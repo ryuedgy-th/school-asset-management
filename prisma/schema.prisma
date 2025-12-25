@@ -1,0 +1,356 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// 14. Users & Permissions
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("User") // Deprecated: Migration to roleId in progress
+  roleId        Int?
+  userRole      Role?     @relation(fields: [roleId], references: [id])
+  department    String?
+  phoneNumber   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt @default(now())
+
+  accounts      Account[]
+  sessions      Session[]
+  logs          AuditLog[]
+  
+  // Relations
+  assignments    Assignment[]
+  closedAssignments Assignment[] @relation("ClosedAssignments")
+  checkedReturns ReturnTransaction[] @relation("CheckedReturns")
+  createdTransactions BorrowTransaction[]
+  assignedTasks  PMTask[]
+  inspections    Inspection[] @relation("InspectorInspections")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  permissions String   // JSON string of allowed paths/actions e.g. ["/assets", "/users"]
+  users       User[]
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  action    String   // CREATE, UPDATE, DELETE, LOGIN
+  entity    String   // User, Asset, Role
+  entityId  String   // ID of the entity affected
+  details   String?  // JSON string of changes
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model LoginAttempt {
+  id        Int      @id @default(autoincrement())
+  email     String
+  ipAddress String
+  createdAt DateTime @default(now())
+}
+
+model Account {
+  id                Int     @id @default(autoincrement())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+ 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@unique([provider, providerAccountId])
+}
+ 
+model Session {
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+ 
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@unique([identifier, token])
+}
+
+// Assets (Equipment)
+model Asset {
+  id            Int       @id @default(autoincrement())
+  name          String
+  category      String    // Laptop, Tablet, Camera, etc.
+  // Enterprise Fields
+  assetCode     String    @unique @default(cuid()) // Internal Tracking ID (e.g. AST-2024-001)
+  brand         String?
+  model         String?
+  serialNumber  String?   // Manufacturer S/N (Non-unique allowed? No, usually distinct, but let's keep unique if possible, or relax it. Existing was unique.)
+  purchaseDate  DateTime?
+  warrantyExp   DateTime?
+  vendor        String?
+  cost          Decimal?
+  location      String?
+
+  status        String    @default("Available") // Available, Reserved, Borrowed, Maintenance, Broken, Lost, Retired
+  image         String?   // Path to image file
+  totalStock    Int       @default(1) // For non-serialized items
+  currentStock  Int       @default(1)
+  
+  // Relations
+  borrowItems  BorrowItem[]
+  pmTasks        PMTask[]
+  issueReports   IssueReport[]
+  inspections    Inspection[]
+}
+
+// Asset Inspection Model
+model Inspection {
+  id                Int      @id @default(autoincrement())
+  assetId           Int
+  inspectionDate    DateTime @default(now())
+  inspectionType    String   // 'checkout', 'checkin', 'periodic', 'incident'
+  inspectorId       Int
+  
+  // Detailed Checklist Fields
+  exteriorCondition     String?  // 'no_damage', 'minor_wear', 'moderate_wear', 'visible_dent', 'structural_damage', 'other'
+  exteriorNotes         String?
+  screenCondition       String?  // 'perfect', 'minor_scratches', 'noticeable_scratches', 'screen_blemish', 'cracked', 'other'
+  screenNotes           String?
+  buttonPortCondition   String?  // 'all_functional', 'sticky_button', 'loose_port', 'non_functional', 'other'
+  buttonPortNotes       String?
+  keyboardCondition     String?  // 'fully_functional', 'minor_wear', 'sticking_keys', 'missing_keys', 'not_applicable', 'other'
+  keyboardNotes         String?
+  touchpadCondition     String?  // 'fully_functional', 'inconsistent', 'non_functional', 'not_applicable'
+  batteryHealth         String?  // 'normal', 'moderate', 'replace_soon', 'not_applicable'
+  
+  // Overall Assessment (Auto-computed or manual)
+  overallCondition  String   // 'excellent', 'good', 'fair', 'poor', 'broken'
+  damageFound       Boolean  @default(false)
+  damageDescription String?
+  estimatedCost     Decimal? @default(0)
+  
+  // Photos (JSON array of paths)
+  photoUrls         String?  // JSON array: ["path1.jpg", "path2.jpg"]
+  
+  // Additional Notes
+  notes             String?
+  
+  createdAt         DateTime @default(now())
+  
+  // Relations
+  asset             Asset    @relation(fields: [assetId], references: [id])
+  inspector         User     @relation(name: "InspectorInspections", fields: [inspectorId], references: [id])
+  
+  // Reverse relations
+  checkoutBorrowItems BorrowItem[]        @relation("ItemCheckoutInspection")
+  checkinTransactions ReturnTransaction[] @relation("CheckinInspection")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// New Model for Issue Reporting (QR Scan Flow)
+model IssueReport {
+  id          Int      @id @default(autoincrement())
+  assetId     Int
+  reporterName String? // Mobile user might be anonymous or guest
+  description String
+  status      String   @default("Open") // Open, Ack, Resolved
+  createdAt   DateTime @default(now())
+
+  asset       Asset    @relation(fields: [assetId], references: [id])
+}
+
+// 9. Equipment Borrowing
+// 9. Equipment Borrowing (Enhanced)
+model Assignment {
+  id               Int       @id @default(autoincrement())
+  assignmentNumber String    @unique // e.g. AS-2024-001
+  userId           Int
+  academicYear     String    // "2024"
+  semester         Int       // 1 or 2
+  status           String    @default("Active") // Active, Closed
+  createdAt        DateTime  @default(now())
+  closedAt         DateTime?
+  
+  // IT Closure (when closing assignment at year-end)
+  itClosureSignature String?   // Path to IT signature image
+  closedById         Int?      // IT staff who closed it
+  closureNotes       String?   // Optional notes when closing
+
+  user               User                @relation(fields: [userId], references: [id])
+  closedBy           User?               @relation(name: "ClosedAssignments", fields: [closedById], references: [id])
+  borrowTransactions BorrowTransaction[]
+  returnTransactions ReturnTransaction[]
+}
+
+model BorrowTransaction {
+  id                Int      @id @default(autoincrement())
+  assignmentId      Int
+  transactionNumber String   @unique // e.g. TR-2024-001
+  borrowDate        DateTime @default(now())
+  borrowerSignature String?  // Path to image
+  notes             String?
+  createdById       Int
+  
+  // Signature token fields
+  signatureToken       String?   @unique
+  signatureTokenExpiry DateTime?
+  isSigned            Boolean   @default(false)
+  signedAt            DateTime?
+  
+  // PDF Receipt
+  signedPdfPath        String?
+  signedPdfGeneratedAt DateTime?
+
+  assignment Assignment   @relation(fields: [assignmentId], references: [id])
+  createdBy  User         @relation(fields: [createdById], references: [id])
+  items      BorrowItem[]
+}
+
+model BorrowItem {
+  id                  Int      @id @default(autoincrement())
+  borrowTransactionId Int
+  assetId             Int
+  quantity            Int      @default(1)
+  status              String   @default("Borrowed") // Borrowed, Returned
+  
+  // Inspection at checkout (per-asset)
+  checkoutInspectionId Int?
+  checkoutInspection   Inspection? @relation("ItemCheckoutInspection", fields: [checkoutInspectionId], references: [id])
+  
+  borrowTransaction   BorrowTransaction @relation(fields: [borrowTransactionId], references: [id])
+  asset               Asset             @relation(fields: [assetId], references: [id])
+  returnItems         ReturnItem[]
+}
+
+model ReturnTransaction {
+  id               Int      @id @default(autoincrement())
+  assignmentId     Int
+  returnDate       DateTime @default(now())
+  checkedById      Int
+  checkerSignature String?  // Path to image
+  notes            String?
+  
+  // Inspection at checkin
+  checkinInspectionId Int?
+  checkinInspection   Inspection? @relation("CheckinInspection", fields: [checkinInspectionId], references: [id])
+
+  assignment Assignment   @relation(fields: [assignmentId], references: [id])
+  checkedBy  User         @relation(name: "CheckedReturns", fields: [checkedById], references: [id])
+  items      ReturnItem[]
+}
+
+model ReturnItem {
+  id                  Int      @id @default(autoincrement())
+  returnTransactionId Int
+  borrowItemId        Int
+  condition           String   // Good, Damaged, Lost
+  damageNotes         String?
+  damageCharge        Decimal? @default(0)
+  quantity            Int      @default(1)
+
+  returnTransaction ReturnTransaction @relation(fields: [returnTransactionId], references: [id])
+  borrowItem        BorrowItem        @relation(fields: [borrowItemId], references: [id])
+}
+
+// 10. Preventive Maintenance (PM)
+model PMTask {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String?
+  scheduledDate DateTime
+  status        String   @default("Pending") // Pending, Completed, Overdue
+  type          String   // Infrastructure, Hardware, Network, AV
+  assetId       Int?
+  assigneeId    Int?
+  resultNotes   String?
+  resultImage   String?
+  
+  asset    Asset? @relation(fields: [assetId], references: [id])
+  assignee User?  @relation(fields: [assigneeId], references: [id])
+}
+
+// 11. Domains
+model Domain {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  registrar String?
+  expiryDate DateTime
+  sslStatus String?  // Active, Warning, Expired
+  sslExpiry DateTime?
+  autoRenew Boolean  @default(false)
+  hostingProvider String?
+}
+
+// 12. Software Licenses
+model License {
+  id           Int      @id @default(autoincrement())
+  softwareName String
+  licenseKey   String?
+  type         String   // Subscription, Perpetual
+  seatsTotal   Int
+  seatsUsed    Int      @default(0)
+  expiryDate   DateTime?
+  cost         String?
+  vendor       String?
+}
+
+// 13. Contracts
+model Contract {
+  id        Int      @id @default(autoincrement())
+  title     String
+  partner   String   // Company Name
+  type      String   // Lease, Service, MA
+  startDate DateTime
+  endDate   DateTime
+  value     String?
+  status    String   @default("Active")
+  filePath  String?  // Path to PDF
+}
+
+// 14. System Settings
+model SystemSettings {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique // e.g. "smtp_host", "smtp_port"
+  value     String?  // Encrypted for sensitive values
+  category  String   @default("general") // general, email, security
+  isSecret  Boolean  @default(false) // If true, value is encrypted
+  updatedAt DateTime @updatedAt @default(now())
+  updatedBy Int?
+}
