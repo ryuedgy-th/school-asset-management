@@ -266,17 +266,17 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
                                                 📧 Send Email
                                             </button>
 
-                                            {/* Delete Button */}
+                                            {/* Cancel Button */}
                                             <button
                                                 onClick={async () => {
-                                                    if (!confirm(`Are you sure you want to delete transaction ${tx.transactionNumber}? This action cannot be undone.`)) {
+                                                    if (!confirm(`Cancel transaction ${tx.transactionNumber}? The reserved assets will become available again.`)) {
                                                         return;
                                                     }
                                                     try {
                                                         const { deleteBorrowTransaction } = await import('@/app/lib/borrow-actions');
                                                         const res = await deleteBorrowTransaction(tx.id);
                                                         if (res.success) {
-                                                            alert('✅ ' + res.message);
+                                                            alert('✅ Transaction cancelled successfully');
                                                             window.location.reload();
                                                         } else {
                                                             alert('❌ ' + res.error);
@@ -286,9 +286,9 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
                                                         alert('❌ Error: ' + e.message);
                                                     }
                                                 }}
-                                                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-sm font-medium transition-all"
+                                                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-sm font-medium transition-all"
                                             >
-                                                🗑️ Delete
+                                                ✖️ Cancel
                                             </button>
                                         </>
                                     )}

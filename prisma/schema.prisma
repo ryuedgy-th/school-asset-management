@@ -37,6 +37,7 @@ model User {
   createdTransactions BorrowTransaction[]
   assignedTasks  PMTask[]
   inspections    Inspection[] @relation("InspectorInspections")
+  approvedInspections Inspection[] @relation("InspectionApprover")
 }
 
 model Role {
@@ -141,6 +142,9 @@ model Inspection {
   inspectionType    String   // 'checkout', 'checkin', 'periodic', 'incident'
   inspectorId       Int
   
+  // Assignment Link (auto-detected)
+  assignmentId      Int?
+  
   // Detailed Checklist Fields
   exteriorCondition     String?  // 'no_damage', 'minor_wear', 'moderate_wear', 'visible_dent', 'structural_damage', 'other'
   exteriorNotes         String?
@@ -162,14 +166,37 @@ model Inspection {
   // Photos (JSON array of paths)
   photoUrls         String?  // JSON array: ["path1.jpg", "path2.jpg"]
   
+  // Email Tracking
+  emailSent         Boolean  @default(false)
+  emailSentAt       DateTime?
+  
+  // PDF Tracking
+  acknowledgementPdfGenerated Boolean  @default(false)
+  acknowledgementPdfPath      String?
+  
+  // Workflow Status (for damage management)
+  damageStatus      String?   @default("pending_review")
+  // Values: pending_review, quotation_received, approved, form_sent, completed, waived
+  
+  // Approval Tracking
+  approvedBy        Int?
+  approvedAt        DateTime?
+  approvalNotes     String?
+  
+  // Form Tracking
+  formSentAt        DateTime?
+  formSignedAt      DateTime?
+  
   // Additional Notes
   notes             String?
   
   createdAt         DateTime @default(now())
   
   // Relations
-  asset             Asset    @relation(fields: [assetId], references: [id])
-  inspector         User     @relation(name: "InspectorInspections", fields: [inspectorId], references: [id])
+  asset             Asset      @relation(fields: [assetId], references: [id])
+  inspector         User       @relation(name: "InspectorInspections", fields: [inspectorId], references: [id])
+  assignment        Assignment? @relation(fields: [assignmentId], references: [id])
+  approver          User?      @relation(name: "InspectionApprover", fields: [approvedBy], references: [id])
   
   // Reverse relations
   checkoutBorrowItems BorrowItem[]        @relation("ItemCheckoutInspection")
@@ -217,6 +244,7 @@ model Assignment {
   closedBy           User?               @relation(name: "ClosedAssignments", fields: [closedById], references: [id])
   borrowTransactions BorrowTransaction[]
   returnTransactions ReturnTransaction[]
+  inspections        Inspection[]
 }
 
 model BorrowTransaction {

@@ -108,94 +108,96 @@ export default function BorrowingClient({ assignments }: BorrowingClientProps) {
                     </div>
                 </div>
 
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
-                        <tr>
-                            <th className="px-6 py-4">Assignment No.</th>
-                            <th className="px-6 py-4">User</th>
-                            <th className="px-6 py-4">Department</th>
-                            <th className="px-6 py-4">Year / Term</th>
-                            <th className="px-6 py-4">Items</th>
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4">Date</th>
-                            <th className="px-6 py-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {filteredAssignments.length === 0 ? (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold">
                             <tr>
-                                <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
-                                    No assignments found.
-                                </td>
+                                <th className="px-6 py-4 whitespace-nowrap">Assignment No.</th>
+                                <th className="px-6 py-4 whitespace-nowrap">User</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Department</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Year / Term</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Items</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Status</th>
+                                <th className="px-6 py-4 whitespace-nowrap">Date</th>
+                                <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
                             </tr>
-                        ) : filteredAssignments.map(assignment => (
-                            <tr
-                                key={assignment.id}
-                                className={`hover:bg-slate-50/50 ${assignment.status === 'Closed' ? 'opacity-60' : ''}`}
-                            >
-                                <td className="px-6 py-4 font-medium text-slate-900 border-l-4 border-l-transparent hover:border-l-blue-500 transition-all">
-                                    {assignment.assignmentNumber}
-                                </td>
-                                <td className="px-6 py-4 text-slate-900 font-medium">
-                                    {assignment.user.name}
-                                </td>
-                                <td className="px-6 py-4 text-slate-500">
-                                    {assignment.user.department || '-'}
-                                </td>
-                                <td className="px-6 py-4 text-slate-500">
-                                    {assignment.academicYear} / Term {assignment.semester}
-                                </td>
-                                <td className="px-6 py-4 text-slate-500">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                                        {assignment.borrowTransactions.reduce((acc, tx) => acc + tx.items.length, 0)} Items
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    {assignment.status === 'Active' ? (
-                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                            <CheckCircle2 size={12} />
-                                            Active
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredAssignments.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                                        No assignments found.
+                                    </td>
+                                </tr>
+                            ) : filteredAssignments.map(assignment => (
+                                <tr
+                                    key={assignment.id}
+                                    className={`hover:bg-slate-50/50 ${assignment.status === 'Closed' ? 'opacity-60' : ''}`}
+                                >
+                                    <td className="px-6 py-4 font-medium text-slate-900 border-l-4 border-l-transparent hover:border-l-blue-500 transition-all">
+                                        {assignment.assignmentNumber}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-900 font-medium">
+                                        {assignment.user.name}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500">
+                                        {assignment.user.department || '-'}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500">
+                                        {assignment.academicYear} / Term {assignment.semester}
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                                            {assignment.borrowTransactions.reduce((acc, tx) => acc + tx.items.length, 0)} Items
                                         </span>
-                                    ) : (
-                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                                            <XCircle size={12} />
-                                            Closed
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4 text-slate-500">
-                                    <div className="text-xs">
-                                        {assignment.status === 'Closed' && assignment.closedAt ? (
-                                            <>
-                                                <div className="text-slate-400">Closed:</div>
-                                                <div>{new Date(assignment.closedAt).toLocaleDateString('en-GB')}</div>
-                                                {assignment.closedBy && (
-                                                    <div className="text-slate-400 mt-1">by {assignment.closedBy.name}</div>
-                                                )}
-                                            </>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {assignment.status === 'Active' ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                <CheckCircle2 size={12} />
+                                                Active
+                                            </span>
                                         ) : (
-                                            <>
-                                                <div className="text-slate-400">Opened:</div>
-                                                <div>{new Date(assignment.createdAt).toLocaleDateString('en-GB')}</div>
-                                            </>
+                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                                <XCircle size={12} />
+                                                Closed
+                                            </span>
                                         )}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <Link
-                                        href={`/dashboard/borrowing/${assignment.id}`}
-                                        className="text-blue-600 font-medium hover:text-blue-800 transition-colors mr-2"
-                                    >
-                                        {assignment.status === 'Active' ? 'Manage' : 'View'}
-                                    </Link>
-                                    {assignment.status === 'Active' && (
-                                        <DeleteAssignmentButton id={assignment.id} />
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-500">
+                                        <div className="text-xs">
+                                            {assignment.status === 'Closed' && assignment.closedAt ? (
+                                                <>
+                                                    <div className="text-slate-400">Closed:</div>
+                                                    <div>{new Date(assignment.closedAt).toLocaleDateString('en-GB')}</div>
+                                                    {assignment.closedBy && (
+                                                        <div className="text-slate-400 mt-1">by {assignment.closedBy.name}</div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="text-slate-400">Opened:</div>
+                                                    <div>{new Date(assignment.createdAt).toLocaleDateString('en-GB')}</div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <Link
+                                            href={`/dashboard/borrowing/${assignment.id}`}
+                                            className="text-blue-600 font-medium hover:text-blue-800 transition-colors mr-2"
+                                        >
+                                            {assignment.status === 'Active' ? 'Manage' : 'View'}
+                                        </Link>
+                                        {assignment.status === 'Active' && (
+                                            <DeleteAssignmentButton id={assignment.id} />
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

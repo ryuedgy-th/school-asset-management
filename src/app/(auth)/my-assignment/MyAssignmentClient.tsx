@@ -87,30 +87,45 @@ export default function MyAssignmentClient({ assignment, user }: MyAssignmentCli
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {borrowedItems.map((item: any) => (
-                                <div key={item.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                        <Package size={24} className="text-blue-600" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <Link
-                                            href={`/assets/${item.asset.id}`}
-                                            className="font-semibold text-slate-900 hover:text-blue-600 transition-colors"
-                                        >
-                                            {item.asset.name}
-                                        </Link>
-                                        <div className="text-sm text-slate-500 mt-1">
-                                            Quantity: {item.quantity} • {item.asset.category}
+                            {borrowedItems.map((item: any) => {
+                                // Find the transaction this item belongs to
+                                const transaction = assignment.borrowTransactions.find((tx: any) =>
+                                    tx.items.some((txItem: any) => txItem.id === item.id)
+                                );
+                                const isSigned = transaction?.isSigned || false;
+
+                                return (
+                                    <div key={item.id} className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                        <div className="p-3 bg-blue-100 rounded-lg">
+                                            <Package size={24} className="text-blue-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <Link
+                                                href={`/assets/${item.asset.id}`}
+                                                className="font-semibold text-slate-900 hover:text-blue-600 transition-colors"
+                                            >
+                                                {item.asset.name}
+                                            </Link>
+                                            <div className="text-sm text-slate-500 mt-1">
+                                                Quantity: {item.quantity} • {item.asset.category}
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            {isSigned ? (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                                    <Clock size={12} className="mr-1" />
+                                                    Borrowed
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                                                    <AlertCircle size={12} className="mr-1" />
+                                                    Reserved
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                                            <Clock size={12} className="mr-1" />
-                                            Borrowed
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>

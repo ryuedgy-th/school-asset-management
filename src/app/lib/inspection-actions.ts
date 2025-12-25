@@ -5,6 +5,7 @@ import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import { sendInspectionReport } from '@/lib/email';
 
 // Condition severity scores for auto-computation
 const SEVERITY_SCORES: Record<string, number> = {
@@ -118,6 +119,56 @@ function detectDamage(data: {
 }
 
 /**
+ * Find active assignment for an asset
+ * Returns the assignment if the asset is currently borrowed and not yet returned
+ */
+async function findActiveAssignmentForAsset(assetId: number) {
+    const assignment = await prisma.assignment.findFirst({
+        where: {
+            status: 'Active',
+            borrowTransactions: {
+                some: {
+                    items: {
+                        some: {
+                            assetId: assetId,
+                            status: {
+                                in: ['Borrowed', 'Reserved']
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    department: true
+                }
+            },
+            borrowTransactions: {
+                where: {
+                    items: {
+                        some: { assetId }
+                    }
+                },
+                orderBy: { borrowDate: 'desc' },
+                take: 1,
+                include: {
+                    items: {
+                        where: { assetId }
+                    }
+                }
+            }
+        }
+    });
+
+    return assignment;
+}
+
+/**
  * Create a new inspection
  */
 export async function createInspection(data: {
@@ -149,6 +200,9 @@ export async function createInspection(data: {
     // Auto-detect damage
     const damageFound = detectDamage(data) || !!data.damageDescription;
 
+    // ✨ NEW: Auto-detect active assignment for this asset
+    const assignment = await findActiveAssignmentForAsset(data.assetId);
+
     // Handle photo uploads
     let photoUrls: string[] = [];
     if (data.photoFiles && data.photoFiles.length > 0) {
@@ -173,6 +227,7 @@ export async function createInspection(data: {
             assetId: data.assetId,
             inspectionType: data.inspectionType,
             inspectorId,
+            assignmentId: assignment?.id, // ✨ NEW: Link to assignment
             exteriorCondition: data.exteriorCondition,
             exteriorNotes: data.exteriorNotes,
             screenCondition: data.screenCondition,
@@ -188,19 +243,87 @@ export async function createInspection(data: {
             damageDescription: data.damageDescription,
             estimatedCost: data.estimatedCost,
             photoUrls: photoUrls.length > 0 ? JSON.stringify(photoUrls) : null,
-            notes: data.notes
+            notes: data.notes,
+            emailSent: false, // ✨ NEW: Email tracking
+            acknowledgementPdfGenerated: false, // ✨ NEW: PDF tracking
+            damageStatus: damageFound ? 'pending_review' : null // ✨ NEW: Workflow status
         },
         include: {
-            asset: true,
+            asset: {
+                select: {
+                    id: true,
+                    name: true,
+                    assetCode: true,
+                    category: true,
+                    cost: true
+                }
+            },
             inspector: {
                 select: {
                     id: true,
                     name: true,
                     email: true
                 }
+            },
+            assignment: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            department: true
+                        }
+                    },
+                    borrowTransactions: {
+                        orderBy: { borrowDate: 'desc' },
+                        take: 1,
+                        select: {
+                            borrowDate: true
+                        }
+                    }
+                }
             }
         }
     });
+
+    // ✨ NEW: Send inspection report email automatically
+    if (assignment) {
+        try {
+            await sendInspectionReport({
+                id: inspection.id,
+                asset: inspection.asset,
+                assignment: inspection.assignment,
+                inspector: inspection.inspector,
+                inspectionDate: inspection.inspectionDate,
+                inspectionType: inspection.inspectionType,
+                overallCondition: inspection.overallCondition,
+                exteriorCondition: inspection.exteriorCondition,
+                screenCondition: inspection.screenCondition,
+                keyboardCondition: inspection.keyboardCondition,
+                batteryHealth: inspection.batteryHealth,
+                damageFound: inspection.damageFound,
+                damageDescription: inspection.damageDescription,
+                estimatedCost: inspection.estimatedCost ? Number(inspection.estimatedCost) : null,
+                photoUrls: inspection.photoUrls,
+                notes: inspection.notes
+            });
+
+            // Update email sent status
+            await prisma.inspection.update({
+                where: { id: inspection.id },
+                data: {
+                    emailSent: true,
+                    emailSentAt: new Date()
+                }
+            });
+
+            console.log(`✅ Inspection report email sent for inspection #${inspection.id}`);
+        } catch (emailError) {
+            console.error(`❌ Failed to send inspection email:`, emailError);
+            // Don't fail the whole operation if email fails
+        }
+    }
 
     revalidatePath('/dashboard/assets');
     revalidatePath(`/dashboard/assets/${data.assetId}`);
