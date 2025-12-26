@@ -249,14 +249,3 @@ This project is licensed under the MIT License.
 For issues or questions, please contact the IT Department.
 
 ---
-
-ฉันเพิ่งย้าย Source Code ของโปรเจกต์ Next.js มาที่เครื่องนี้ ช่วยเช็คและติดตั้ง Environment ให้พร้อมใช้งานหน่อย:
-
-1. ตรวจสอบว่ามี Node.js ติดตั้งหรือยัง ถ้ายังให้แจ้งวิธีติดตั้ง
-2. รันคำสั่ง `npm install` เพื่อลง Dependencies ทั้งหมด
-3. รันคำสั่ง `npx prisma generate` เพื่อเตรียม Client สำหรับ Database
-4. ถ้าระบบพร้อมแล้ว ให้ลองรัน Server ด้วย `npm run dev` ให้ที
-
-ช่วยรันทีละคำสั่งและรายงานผลด้วย
-
-Built with ❤️ for efficient school asset management
