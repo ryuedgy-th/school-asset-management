@@ -82,11 +82,35 @@ export async function POST(
             });
 
         } else if (account.type === 'GOOGLE_OAUTH') {
-            // TODO: Implement Google OAuth test
-            return NextResponse.json(
-                { error: 'Google OAuth testing not yet implemented' },
-                { status: 501 }
+            // Send via Gmail API with OAuth2
+            const { sendEmailViaGmailAPI } = await import('@/lib/gmail-oauth');
+
+            const recipient = testEmail || session.user.email;
+            const html = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #574193;">Email Connection Test</h2>
+                    <p>This is a test email from your MYIS Asset Management system.</p>
+                    <p><strong>Account:</strong> ${account.name} (${account.email})</p>
+                    <p><strong>Type:</strong> Google OAuth</p>
+                    <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+                    <hr style="border: 1px solid #eee; margin: 20px 0;">
+                    <p style="color: #666; font-size: 12px;">
+                        If you received this email, your Google OAuth configuration is working correctly!
+                    </p>
+                </div>
+            `;
+
+            await sendEmailViaGmailAPI(
+                account.id,
+                recipient,
+                'Test Email - MYIS Asset Management',
+                html
             );
+
+            return NextResponse.json({
+                success: true,
+                message: `Test email sent successfully to ${recipient} via Gmail API`
+            });
         }
 
         return NextResponse.json(

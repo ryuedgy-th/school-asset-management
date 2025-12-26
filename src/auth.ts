@@ -22,8 +22,9 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     adapter: PrismaAdapter(prisma),
     // Use JWT with minimal data to avoid HTTP 431
     session: {
-        strategy: 'jwt',
-        maxAge: 30 * 24 * 60 * 60, // 30 days
+        strategy: "jwt",
+        maxAge: 24 * 60 * 60, // 1 day (24 hours)
+        updateAge: 60 * 60, // Update session every 1 hour
     },
     providers: [
         Google({
@@ -48,11 +49,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     return null;
                 }
 
+                const email = credentials.email as string;
+
+                // Check if account is locked
+                const { checkAccountLock, incrementFailedAttempts, resetFailedAttempts } = await import('@/lib/account-lockout');
+                const lockStatus = await checkAccountLock(email);
+
+                if (lockStatus.isLocked) {
+                    throw new Error(lockStatus.message || 'Account is locked');
+                }
+
                 const user = await prisma.user.findUnique({
-                    where: { email: credentials.email as string }
+                    where: { email }
                 });
 
                 if (!user || !user.password) {
+                    // Increment failed attempts even if user doesn't exist (don't reveal)
+                    await incrementFailedAttempts(email);
                     return null;
                 }
 
@@ -62,8 +75,20 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 );
 
                 if (!isValidPassword) {
+                    // Increment failed attempts
+                    const attempts = await incrementFailedAttempts(email);
+
+                    // Provide feedback on remaining attempts
+                    const remaining = Math.max(0, 5 - attempts);
+                    if (remaining > 0 && remaining <= 2) {
+                        throw new Error(`Invalid credentials. ${remaining} attempt${remaining > 1 ? 's' : ''} remaining before account lockout.`);
+                    }
+
                     return null;
                 }
+
+                // Success - reset failed attempts
+                await resetFailedAttempts(email);
 
                 return {
                     id: user.id.toString(),

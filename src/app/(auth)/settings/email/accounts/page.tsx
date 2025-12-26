@@ -30,9 +30,31 @@ export default function EmailAccountsPage() {
         try {
             const res = await fetch('/api/email-accounts');
             const data = await res.json();
-            setAccounts(data);
+
+            // Check if response is an error
+            if (data.error) {
+                console.error('API error:', data.error);
+
+                // If unauthorized, redirect to login
+                if (res.status === 401 || data.error === 'Unauthorized') {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                setAccounts([]);
+                return;
+            }
+
+            // Ensure data is an array
+            if (Array.isArray(data)) {
+                setAccounts(data);
+            } else {
+                console.error('API returned non-array:', data);
+                setAccounts([]);
+            }
         } catch (error) {
             console.error('Error fetching accounts:', error);
+            setAccounts([]);
         } finally {
             setLoading(false);
         }
@@ -149,6 +171,60 @@ export default function EmailAccountsPage() {
                                         </span>
                                     </div>
                                     <p className="text-slate-600 mb-3">{account.email}</p>
+
+                                    {/* Gmail-style integration card for Google OAuth */}
+                                    {account.type === 'GOOGLE_OAUTH' && (
+                                        <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                            <div className="flex items-start gap-4">
+                                                {/* Gmail Logo */}
+                                                <div className="flex-shrink-0">
+                                                    <svg className="w-12 h-12" viewBox="0 0 48 48">
+                                                        <path fill="#4caf50" d="M45,16.2l-5,2.75l-5,4.75L35,40h7c1.657,0,3-1.343,3-3V16.2z" />
+                                                        <path fill="#1e88e5" d="M3,16.2l3.614,1.71L13,23.7V40H6c-1.657,0-3-1.343-3-3V16.2z" />
+                                                        <polygon fill="#e53935" points="35,11.2 24,19.45 13,11.2 12,17 13,23.7 24,31.95 35,23.7 36,17" />
+                                                        <path fill="#c62828" d="M3,12.298V16.2l10,7.5V11.2L9.876,8.859C9.132,8.301,8.228,8,7.298,8h0C4.924,8,3,9.924,3,12.298z" />
+                                                        <path fill="#fbc02d" d="M45,12.298V16.2l-10,7.5V11.2l3.124-2.341C38.868,8.301,39.772,8,40.702,8h0 C43.076,8,45,9.924,45,12.298z" />
+                                                    </svg>
+                                                </div>
+
+                                                {/* Content */}
+                                                <div className="flex-1">
+                                                    <h4 className="text-base font-bold text-slate-900 mb-1">Gmail</h4>
+                                                    <p className="text-sm text-slate-600">
+                                                        Integrate Gmail to send, receive, and manage emails directly from your workspace.
+                                                    </p>
+
+                                                    {/* Connection Status */}
+                                                    <div className="mt-3 flex items-center gap-2">
+                                                        {(account as any).oauthTokenExpiry ? (
+                                                            <>
+                                                                <div className="flex items-center gap-2 text-sm text-green-600">
+                                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                                                    </svg>
+                                                                    <span className="font-medium">Connected</span>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => window.location.href = `/api/email-accounts/oauth/authorize?accountId=${account.id}`}
+                                                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
+                                                            >
+                                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                                                                </svg>
+                                                                Connect Google
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {account.type === 'SMTP' && account.smtpHost && (
                                         <p className="text-sm text-slate-500">
                                             {account.smtpHost}:{account.smtpPort}
@@ -157,6 +233,23 @@ export default function EmailAccountsPage() {
                                 </div>
 
                                 <div className="flex items-center gap-2">
+                                    {/* Connect Google button for OAuth accounts without tokens */}
+                                    {account.type === 'GOOGLE_OAUTH' && !(account as any).oauthTokenExpiry && (
+                                        <button
+                                            onClick={() => window.location.href = `/api/email-accounts/oauth/authorize?accountId=${account.id}`}
+                                            className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
+                                            title="Connect Google Account"
+                                        >
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                                            </svg>
+                                            Connect Google
+                                        </button>
+                                    )}
+
                                     <button
                                         onClick={() => handleTest(account.id)}
                                         disabled={testingId === account.id}
@@ -317,8 +410,14 @@ function AccountModal({
                             disabled={!!account}
                         >
                             <option value="SMTP">SMTP (Gmail, Outlook, etc.)</option>
-                            <option value="GOOGLE_OAUTH">Google OAuth (Coming Soon)</option>
+                            <option value="GOOGLE_OAUTH">Google OAuth (Google Workspace)</option>
                         </select>
+                        {formData.type === 'GOOGLE_OAUTH' && !account && (
+                            <p className="text-xs text-slate-600 mt-2">
+                                💡 <strong>Note:</strong> After creating the account, you'll need to connect your Google account.
+                                Make sure Gmail API is enabled in Google Cloud Console.
+                            </p>
+                        )}
                     </div>
 
                     {/* SMTP Settings */}

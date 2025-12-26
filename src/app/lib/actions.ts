@@ -8,16 +8,25 @@ import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 
 export async function createUser(formData: FormData) {
-    const name = formData.get('name') as string;
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const role = formData.get('role') as string;
-    const department = formData.get('department') as string;
-    const phoneNumber = formData.get('phoneNumber') as string;
+    const rawData = {
+        name: formData.get('name') as string,
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+        role: formData.get('role') as string,
+        department: formData.get('department') as string,
+        phoneNumber: formData.get('phoneNumber') as string,
+    };
 
-    if (!email || !password || !name) {
-        return { error: 'Missing required fields' };
+    // Validate input with Zod
+    const { createUserSchema } = await import('@/lib/validation');
+    const validation = createUserSchema.safeParse(rawData);
+
+    if (!validation.success) {
+        const errors = validation.error.errors.map(e => e.message).join(', ');
+        return { error: errors };
     }
+
+    const { name, email, password, role, department, phoneNumber } = validation.data;
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);

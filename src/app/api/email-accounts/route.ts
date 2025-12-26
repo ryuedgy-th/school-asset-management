@@ -27,8 +27,9 @@ export async function GET(req: NextRequest) {
                 smtpPort: true,
                 smtpUser: true,
                 smtpSecure: true,
-                oauthProvider: true,
-                tokenExpiry: true,
+                // OAuth fields (don't send sensitive data)
+                oauthClientId: true,
+                oauthTokenExpiry: true,
                 createdAt: true,
                 updatedAt: true,
                 // Don't send passwords/tokens to frontend
@@ -93,12 +94,6 @@ export async function POST(req: NextRequest) {
         if (smtpPassword) {
             encryptedData.smtpPassword = encrypt(smtpPassword);
         }
-        if (accessToken) {
-            encryptedData.accessToken = encrypt(accessToken);
-        }
-        if (refreshToken) {
-            encryptedData.refreshToken = encrypt(refreshToken);
-        }
 
         const account = await prisma.emailAccount.create({
             data: {
@@ -110,8 +105,6 @@ export async function POST(req: NextRequest) {
                 smtpPort: smtpPort ? parseInt(smtpPort) : null,
                 smtpUser,
                 smtpSecure: smtpSecure !== false,
-                oauthProvider,
-                tokenExpiry: tokenExpiry ? new Date(tokenExpiry) : null,
                 ...encryptedData,
             },
             select: {
