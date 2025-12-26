@@ -186,7 +186,7 @@ export default function BorrowForm({ userId, activeAssignmentId, academicYear, s
                 <button
                     onClick={handleSubmit}
                     disabled={loading || items.length === 0 || !signature}
-                    className={`px-6 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-lg shadow-blue-500/30 flex items-center gap-2 transition-all ${loading ? 'opacity-70 cursor-wait' : 'hover:bg-blue-700'}`}
+                    className={`px-6 py-2 bg-primary text-white rounded-lg font-medium shadow-lg shadow-primary/80/30 flex items-center gap-2 transition-all ${loading ? 'opacity-70 cursor-wait' : 'hover:bg-primary/90'}`}
                 >
                     {loading ? 'Processing...' : 'Confirm Borrowing'}
                 </button>

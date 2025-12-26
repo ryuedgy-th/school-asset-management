@@ -29,7 +29,15 @@ export default async function AuthLayout({
 
     return (
         <div className="flex flex-col lg:flex-row min-h-screen w-full">
-            <Sidebar permissions={permissions} role={user?.userRole?.name || 'User'} />
+            <Sidebar
+                permissions={permissions}
+                role={user?.role || 'User'}
+                user={{
+                    name: user?.name,
+                    email: user?.email,
+                    image: user?.image
+                }}
+            />
             <main className="flex-1 w-full lg:ml-72 pt-[80px] lg:pt-0 p-4 lg:p-8 transition-all duration-300 ease-in-out">
                 <div className="mx-auto max-w-7xl w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {children}

@@ -115,14 +115,14 @@ export default function ReturnModal({ assignmentId, borrowItems, onClose }: Retu
                         ) : items.map((itemState) => {
                             const originalItem = borrowItems.find(i => i.id === itemState.borrowItemId)!;
                             return (
-                                <div key={itemState.borrowItemId} className={`p-4 rounded-xl border transition-all ${itemState.isSelected ? 'border-blue-500 bg-blue-50/10 shadow-sm' : 'border-slate-200 opacity-80 hover:opacity-100'}`}>
+                                <div key={itemState.borrowItemId} className={`p-4 rounded-xl border transition-all ${itemState.isSelected ? 'border-primary/80 bg-primary/10/10 shadow-sm' : 'border-slate-200 opacity-80 hover:opacity-100'}`}>
                                     <div className="flex items-start gap-4">
                                         <div className="pt-1">
                                             <input
                                                 type="checkbox"
                                                 checked={itemState.isSelected}
                                                 onChange={() => handleToggle(itemState.borrowItemId)}
-                                                className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                className="w-5 h-5 rounded border-slate-300 text-primary focus:ring-primary/80"
                                             />
                                         </div>
                                         <div className="flex-1 space-y-3">
@@ -138,7 +138,7 @@ export default function ReturnModal({ assignmentId, borrowItems, onClose }: Retu
                                                         <select
                                                             value={itemState.condition}
                                                             onChange={(e) => handleChange(itemState.borrowItemId, 'condition', e.target.value)}
-                                                            className="w-full text-sm border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                                                            className="w-full text-sm border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80"
                                                         >
                                                             <option value="Good">Good</option>
                                                             <option value="Damaged">Damaged</option>
@@ -193,7 +193,7 @@ export default function ReturnModal({ assignmentId, borrowItems, onClose }: Retu
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all disabled:opacity-70"
+                        className="px-6 py-2 bg-primary text-white rounded-lg font-medium shadow-lg shadow-primary/80/30 hover:bg-primary/90 transition-all disabled:opacity-70"
                     >
                         {loading ? 'Processing...' : 'Confirm Return'}
                     </button>

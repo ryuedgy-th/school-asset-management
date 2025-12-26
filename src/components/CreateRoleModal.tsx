@@ -78,7 +78,7 @@ export default function CreateRoleModal({ isOpen, onClose }: CreateRoleModalProp
                             name="name"
                             id="name"
                             required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             placeholder="e.g. Content Editor"
                         />
                     </div>
@@ -92,7 +92,7 @@ export default function CreateRoleModal({ isOpen, onClose }: CreateRoleModalProp
                                         type="checkbox"
                                         checked={selectedPerms.includes(perm.id)}
                                         onChange={() => togglePerm(perm.id)}
-                                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/80"
                                     />
                                     <span className="text-sm font-medium text-slate-700">{perm.label}</span>
                                 </label>
@@ -104,7 +104,7 @@ export default function CreateRoleModal({ isOpen, onClose }: CreateRoleModalProp
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Save size={18} />}
                             {isLoading ? 'Create Role' : 'Create Role'}

@@ -99,7 +99,7 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
                 </div>
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
-                    className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all active:scale-95"
+                    className="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-primary/80/30 hover:bg-primary/90 hover:shadow-primary/40 transition-all active:scale-95"
                 >
                     <Plus size={20} className="mr-2" />
                     Create Plan
@@ -109,7 +109,7 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between border-b border-slate-100 p-6">
                     <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                        <CalendarIcon className="text-blue-500" />
+                        <CalendarIcon className="text-primary/80" />
                         {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h2>
                     <div className="flex gap-2">
@@ -136,7 +136,7 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
                                 {day && (
                                     <>
                                         <div className={`self-end flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium transition-colors ${isToday
-                                                ? 'bg-blue-600 text-white shadow-md'
+                                                ? 'bg-primary text-white shadow-md'
                                                 : 'text-slate-700 hover:bg-slate-100'
                                             }`}>
                                             {day}
@@ -149,12 +149,12 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
                                                     onClick={() => setSelectedTask(task)}
                                                     className={`group w-full rounded px-2 py-1.5 text-left text-xs font-medium transition-all hover:shadow-sm flex items-center gap-1.5 ${task.status === 'Completed' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100' :
                                                             task.status === 'Overdue' ? 'bg-rose-50 text-rose-700 border border-rose-100 hover:bg-rose-100' :
-                                                                'bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100'
+                                                                'bg-primary/10 text-primary/90 border border-primary/20 hover:bg-primary/20'
                                                         }`}
                                                 >
                                                     <div className={`h-1.5 w-1.5 rounded-full ${task.status === 'Completed' ? 'bg-emerald-500' :
                                                             task.status === 'Overdue' ? 'bg-rose-500' :
-                                                                'bg-blue-500'
+                                                                'bg-primary/80'
                                                         }`} />
                                                     <span className="truncate">{task.title}</span>
                                                 </button>
@@ -176,7 +176,7 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
             >
                 <div className="space-y-6">
                     <div className="flex items-center gap-3">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${selectedTask?.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${selectedTask?.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' : 'bg-primary/20 text-blue-800'
                             }`}>
                             {selectedTask?.status}
                         </span>
@@ -198,13 +198,13 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
 
                     <div>
                         <h4 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                            <CheckCircle2 size={16} className="text-blue-500" />
+                            <CheckCircle2 size={16} className="text-primary/80" />
                             Standard Checklist
                         </h4>
                         <div className="space-y-2">
                             {['Check physical condition', 'Clean dust filters', 'Verify power supply', 'Update firmware (if applicable)'].map((item, i) => (
-                                <label key={i} className="group flex items-center gap-3 rounded-lg border border-slate-100 p-3 transition-colors hover:bg-blue-50/50 hover:border-blue-100 cursor-pointer">
-                                    <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                <label key={i} className="group flex items-center gap-3 rounded-lg border border-slate-100 p-3 transition-colors hover:bg-primary/10/50 hover:border-primary/20 cursor-pointer">
+                                    <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary/80" />
                                     <span className="text-sm text-slate-600 group-hover:text-slate-900">{item}</span>
                                 </label>
                             ))}
@@ -220,7 +220,7 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
                         </button>
                         {selectedTask?.status !== 'Completed' && (
                             <button
-                                className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white shadow-lg shadow-primary/80/30 hover:bg-primary/90 hover:shadow-primary/40 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
                                 onClick={handleCompleteTask}
                                 disabled={loading}
                             >
@@ -241,16 +241,16 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
                 <form onSubmit={handleCreateTask} className="space-y-5">
                     <div className="space-y-1.5">
                         <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Title</label>
-                        <input name="title" required className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" placeholder="e.g. Server Room A/C Check" />
+                        <input name="title" required className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all" placeholder="e.g. Server Room A/C Check" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Date</label>
-                            <input type="date" name="date" required className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all" />
+                            <input type="date" name="date" required className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all" />
                         </div>
                         <div className="space-y-1.5">
                             <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Type</label>
-                            <select name="type" className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all">
+                            <select name="type" className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all">
                                 <option value="Hardware">Hardware</option>
                                 <option value="Infrastructure">Infrastructure</option>
                                 <option value="Network">Network</option>
@@ -259,11 +259,11 @@ export default function PMCalendar({ initialTasks }: PMCalendarProps) {
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Description</label>
-                        <textarea name="description" rows={3} className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all placeholder:text-slate-400"></textarea>
+                        <textarea name="description" rows={3} className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all placeholder:text-slate-400"></textarea>
                     </div>
                     <div className="flex justify-end gap-3 pt-2">
                         <button type="button" onClick={() => setIsCreateModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">Cancel</button>
-                        <button type="submit" className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2" disabled={loading}>
+                        <button type="submit" className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white shadow-lg shadow-primary/80/30 hover:bg-primary/90 hover:shadow-primary/40 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2" disabled={loading}>
                             {loading && <Loader2 className="animate-spin" size={16} />}
                             Schedule
                         </button>

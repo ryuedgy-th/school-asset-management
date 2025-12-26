@@ -3,13 +3,78 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, User, AlertTriangle, X } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { approveDamage, waiveDamage } from '@/app/lib/inspection-actions';
+import DamageStatusBadge from '@/components/DamageStatusBadge';
+import RepairManagement from '@/components/RepairManagement';
 
 interface InspectionDetailClientProps {
     inspection: any;
 }
 
 export default function InspectionDetailClient({ inspection }: InspectionDetailClientProps) {
+    const router = useRouter();
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handleApprove = async () => {
+        if (isProcessing) return;
+
+        const notes = prompt('Optional approval notes:');
+        if (notes === null) return; // User cancelled
+
+        setIsProcessing(true);
+        try {
+            await approveDamage(inspection.id, notes || undefined);
+            alert('✅ Damage claim approved successfully!');
+            router.refresh();
+        } catch (error: any) {
+            alert('❌ Failed to approve: ' + error.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleWaive = async () => {
+        if (isProcessing) return;
+
+        const reason = prompt('Please provide a reason for waiving charges:');
+        if (!reason) {
+            alert('Reason is required to waive charges');
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            await waiveDamage(inspection.id, reason);
+            alert('✅ Damage charges waived successfully!');
+            router.refresh();
+        } catch (error: any) {
+            alert('❌ Failed to waive: ' + error.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleGenerateForm = async () => {
+        if (isProcessing) return;
+
+        if (!confirm('Generate and send damage acknowledgement form to the user?')) {
+            return;
+        }
+
+        setIsProcessing(true);
+        try {
+            const { generateAndSendDamageForm } = await import('@/app/lib/inspection-actions');
+            const result = await generateAndSendDamageForm(inspection.id);
+            alert(`✅ Damage form generated successfully!\n\nPDF: ${result.pdfPath}`);
+            router.refresh();
+        } catch (error: any) {
+            alert('❌ Failed to generate form: ' + error.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     const getConditionBadge = (condition: string | null) => {
         if (!condition) return null;
@@ -55,11 +120,11 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
     }, [lightboxIndex, photoUrls.length]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-primary/10 p-6">
             <div className="max-w-5xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    <Link href="/inspections" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
+                    <Link href="/inspections" className="inline-flex items-center text-primary hover:text-primary/90 mb-4">
                         <ArrowLeft size={20} className="mr-2" />
                         Back to Inspections
                     </Link>
@@ -69,18 +134,18 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
                 {/* Main Card */}
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     {/* Header Section */}
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+                    <div className="bg-gradient-to-r from-primary to-primary p-6 text-white">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold">{inspection.asset.name}</h2>
-                                <p className="text-blue-100 mt-1">Code: {inspection.asset.assetCode}</p>
+                                <p className="text-primary/20 mt-1">Code: {inspection.asset.assetCode}</p>
                             </div>
                             <div className="text-right">
-                                <div className="flex items-center gap-2 text-blue-100">
+                                <div className="flex items-center gap-2 text-primary/20">
                                     <Calendar size={16} />
                                     <span>{new Date(inspection.inspectionDate).toLocaleDateString('en-GB')}</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-blue-100 mt-1">
+                                <div className="flex items-center gap-2 text-primary/20 mt-1">
                                     <User size={16} />
                                     <span>{inspection.inspector.name}</span>
                                 </div>
@@ -93,7 +158,7 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
                         {/* Inspection Type */}
                         <div>
                             <h3 className="text-lg font-semibold text-slate-900 mb-3">Inspection Type</h3>
-                            <span className="inline-block px-4 py-2 bg-blue-100 text-blue-800 rounded-lg font-medium">
+                            <span className="inline-block px-4 py-2 bg-primary/20 text-blue-800 rounded-lg font-medium">
                                 {formatCondition(inspection.inspectionType)}
                             </span>
                         </div>
@@ -145,7 +210,7 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
                                     {photoUrls.map((url: string, index: number) => (
                                         <div
                                             key={index}
-                                            className="relative aspect-square rounded-lg overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-blue-500 transition-all group"
+                                            className="relative aspect-square rounded-lg overflow-hidden border-2 border-slate-200 cursor-pointer hover:border-primary/80 transition-all group"
                                             onClick={() => setLightboxIndex(index)}
                                         >
                                             <img
@@ -170,10 +235,71 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
                         {/* Damage Info */}
                         {inspection.damageFound && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                <h3 className="text-lg font-semibold text-red-900 mb-2 flex items-center gap-2">
-                                    <AlertTriangle size={20} />
-                                    Damage Reported
-                                </h3>
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-lg font-semibold text-red-900 flex items-center gap-2">
+                                        <AlertTriangle size={20} />
+                                        Damage Reported
+                                    </h3>
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-2">
+                                        {/* Edit Cost Button */}
+                                        {(!inspection.damageStatus || inspection.damageStatus === 'pending_review') && (
+                                            <Link
+                                                href={`/inspections/${inspection.id}/edit`}
+                                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                                            >
+                                                📝 Update Cost
+                                            </Link>
+                                        )}
+                                        {/* Approve Button (Directors only) */}
+                                        {inspection.damageStatus === 'quotation_received' && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleApprove()}
+                                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                                                >
+                                                    ✅ Approve
+                                                </button>
+                                                <button
+                                                    onClick={() => handleWaive()}
+                                                    className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
+                                                >
+                                                    🔄 Waive
+                                                </button>
+                                            </>
+                                        )}
+                                        {/* Generate Form Button (After Approval) */}
+                                        {inspection.damageStatus === 'approved' && !inspection.acknowledgementPdfGenerated && (
+                                            <button
+                                                onClick={() => handleGenerateForm()}
+                                                disabled={isProcessing}
+                                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium disabled:opacity-50"
+                                            >
+                                                📄 Generate Form
+                                            </button>
+                                        )}
+                                        {/* Download PDF Button (After Form Generated) */}
+                                        {inspection.acknowledgementPdfPath && (
+                                            <>
+                                                <a
+                                                    href={inspection.acknowledgementPdfPath}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium"
+                                                >
+                                                    📥 Download PDF
+                                                </a>
+                                                <button
+                                                    onClick={() => handleGenerateForm()}
+                                                    disabled={isProcessing}
+                                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium disabled:opacity-50"
+                                                >
+                                                    🔄 Regenerate Form
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                                 {inspection.damageDescription && (
                                     <p className="text-red-800 mb-2">{inspection.damageDescription}</p>
                                 )}
@@ -182,6 +308,28 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
                                         Estimated Cost: ฿{Number(inspection.estimatedCost).toLocaleString()}
                                     </p>
                                 )}
+                                {/* Status Badge */}
+                                {inspection.damageStatus && (
+                                    <div className="mt-3 pt-3 border-t border-red-200">
+                                        <DamageStatusBadge status={inspection.damageStatus} />
+                                    </div>
+                                )}
+                                {/* Approval Info */}
+                                {inspection.approver && (
+                                    <div className="mt-3 pt-3 border-t border-red-200">
+                                        <p className="text-sm text-red-700">
+                                            {inspection.damageStatus === 'waived' ? 'Waived' : 'Approved'} by: <span className="font-semibold">{inspection.approver.name}</span>
+                                            {inspection.approvedAt && (
+                                                <span className="ml-2">on {new Date(inspection.approvedAt).toLocaleDateString('en-GB')}</span>
+                                            )}
+                                        </p>
+                                        {inspection.approvalNotes && (
+                                            <p className="text-sm text-red-600 mt-1">Note: {inspection.approvalNotes}</p>
+                                        )}
+                                    </div>
+                                )}
+                                {/* Repair Management */}
+                                <RepairManagement inspection={inspection} />
                             </div>
                         )}
                     </div>

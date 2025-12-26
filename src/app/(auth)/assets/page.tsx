@@ -34,9 +34,9 @@ export default async function AssetsPage(props: {
     // Search query
     if (query) {
         whereClause.OR = [
-            { name: { contains: query, mode: 'insensitive' } },
-            { serialNumber: { contains: query, mode: 'insensitive' } },
-            { assetCode: { contains: query, mode: 'insensitive' } },
+            { name: { contains: query } },
+            { serialNumber: { contains: query } },
+            { assetCode: { contains: query } },
         ];
     }
 

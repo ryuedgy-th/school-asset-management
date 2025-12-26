@@ -20,6 +20,7 @@ import {
     ChevronRight,
     Menu,
     X as CloseIcon,
+    Mail,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -67,7 +68,7 @@ const menuItems: MenuItem[] = [
         href: '/dashboard/borrowing',
         subItems: [
             { label: 'Borrowing Management', href: '/dashboard/borrowing', roles: ['Admin', 'Technician'] },
-            { label: 'My Assignment', href: '/my-assignment' }
+            { label: 'My Assignment', href: '/borrow' }
         ]
     },
     {
@@ -81,12 +82,25 @@ const menuItems: MenuItem[] = [
             { label: 'Audit Logs', href: '/audit' }
         ]
     },
-    { icon: Settings, label: 'Settings', href: '/settings' },
+    {
+        icon: Settings,
+        label: 'Settings',
+        href: '/settings',
+        subItems: [
+            { label: 'Email Accounts', href: '/settings/email/accounts' },
+            { label: 'Email Templates', href: '/settings/email/templates' },
+        ]
+    },
 ];
 
 interface SidebarProps {
     permissions: string[];
     role: string;
+    user?: {
+        name?: string | null;
+        email?: string | null;
+        image?: string | null;
+    };
 }
 
 function SidebarMenu({ items, role }: { items: MenuItem[], role: string }) {
@@ -120,10 +134,10 @@ function SidebarMenu({ items, role }: { items: MenuItem[], role: string }) {
                 const isExpanded = openItems.includes(item.label);
                 const hasSubItems = item.subItems && item.subItems.length > 0;
 
-                // Filter subItems based on role
+                // Filter subItems based on role (case-insensitive)
                 const filteredSubItems = item.subItems?.filter(subItem => {
                     if (!subItem.roles) return true;
-                    return subItem.roles.includes(role);
+                    return subItem.roles.some(r => r.toLowerCase() === role.toLowerCase());
                 });
 
                 // If menu has subitems but role filters all of them out, treat as no subitems?
@@ -222,13 +236,15 @@ function SidebarMenu({ items, role }: { items: MenuItem[], role: string }) {
     );
 }
 
-export default function Sidebar({ permissions, role }: SidebarProps) {
+export default function Sidebar({ permissions, role, user }: SidebarProps) {
     const pathname = usePathname();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+    console.log('🔍 Sidebar role:', role); // Debug log
+
     const filteredItems = menuItems.filter(item => {
         if (!item.roles) return true;
-        return item.roles.includes(role);
+        return item.roles.some(r => r.toLowerCase() === role.toLowerCase());
     });
 
     // Close mobile menu when route changes
@@ -258,7 +274,7 @@ export default function Sidebar({ permissions, role }: SidebarProps) {
             )}>
                 {/* Logo Section */}
                 <div className="flex h-20 items-center gap-3 px-6 border-b border-gray-200">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
                         <Building2 className="text-white" size={20} />
                     </div>
                     <div className="flex flex-col flex-1">
@@ -286,15 +302,26 @@ export default function Sidebar({ permissions, role }: SidebarProps) {
 
                 {/* Footer / Profile */}
                 <div className="border-t border-gray-200 bg-gray-50 p-4">
-                    <div className="flex items-center gap-3 rounded-xl bg-white border border-gray-200 p-3 transition-colors hover:bg-gray-50">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
-                            A
+                    <Link
+                        href="/profile"
+                        className="flex items-center gap-3 rounded-xl bg-white border border-gray-200 p-3 transition-colors hover:bg-gray-50 hover:border-primary cursor-pointer"
+                    >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-white overflow-hidden">
+                            {user?.image ? (
+                                <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'
+                            )}
                         </div>
                         <div className="flex flex-col overflow-hidden">
-                            <span className="truncate text-sm font-semibold text-gray-900">Admin User</span>
-                            <span className="truncate text-xs text-gray-500">IT Manager</span>
+                            <span className="truncate text-sm font-semibold text-gray-900">
+                                {user?.name || user?.email || 'User'}
+                            </span>
+                            <span className="truncate text-xs text-gray-500">
+                                {role || 'User'}
+                            </span>
                         </div>
-                    </div>
+                    </Link>
                     <form
                         action={async () => {
                             const { logout } = await import('@/app/lib/actions');

@@ -46,7 +46,7 @@ export default function BorrowClient({ initialAssets }: { initialAssets: any[] }
                         placeholder="Search equipment..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/10 transition-all"
                     />
                 </div>
 
@@ -99,7 +99,7 @@ export default function BorrowClient({ initialAssets }: { initialAssets: any[] }
 
                         <div className="flex flex-col p-5">
                             <div className="mb-4">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
                                     {item.category}
                                 </span>
                                 <h3 className="mt-1 text-lg font-bold text-slate-900 line-clamp-1">{item.name}</h3>
@@ -109,7 +109,7 @@ export default function BorrowClient({ initialAssets }: { initialAssets: any[] }
                                 className={cn(
                                     "mt-auto w-full rounded-xl py-2.5 text-sm font-semibold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2",
                                     item.currentStock > 0
-                                        ? "bg-blue-600 text-white shadow-blue-500/25 hover:bg-blue-700 hover:shadow-blue-600/30"
+                                        ? "bg-primary text-white shadow-primary/80/25 hover:bg-primary/90 hover:shadow-primary/30"
                                         : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                                 )}
                                 onClick={() => handleRequest(item)}
@@ -170,7 +170,7 @@ export default function BorrowClient({ initialAssets }: { initialAssets: any[] }
                                 type="date"
                                 name="startDate"
                                 required
-                                className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/10 transition-all"
                             />
                         </div>
                         <div className="space-y-1.5">
@@ -179,7 +179,7 @@ export default function BorrowClient({ initialAssets }: { initialAssets: any[] }
                                 type="date"
                                 name="endDate"
                                 required
-                                className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/10 transition-all"
                             />
                         </div>
                     </div>
@@ -189,7 +189,7 @@ export default function BorrowClient({ initialAssets }: { initialAssets: any[] }
                         <textarea
                             name="reason"
                             rows={3}
-                            className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                            className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3 text-sm outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/10 transition-all placeholder:text-slate-400"
                             placeholder="E.g. Teaching class grade 10, Project presentation..."
                             required
                         />
@@ -206,7 +206,7 @@ export default function BorrowClient({ initialAssets }: { initialAssets: any[] }
                         <button type="button" onClick={closeModal} className="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
                             Cancel
                         </button>
-                        <button type="submit" className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 text-white shadow-lg shadow-blue-500/25 hover:bg-blue-700 hover:shadow-blue-600/30 transition-all active:scale-95">
+                        <button type="submit" className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary text-white shadow-lg shadow-primary/80/25 hover:bg-primary/90 hover:shadow-primary/30 transition-all active:scale-95">
                             Confirm Request
                         </button>
                     </div>

@@ -2,7 +2,6 @@ import NextAuth from 'next-auth';
 import { authConfig } from './auth.config';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
-import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
@@ -21,53 +20,91 @@ async function getUser(email: string): Promise<User | null> {
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
     adapter: PrismaAdapter(prisma),
-    session: { strategy: 'jwt' }, // Force JWT session for credentials to work smoothly with adapter (standard practice)
+    // Use JWT with minimal data to avoid HTTP 431
+    session: {
+        strategy: 'jwt',
+        maxAge: 30 * 24 * 60 * 60, // 30 days
+    },
     providers: [
         Google({
             clientId: process.env.AUTH_GOOGLE_ID,
             clientSecret: process.env.AUTH_GOOGLE_SECRET,
+            authorization: {
+                params: {
+                    prompt: "consent",
+                    access_type: "offline",
+                    response_type: "code",
+                    hd: "magicyears.ac.th" // Restrict to this domain only
+                }
+            }
         }),
         Credentials({
+            credentials: {
+                email: { label: 'Email', type: 'email' },
+                password: { label: 'Password', type: 'password' }
+            },
             async authorize(credentials) {
-                const parsedCredentials = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
-                    .safeParse(credentials);
-
-                if (parsedCredentials.success) {
-                    const { email, password } = parsedCredentials.data;
-                    const user = await getUser(email);
-                    if (!user) return null;
-
-                    // If user has no password (e.g. OAuth only), return null for credentials login
-                    if (!user.password) return null;
-
-                    const passwordsMatch = await bcrypt.compare(password, user.password);
-                    if (passwordsMatch) return user;
+                if (!credentials?.email || !credentials?.password) {
+                    return null;
                 }
 
-                console.log('Invalid credentials');
-                return null;
-            },
-        }),
+                const user = await prisma.user.findUnique({
+                    where: { email: credentials.email as string }
+                });
+
+                if (!user || !user.password) {
+                    return null;
+                }
+
+                const isValidPassword = await bcrypt.compare(
+                    credentials.password as string,
+                    user.password
+                );
+
+                if (!isValidPassword) {
+                    return null;
+                }
+
+                return {
+                    id: user.id.toString(),
+                    email: user.email,
+                    name: user.name,
+                    role: user.role
+                };
+            }
+        })
     ],
     callbacks: {
         ...authConfig.callbacks,
-        async session({ session, token }) {
-            if (token.sub && session.user) {
-                session.user.id = token.sub; // Ensure user ID is passed
-
-                // Fetch latest role/data from DB if needed, or rely on token if we persist it there
-                // For simplicity, let's assume token has what we need or we fetch basic info
-                // A common pattern with JWT strategy + Adapter is to fetch user in jwt callback
-            }
-            return session;
-        },
         async jwt({ token, user }) {
-            // Initial sign in
+            // CRITICAL: Store ONLY user ID to keep JWT tiny
             if (user) {
-                token.sub = user.id.toString();
+                token.userId = user.id;
             }
             return token;
+        },
+        async session({ session, token }) {
+            // Fetch user data from database on each request
+            if (token.userId && session.user) {
+                const user = await prisma.user.findUnique({
+                    where: { id: parseInt(token.userId as string) },
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                        role: true,
+                        // Never include image or large fields
+                    }
+                });
+
+                if (user) {
+                    session.user.id = user.id.toString();
+                    session.user.role = user.role;
+                    session.user.name = user.name ?? undefined;
+                    session.user.email = user.email;
+                }
+            }
+            return session;
         }
     }
 });

@@ -66,7 +66,7 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
     const activeItems = allBorrowed.filter(item => !returnedIds.includes(item.id));
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-20">
+        <div className="max-w-5xl mx-auto space-y-8 pb-20 pt-6">
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div>
@@ -90,7 +90,7 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
                         <>
                             <button
                                 onClick={() => setIsAddAssetModalOpen(true)}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+                                className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-sm hover:bg-primary/90 transition-all flex items-center gap-2"
                             >
                                 <span className="text-xl font-bold leading-none">+</span>
                                 Add Items
@@ -136,7 +136,7 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
             {/* Currently Borrowed */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 font-semibold text-slate-700">
-                    <Clock size={18} className="text-blue-500" />
+                    <Clock size={18} className="text-primary/80" />
                     Currently Borrowed ({activeItems.length} items)
                 </div>
                 {activeItems.length === 0 ? (
@@ -144,7 +144,7 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
                         <p>No currently borrowed items.</p>
                         <button
                             onClick={() => setIsAddAssetModalOpen(true)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+                            className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-sm hover:bg-primary/90 transition-all flex items-center gap-2"
                         >
                             <span className="text-xl font-bold">+</span>
                             Add Assets
@@ -181,7 +181,7 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
                 {/* Borrow Transactions */}
                 {assignment.borrowTransactions.map(tx => (
                     <div key={tx.id} className="relative pl-8 border-l-2 border-slate-200 pb-8 last:pb-0">
-                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow-sm"></div>
+                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary/80 border-4 border-white shadow-sm"></div>
                         <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
                             <div className="flex justify-between mb-4">
                                 <div>
@@ -261,7 +261,7 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
                                                         alert('❌ Error: ' + e.message);
                                                     }
                                                 }}
-                                                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
+                                                className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary/90 border border-blue-200 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
                                             >
                                                 📧 Send Email
                                             </button>

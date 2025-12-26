@@ -81,15 +81,15 @@ export default function CloseAssignmentModal({
                 {/* Content */}
                 <div className="p-6 space-y-6">
                     {/* Summary */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div className="bg-primary/10 border border-blue-200 rounded-xl p-4">
                         <div className="flex items-start gap-3">
-                            <CheckCircle2 className="text-blue-600 mt-0.5" size={20} />
+                            <CheckCircle2 className="text-primary mt-0.5" size={20} />
                             <div>
                                 <h3 className="font-semibold text-blue-900">Assignment Summary</h3>
-                                <p className="text-sm text-blue-700 mt-1">
+                                <p className="text-sm text-primary/90 mt-1">
                                     Total items processed: <span className="font-bold">{totalItems}</span>
                                 </p>
-                                <p className="text-sm text-blue-700 mt-1">
+                                <p className="text-sm text-primary/90 mt-1">
                                     All items have been returned and verified.
                                 </p>
                             </div>
@@ -105,7 +105,7 @@ export default function CloseAssignmentModal({
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Add any final notes or comments about this assignment..."
-                            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80 resize-none"
                             rows={3}
                             disabled={isSubmitting}
                         />

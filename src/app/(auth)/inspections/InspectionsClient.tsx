@@ -43,13 +43,13 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
     const damageCount = filteredInspections.filter(i => i.damageFound).length;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-primary/10 to-slate-50 p-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
-                            <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                            <div className="p-3 bg-primary rounded-xl shadow-lg shadow-primary/20">
                                 <ClipboardCheck className="text-white" size={28} />
                             </div>
                             <div>
@@ -59,7 +59,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                         </div>
                         <button
                             onClick={() => setShowModal(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
                         >
                             <Plus size={20} />
                             Create Inspection
@@ -75,7 +75,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                         <div className="text-sm text-slate-500 mb-1">Checkout Inspections</div>
-                        <div className="text-2xl font-bold text-blue-600">{checkoutCount}</div>
+                        <div className="text-2xl font-bold text-primary">{checkoutCount}</div>
                     </div>
                     <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                         <div className="text-sm text-slate-500 mb-1">Checkin Inspections</div>
@@ -98,7 +98,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                 placeholder="Search by asset name..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/80 focus:border-transparent"
                             />
                         </div>
 
@@ -108,7 +108,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                             <select
                                 value={filterType}
                                 onChange={(e) => setFilterType(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/80 focus:border-transparent appearance-none bg-white"
                             >
                                 <option value="all">All Types</option>
                                 <option value="checkout">Checkout</option>
@@ -124,7 +124,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                             <select
                                 value={filterDamage}
                                 onChange={(e) => setFilterDamage(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/80 focus:border-transparent appearance-none bg-white"
                             >
                                 <option value="all">All Damage Status</option>
                                 <option value="damaged">Damaged Only</option>
@@ -138,7 +138,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                         <div className="mt-3 flex items-center gap-2 text-sm">
                             <span className="text-slate-500">Active filters:</span>
                             {searchQuery && (
-                                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md">
+                                <span className="px-2 py-1 bg-primary/20 text-primary/90 rounded-md">
                                     Search: "{searchQuery}"
                                 </span>
                             )}
@@ -158,7 +158,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                     setFilterType('all');
                                     setFilterDamage('all');
                                 }}
-                                className="ml-auto text-blue-600 hover:text-blue-700 font-medium"
+                                className="ml-auto text-primary hover:text-primary/90 font-medium"
                             >
                                 Clear all
                             </button>
@@ -218,14 +218,14 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                             <td className="px-4 py-3">
                                                 <Link
                                                     href={`/assets/${inspection.asset.id}`}
-                                                    className="hover:text-blue-600 transition-colors"
+                                                    className="hover:text-primary transition-colors"
                                                 >
                                                     <div className="font-medium text-slate-900">{inspection.asset.name}</div>
                                                     <div className="text-xs text-slate-500 font-mono">{inspection.asset.assetCode}</div>
                                                 </Link>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${inspection.inspectionType === 'checkout' ? 'bg-blue-100 text-blue-700' :
+                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${inspection.inspectionType === 'checkout' ? 'bg-primary/20 text-primary/90' :
                                                         inspection.inspectionType === 'checkin' ? 'bg-green-100 text-green-700' :
                                                             inspection.inspectionType === 'periodic' ? 'bg-purple-100 text-purple-700' :
                                                                 'bg-orange-100 text-orange-700'
@@ -261,7 +261,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                             <td className="px-4 py-3">
                                                 <Link
                                                     href={`/inspections/${inspection.id}`}
-                                                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
                                                 >
                                                     <Eye size={14} />
                                                     View

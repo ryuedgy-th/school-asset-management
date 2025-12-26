@@ -194,11 +194,12 @@ export async function searchUsers(query: string) {
         where: {
             OR: [
                 { name: { contains: query } },
+                { nickname: { contains: query } },
                 { email: { contains: query } }
             ]
         },
         take: 5,
-        select: { id: true, name: true, email: true, department: true }
+        select: { id: true, name: true, nickname: true, email: true, department: true }
     });
 }
 
@@ -210,6 +211,7 @@ export async function getAllUsers() {
         select: {
             id: true,
             name: true,
+            nickname: true,
             email: true,
             department: true,
             role: true

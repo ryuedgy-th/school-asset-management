@@ -2,6 +2,7 @@
 
 import { ArrowLeft, Package, Calendar, User, ClipboardCheck, History, MapPin, DollarSign } from 'lucide-react';
 import Link from 'next/link';
+import MaintenanceHistory from '@/components/MaintenanceHistory';
 
 interface AssetDetailClientProps {
     asset: any;
@@ -11,7 +12,7 @@ export default function AssetDetailClient({ asset }: AssetDetailClientProps) {
     const getStatusBadge = (status: string) => {
         const colors: Record<string, string> = {
             'Available': 'bg-green-100 text-green-800',
-            'Borrowed': 'bg-blue-100 text-blue-800',
+            'Borrowed': 'bg-primary/20 text-blue-800',
             'Maintenance': 'bg-yellow-100 text-yellow-800',
             'Broken': 'bg-red-100 text-red-800',
             'Lost': 'bg-gray-100 text-gray-800',
@@ -32,16 +33,16 @@ export default function AssetDetailClient({ asset }: AssetDetailClientProps) {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-primary/10 p-6">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    <Link href="/assets" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
+                    <Link href="/assets" className="inline-flex items-center text-primary hover:text-primary/90 mb-4">
                         <ArrowLeft size={20} className="mr-2" />
                         Back to Assets
                     </Link>
                     <div className="flex items-center gap-4">
-                        <div className="p-4 bg-blue-600 rounded-xl shadow-lg">
+                        <div className="p-4 bg-primary rounded-xl shadow-lg">
                             <Package className="text-white" size={32} />
                         </div>
                         <div>
@@ -125,15 +126,17 @@ export default function AssetDetailClient({ asset }: AssetDetailClientProps) {
                 </div>
 
                 {/* Borrow History */}
-                {asset.borrowHistory && asset.borrowHistory.length > 0 && (
-                    <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
-                        <div className="flex items-center gap-2 mb-4">
-                            <History className="text-blue-600" size={24} />
-                            <h2 className="text-xl font-bold text-slate-900">Recent Borrow History</h2>
-                            <span className="ml-auto text-sm text-slate-500">
-                                Showing {Math.min(3, asset.borrowHistory.length)} recent records
-                            </span>
-                        </div>
+                <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <History className="text-primary" size={24} />
+                        <h2 className="text-xl font-bold text-slate-900">Borrow History</h2>
+                        <span className="ml-auto text-sm text-slate-500">
+                            {asset.borrowHistory?.length || 0} {(asset.borrowHistory?.length || 0) === 1 ? 'record' : 'records'}
+                        </span>
+                    </div>
+                    {!asset.borrowHistory || asset.borrowHistory.length === 0 ? (
+                        <p className="text-gray-500">No borrow history found.</p>
+                    ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-slate-50 border-b border-slate-200">
@@ -173,8 +176,8 @@ export default function AssetDetailClient({ asset }: AssetDetailClientProps) {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${item.status === 'Returned'
-                                                        ? 'bg-gray-100 text-gray-700'
-                                                        : 'bg-blue-100 text-blue-700'
+                                                    ? 'bg-gray-100 text-gray-700'
+                                                    : 'bg-primary/20 text-primary/90'
                                                     }`}>
                                                     {item.status}
                                                 </span>
@@ -184,90 +187,11 @@ export default function AssetDetailClient({ asset }: AssetDetailClientProps) {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                )}
-
-                {/* Inspection History */}
-                <div className="bg-white rounded-2xl shadow-xl p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <ClipboardCheck className="text-blue-600" size={24} />
-                        <h2 className="text-xl font-bold text-slate-900">Inspection History</h2>
-                        <span className="ml-auto text-sm text-slate-500">
-                            {asset.inspections.length} {asset.inspections.length === 1 ? 'inspection' : 'inspections'}
-                        </span>
-                    </div>
-                    {asset.inspections.length === 0 ? (
-                        <div className="text-center py-12 text-slate-500">
-                            <ClipboardCheck size={48} className="mx-auto mb-3 text-slate-300" />
-                            <div className="font-medium">No inspection history</div>
-                            <div className="text-sm">This asset has not been inspected yet</div>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-slate-50 border-b border-slate-200">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Date</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Type</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Inspector</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Condition</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Damage</th>
-                                        <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100">
-                                    {asset.inspections.map((inspection: any) => (
-                                        <tr key={inspection.id} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-4 py-3 text-sm text-slate-600">
-                                                <div className="flex items-center gap-1">
-                                                    <Calendar size={14} className="text-slate-400" />
-                                                    {new Date(inspection.inspectionDate).toLocaleDateString('en-GB')}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${inspection.inspectionType === 'checkout' ? 'bg-blue-100 text-blue-700' :
-                                                        inspection.inspectionType === 'checkin' ? 'bg-green-100 text-green-700' :
-                                                            inspection.inspectionType === 'periodic' ? 'bg-purple-100 text-purple-700' :
-                                                                'bg-orange-100 text-orange-700'
-                                                    }`}>
-                                                    {inspection.inspectionType}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-sm text-slate-600">
-                                                <div className="flex items-center gap-1">
-                                                    <User size={14} className="text-slate-400" />
-                                                    {inspection.inspector.name}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getConditionBadge(inspection.overallCondition)}`}>
-                                                    {inspection.overallCondition}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                {inspection.damageFound ? (
-                                                    <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                                                        ⚠️ Damage
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-xs text-slate-400">No damage</span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <Link
-                                                    href={`/inspections/${inspection.id}`}
-                                                    className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                                                >
-                                                    View Details
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
                     )}
                 </div>
+
+                {/* Maintenance History */}
+                <MaintenanceHistory inspections={asset.inspections} />
             </div>
         </div>
     );

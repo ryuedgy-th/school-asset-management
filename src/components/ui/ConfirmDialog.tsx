@@ -32,10 +32,10 @@ const variantStyles = {
         Icon: AlertTriangle
     },
     info: {
-        bg: 'bg-blue-50',
+        bg: 'bg-primary/10',
         border: 'border-blue-200',
-        icon: 'text-blue-600',
-        button: 'bg-blue-600 hover:bg-blue-700',
+        icon: 'text-primary',
+        button: 'bg-primary hover:bg-primary/90',
         Icon: Info
     }
 };

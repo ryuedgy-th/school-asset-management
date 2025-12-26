@@ -14,6 +14,7 @@ datasource db {
 model User {
   id            Int       @id @default(autoincrement())
   name          String?
+  nickname      String?   // Thai nickname for common use
   email         String?   @unique
   emailVerified DateTime?
   image         String?
@@ -137,6 +138,7 @@ model Asset {
 // Asset Inspection Model
 model Inspection {
   id                Int      @id @default(autoincrement())
+  inspectionNumber  String?  @unique // Auto-generated: INS-YYYY-NNN
   assetId           Int
   inspectionDate    DateTime @default(now())
   inspectionType    String   // 'checkout', 'checkin', 'periodic', 'incident'
@@ -177,6 +179,18 @@ model Inspection {
   // Workflow Status (for damage management)
   damageStatus      String?   @default("pending_review")
   // Values: pending_review, quotation_received, approved, form_sent, completed, waived
+  
+  // Damage Severity (for repair tracking)
+  damageSeverity    String?   // 'minor', 'moderate', 'severe'
+  canContinueUse    Boolean   @default(false)  // Can asset still be used despite damage
+  
+  // Repair Tracking
+  repairStatus      String?   // 'pending', 'in_progress', 'completed', 'cannot_repair'
+  repairStartDate   DateTime?
+  repairCompletedDate DateTime?
+  repairCost        Decimal?
+  repairNotes       String?
+  repairedBy        String?   // Technician/Vendor name
   
   // Approval Tracking
   approvedBy        Int?
@@ -370,6 +384,50 @@ model Contract {
   value     String?
   status    String   @default("Active")
   filePath  String?  // Path to PDF
+}
+
+// Email Management System
+model EmailAccount {
+  id            Int      @id @default(autoincrement())
+  name          String   // Display name (e.g., "IT Department", "Admin")
+  email         String   @unique
+  type          String   // "SMTP" or "GOOGLE_OAUTH"
+  isDefault     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  
+  // SMTP fields
+  smtpHost      String?
+  smtpPort      Int?
+  smtpUser      String?
+  smtpPassword  String?  // Encrypted
+  smtpSecure    Boolean  @default(true)
+  
+  // OAuth fields
+  oauthProvider String?  // "google"
+  accessToken   String?  // Encrypted
+  refreshToken  String?  // Encrypted
+  tokenExpiry   DateTime?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  templates     EmailTemplate[]
+}
+
+model EmailTemplate {
+  id              Int      @id @default(autoincrement())
+  name            String   // "Inspection Complete", "Borrow Request"
+  subject         String
+  body            String   // Template with variables like {userName}, {assetName}
+  variables       String   // JSON array of available variables
+  category        String   // "inspection", "borrowing", "general"
+  
+  emailAccountId  Int?
+  emailAccount    EmailAccount? @relation(fields: [emailAccountId], references: [id])
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 // 14. System Settings

@@ -21,7 +21,7 @@ export default async function AuditLogsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                        <Shield className="text-blue-600" size={32} />
+                        <Shield className="text-primary" size={32} />
                         Audit Logs
                     </h1>
                     <p className="text-slate-500 mt-2 text-lg">

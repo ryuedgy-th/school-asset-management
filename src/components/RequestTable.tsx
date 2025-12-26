@@ -149,7 +149,7 @@ export default function RequestTable() {
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
                                     ${req.status === 'Pending' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
                                         req.status === 'Approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                            req.status === 'Returned' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                            req.status === 'Returned' ? 'bg-primary/10 text-primary/90 border-blue-200' :
                                                 'bg-gray-50 text-gray-700 border-gray-200'}`}>
                                     {req.status}
                                 </span>
@@ -180,7 +180,7 @@ export default function RequestTable() {
                                         <button
                                             onClick={() => handleAction(req.id, 'Returned')}
                                             disabled={actionLoading === req.id}
-                                            className="p-1.5 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors flex items-center gap-1 px-2"
+                                            className="p-1.5 bg-primary/20 text-primary rounded hover:bg-blue-200 transition-colors flex items-center gap-1 px-2"
                                             title="Mark as Returned"
                                         >
                                             <RotateCcw size={14} />

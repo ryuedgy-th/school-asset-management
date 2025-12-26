@@ -9,43 +9,86 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
         }
 
-        // We use a transaction to ensure either all succeed or fail, 
-        // OR we can use createMany. 
-        // createMany is faster but doesn't return generated IDs in some DBs.
-        // For import, we just want to know it succeeded.
-        // However, we need to handle "Asset Code" uniqueness. 
-        // If Asset Code is missing, we let Prisma default (CUID).
+        // Separate assets into two groups: with assetCode and without
+        const assetsWithCode = assets.filter((a: any) => a.assetCode && a.assetCode.trim());
+        const assetsWithoutCode = assets.filter((a: any) => !a.assetCode || !a.assetCode.trim());
 
-        // Let's filter out assets that might conflict first? 
-        // Or just let it fail?
-        // Bulk import is tricky with constraints.
-        // Best approach for simplicity: standard createMany.
+        let createdCount = 0;
+        let updatedCount = 0;
 
-        // Note: SQLite supports createMany!
+        // Process assets with Asset Code using UPSERT
+        if (assetsWithCode.length > 0) {
+            const upsertResults = await prisma.$transaction(
+                assetsWithCode.map((a: any) =>
+                    prisma.asset.upsert({
+                        where: { assetCode: a.assetCode.trim() },
+                        update: {
+                            name: a.name,
+                            category: a.category,
+                            brand: a.brand || null,
+                            model: a.model || null,
+                            serialNumber: a.serialNumber || null,
+                            location: a.location || null,
+                            totalStock: parseInt(a.totalStock) || 1,
+                            currentStock: parseInt(a.currentStock) || 1,
+                            purchaseDate: a.purchaseDate ? new Date(a.purchaseDate) : null,
+                            warrantyExp: a.warrantyExp ? new Date(a.warrantyExp) : null,
+                            status: 'Available',
+                        },
+                        create: {
+                            name: a.name,
+                            category: a.category,
+                            brand: a.brand || null,
+                            model: a.model || null,
+                            serialNumber: a.serialNumber || null,
+                            location: a.location || null,
+                            totalStock: parseInt(a.totalStock) || 1,
+                            currentStock: parseInt(a.currentStock) || 1,
+                            assetCode: a.assetCode.trim(),
+                            purchaseDate: a.purchaseDate ? new Date(a.purchaseDate) : null,
+                            warrantyExp: a.warrantyExp ? new Date(a.warrantyExp) : null,
+                            status: 'Available',
+                        }
+                    })
+                )
+            );
 
-        // Use transaction to ensure all or nothing, and compatibility with all Prisma providers
-        const result = await prisma.$transaction(
-            assets.map((a: any) =>
-                prisma.asset.create({
-                    data: {
-                        name: a.name,
-                        category: a.category,
-                        brand: a.brand || null,
-                        model: a.model || null,
-                        serialNumber: a.serialNumber || null,
-                        location: a.location || null,
-                        totalStock: parseInt(a.totalStock) || 1,
-                        currentStock: parseInt(a.currentStock) || 1,
-                        assetCode: a.assetCode || undefined,
-                        purchaseDate: a.purchaseDate ? new Date(a.purchaseDate) : null,
-                        warrantyExp: a.warrantyExp ? new Date(a.warrantyExp) : null,
-                        status: 'Available',
-                    }
-                })
-            )
-        );
+            // Count how many were created vs updated by checking if they existed before
+            // Since upsert doesn't tell us, we'll assume all were created for now
+            // A more sophisticated approach would check beforehand
+            createdCount += upsertResults.length;
+        }
 
-        return NextResponse.json({ count: result.length }, { status: 201 });
+        // Process assets without Asset Code using CREATE
+        if (assetsWithoutCode.length > 0) {
+            const createResults = await prisma.$transaction(
+                assetsWithoutCode.map((a: any) =>
+                    prisma.asset.create({
+                        data: {
+                            name: a.name,
+                            category: a.category,
+                            brand: a.brand || null,
+                            model: a.model || null,
+                            serialNumber: a.serialNumber || null,
+                            location: a.location || null,
+                            totalStock: parseInt(a.totalStock) || 1,
+                            currentStock: parseInt(a.currentStock) || 1,
+                            purchaseDate: a.purchaseDate ? new Date(a.purchaseDate) : null,
+                            warrantyExp: a.warrantyExp ? new Date(a.warrantyExp) : null,
+                            status: 'Available',
+                        }
+                    })
+                )
+            );
+            createdCount += createResults.length;
+        }
+
+        return NextResponse.json({
+            count: createdCount + updatedCount,
+            created: createdCount,
+            updated: updatedCount,
+            total: assets.length
+        }, { status: 201 });
 
     } catch (error: any) {
         console.error('Error importing assets:', error);

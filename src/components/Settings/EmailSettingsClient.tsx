@@ -68,8 +68,8 @@ export default function EmailSettingsClient() {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-slate-100 bg-slate-50">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                            <Mail className="text-blue-600" size={24} />
+                        <div className="p-2 bg-primary/20 rounded-lg">
+                            <Mail className="text-primary" size={24} />
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-slate-900">Email Settings (SMTP)</h2>
@@ -86,7 +86,7 @@ export default function EmailSettingsClient() {
                             value={settings.smtp_host}
                             onChange={e => setSettings({ ...settings, smtp_host: e.target.value })}
                             placeholder="smtp.gmail.com"
-                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none"
                         />
                     </div>
 
@@ -97,7 +97,7 @@ export default function EmailSettingsClient() {
                             value={settings.smtp_port}
                             onChange={e => setSettings({ ...settings, smtp_port: e.target.value })}
                             placeholder="587"
-                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none"
                         />
                     </div>
 
@@ -108,7 +108,7 @@ export default function EmailSettingsClient() {
                             value={settings.smtp_user}
                             onChange={e => setSettings({ ...settings, smtp_user: e.target.value })}
                             placeholder="your-email@gmail.com"
-                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none"
                         />
                     </div>
 
@@ -120,7 +120,7 @@ export default function EmailSettingsClient() {
                                 value={settings.smtp_password}
                                 onChange={e => setSettings({ ...settings, smtp_password: e.target.value })}
                                 placeholder="••••••••••••••••"
-                                className="w-full px-4 py-2 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                                className="w-full px-4 py-2 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none"
                             />
                             <button
                                 type="button"
@@ -131,7 +131,7 @@ export default function EmailSettingsClient() {
                             </button>
                         </div>
                         <p className="text-xs text-slate-500 mt-1">
-                            For Gmail: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-blue-600 hover:underline">Create App Password</a>
+                            For Gmail: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-primary hover:underline">Create App Password</a>
                         </p>
                     </div>
 
@@ -142,7 +142,7 @@ export default function EmailSettingsClient() {
                             value={settings.smtp_from}
                             onChange={e => setSettings({ ...settings, smtp_from: e.target.value })}
                             placeholder="School Asset <your-email@gmail.com>"
-                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none"
                         />
                     </div>
 
@@ -177,7 +177,7 @@ export default function EmailSettingsClient() {
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         <Save size={18} />
                         {isSaving ? 'Saving...' : 'Save Settings'}

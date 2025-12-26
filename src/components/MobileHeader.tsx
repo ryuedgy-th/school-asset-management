@@ -37,7 +37,7 @@ export default function MobileHeader({ onMenuClick }: MobileHeaderProps) {
 
                 {/* Logo (Center) */}
                 <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 flex-shrink-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary flex-shrink-0">
                         <Building2 className="text-white flex-shrink-0" size={16} />
                     </div>
                     <span className="text-base font-bold text-gray-900 whitespace-nowrap">AssetMaster</span>

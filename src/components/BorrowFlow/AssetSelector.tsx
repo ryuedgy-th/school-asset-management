@@ -57,11 +57,11 @@ export default function AssetSelector({ onSelect, selectedIds }: AssetSelectorPr
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     placeholder="Search by name, code, or serial..."
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 transition-all"
                 />
                 {loading && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-primary/80 border-t-transparent rounded-full animate-spin"></div>
                     </div>
                 )}
             </div>
@@ -100,7 +100,7 @@ export default function AssetSelector({ onSelect, selectedIds }: AssetSelectorPr
                                     </div>
                                 </div>
                                 {!isDisabled && (
-                                    <Plus className="text-blue-600" size={18} />
+                                    <Plus className="text-primary" size={18} />
                                 )}
                                 {isSelected && (
                                     <span className="text-xs font-medium text-slate-400">Added</span>

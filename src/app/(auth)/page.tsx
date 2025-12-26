@@ -93,14 +93,14 @@ export default async function Home() {
         <section className="col-span-2 rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-100 p-6">
             <h3 className="font-semibold text-slate-900">Recently Added Assets</h3>
-            <button className="text-sm font-medium text-blue-600 hover:text-blue-700">View All</button>
+            <button className="text-sm font-medium text-primary hover:text-primary/90">View All</button>
           </div>
           <div className="p-6">
             <div className="space-y-6">
               {recentAssets.map((asset) => (
                 <div key={asset.id} className="flex items-center justify-between group">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                       <Box size={24} />
                     </div>
                     <div>
@@ -132,7 +132,7 @@ export default async function Home() {
           <div className="space-y-3">
             <button className="w-full flex items-center justify-between rounded-xl bg-white/10 p-4 hover:bg-white/20 transition-colors">
               <span className="text-sm font-medium">Add New Asset</span>
-              <Package size={18} className="text-blue-300" />
+              <Package size={18} className="text-primary/60" />
             </button>
             <button className="w-full flex items-center justify-between rounded-xl bg-white/10 p-4 hover:bg-white/20 transition-colors">
               <span className="text-sm font-medium">Approve Requests</span>

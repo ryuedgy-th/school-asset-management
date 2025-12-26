@@ -47,7 +47,7 @@ export default function NewAssetPage() {
 
     return (
         <div className="max-w-3xl mx-auto">
-            <Link href="/assets" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-blue-600 mb-8 transition-colors">
+            <Link href="/assets" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-primary mb-8 transition-colors">
                 <ArrowLeft size={16} className="mr-2" />
                 Back to Assets
             </Link>
@@ -55,7 +55,7 @@ export default function NewAssetPage() {
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                 <div className="border-b border-slate-100 bg-slate-50/50 p-8">
                     <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/30">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/80/30">
                             <PackagePlus size={24} />
                         </div>
                         <div>
@@ -80,8 +80,8 @@ export default function NewAssetPage() {
                                             file:mr-4 file:py-2 file:px-4
                                             file:rounded-full file:border-0
                                             file:text-sm file:font-semibold
-                                            file:bg-blue-50 file:text-blue-700
-                                            hover:file:bg-blue-100
+                                            file:bg-primary/10 file:text-primary/90
+                                            hover:file:bg-primary/20
                                         "
                                     />
                                 </div>
@@ -91,7 +91,7 @@ export default function NewAssetPage() {
                                     <input
                                         name="name"
                                         required
-                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all placeholder:text-slate-400"
                                         placeholder="e.g. MacBook Pro 14 M3 Max"
                                     />
                                 </div>
@@ -101,7 +101,7 @@ export default function NewAssetPage() {
                                         <label className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-white px-1">Category</label>
                                         <select
                                             name="category"
-                                            className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all cursor-pointer"
+                                            className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all cursor-pointer"
                                         >
                                             <option value="Laptop">Laptop</option>
                                             <option value="Tablet">Tablet</option>
@@ -122,7 +122,7 @@ export default function NewAssetPage() {
                                                 disabled={assetType === 'unique'}
                                                 min={1}
                                                 required
-                                                className="block w-full rounded-xl border-slate-200 bg-slate-100 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-slate-500 disabled:opacity-75 disabled:cursor-not-allowed"
+                                                className="block w-full rounded-xl border-slate-200 bg-slate-100 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all text-slate-500 disabled:opacity-75 disabled:cursor-not-allowed"
                                             />
                                             {assetType === 'unique' && (
                                                 <div className="absolute inset-y-0 right-3 flex items-center text-xs font-bold text-slate-400">
@@ -141,7 +141,7 @@ export default function NewAssetPage() {
                                     type="button"
                                     onClick={() => { setAssetType('unique'); setStock(1); }}
                                     className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${assetType === 'unique'
-                                        ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200'
+                                        ? 'bg-white text-primary shadow-sm ring-1 ring-slate-200'
                                         : 'text-slate-500 hover:bg-slate-200/50'
                                         }`}
                                 >
@@ -153,7 +153,7 @@ export default function NewAssetPage() {
                                     type="button"
                                     onClick={() => setAssetType('bulk')}
                                     className={`flex-1 py-3 px-4 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${assetType === 'bulk'
-                                        ? 'bg-white text-blue-600 shadow-sm ring-1 ring-slate-200'
+                                        ? 'bg-white text-primary shadow-sm ring-1 ring-slate-200'
                                         : 'text-slate-500 hover:bg-slate-200/50'
                                         }`}
                                 >
@@ -169,7 +169,7 @@ export default function NewAssetPage() {
                                     <label className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-white px-1">Brand</label>
                                     <input
                                         name="brand"
-                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all placeholder:text-slate-400"
                                         placeholder="e.g. Apple"
                                     />
                                 </div>
@@ -177,7 +177,7 @@ export default function NewAssetPage() {
                                     <label className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-white px-1">Model</label>
                                     <input
                                         name="model"
-                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all placeholder:text-slate-400"
                                         placeholder="e.g. MacBook Pro M3"
                                     />
                                 </div>
@@ -185,7 +185,7 @@ export default function NewAssetPage() {
                                     <label className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-white px-1">Asset Code (Tag ID)</label>
                                     <input
                                         name="assetCode"
-                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all placeholder:text-slate-400"
                                         placeholder="Auto-generated if empty"
                                     />
                                 </div>
@@ -193,7 +193,7 @@ export default function NewAssetPage() {
                                     <label className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-white px-1">Location</label>
                                     <input
                                         name="location"
-                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all placeholder:text-slate-400"
                                         placeholder="e.g. IT Room"
                                     />
                                 </div>
@@ -201,15 +201,15 @@ export default function NewAssetPage() {
 
                             {/* Specifics Section */}
                             {assetType === 'unique' && (
-                                <div className="rounded-xl border border-blue-100 bg-blue-50/30 p-6 space-y-1.5 animate-in slide-in-from-top-2 duration-200">
+                                <div className="rounded-xl border border-primary/20 bg-primary/10/30 p-6 space-y-1.5 animate-in slide-in-from-top-2 duration-200">
                                     <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Serial Number</label>
                                     <input
                                         name="serialNumber"
                                         required
-                                        className="block w-full rounded-xl border-blue-200 bg-white p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400"
+                                        className="block w-full rounded-xl border-blue-200 bg-white p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all placeholder:text-slate-400"
                                         placeholder="e.g. SN-12345678"
                                     />
-                                    <p className="text-xs text-blue-600/70 pt-1 font-medium">Unique Identifier for this specific unit.</p>
+                                    <p className="text-xs text-primary/70 pt-1 font-medium">Unique Identifier for this specific unit.</p>
                                 </div>
                             )}
 
@@ -219,7 +219,7 @@ export default function NewAssetPage() {
                                     <input
                                         type="date"
                                         name="purchaseDate"
-                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -227,7 +227,7 @@ export default function NewAssetPage() {
                                     <input
                                         type="date"
                                         name="warrantyExp"
-                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                                        className="block w-full rounded-xl border-slate-200 bg-slate-50 p-3.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-4 focus:ring-primary/80/10 transition-all"
                                     />
                                 </div>
                             </div>
@@ -240,7 +240,7 @@ export default function NewAssetPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-6 py-3 rounded-xl text-sm font-bold bg-blue-600 text-white shadow-xl shadow-blue-500/20 hover:bg-blue-700 hover:shadow-blue-600/30 transition-all active:scale-95 flex items-center gap-2"
+                                className="px-6 py-3 rounded-xl text-sm font-bold bg-primary text-white shadow-xl shadow-primary/80/20 hover:bg-primary/90 hover:shadow-primary/30 transition-all active:scale-95 flex items-center gap-2"
                             >
                                 {loading ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                                 Save Asset

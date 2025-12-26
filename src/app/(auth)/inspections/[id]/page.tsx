@@ -14,6 +14,12 @@ export default async function InspectionDetailPage({ params }: { params: Promise
                     name: true,
                     email: true
                 }
+            },
+            approver: {
+                select: {
+                    id: true,
+                    name: true
+                }
             }
         }
     });
@@ -22,14 +28,20 @@ export default async function InspectionDetailPage({ params }: { params: Promise
         notFound();
     }
 
-    // Convert Decimal to number
+    // Convert Decimal to number for Client Component
     const serializedInspection = {
         ...inspection,
         estimatedCost: inspection.estimatedCost ? Number(inspection.estimatedCost) : null,
+        repairCost: inspection.repairCost ? Number(inspection.repairCost) : null,
         asset: {
             ...inspection.asset,
             cost: inspection.asset.cost ? Number(inspection.asset.cost) : null
-        }
+        },
+        assignment: inspection.assignment ? {
+            ...inspection.assignment,
+            // No Decimal fields in assignment
+        } : null,
+        approver: inspection.approver || null
     };
 
     return <InspectionDetailClient inspection={serializedInspection} />;

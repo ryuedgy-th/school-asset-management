@@ -60,7 +60,7 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
                 </div>
                 <button
                     onClick={() => setIsCreateOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/30"
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/80/30"
                 >
                     <Plus size={20} />
                     New User
@@ -88,7 +88,7 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
                                         </div>
                                         <div>
                                             <div className="font-medium text-slate-900">{user.name || 'Unnamed'}</div>
-                                            <div className="text-xs text-slate-500">Added {new Date(user.createdAt).toLocaleDateString()}</div>
+                                            <div className="text-xs text-slate-500">Added {new Date(user.createdAt).toLocaleDateString('en-GB')}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -100,7 +100,7 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
                                 </td>
                                 <td className="p-4">
                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
-                                        user.role === 'Technician' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                        user.role === 'Technician' ? 'bg-primary/20 text-blue-800' : 'bg-green-100 text-green-800'
                                         }`}>
                                         {user.role === 'Admin' && <Shield size={12} className="mr-1" />}
                                         {user.role}
@@ -111,7 +111,7 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
                                             onClick={() => setEditingUser(user)}
-                                            className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg font-medium text-xs transition-colors"
+                                            className="px-3 py-1.5 text-primary hover:bg-primary/10 rounded-lg font-medium text-xs transition-colors"
                                         >
                                             Edit
                                         </button>

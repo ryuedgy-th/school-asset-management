@@ -43,7 +43,7 @@ export default function NewAssignmentModal({ onClose }: NewAssignmentModalProps)
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                     <h2 className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                        <UserPlus className="text-blue-600" size={20} />
+                        <UserPlus className="text-primary" size={20} />
                         New Asset Assignment
                     </h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
@@ -93,7 +93,7 @@ export default function NewAssignmentModal({ onClose }: NewAssignmentModalProps)
                     <button
                         onClick={handleCreate}
                         disabled={loading || !userId}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {loading ? 'Creating...' : (
                             <>

@@ -76,16 +76,16 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
 
     if (selectedUser) {
         return (
-            <div className="flex justify-between items-center p-4 border-2 rounded-xl bg-blue-50 border-blue-200">
+            <div className="flex justify-between items-center p-4 border-2 rounded-xl bg-primary/10 border-blue-200">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
                         {selectedUser.name?.charAt(0).toUpperCase() || '?'}
                     </div>
                     <div>
                         <div className="font-semibold text-blue-900">{selectedUser.name}</div>
-                        <div className="text-sm text-blue-700">{selectedUser.email}</div>
+                        <div className="text-sm text-primary/90">{selectedUser.email}</div>
                         {selectedUser.department && (
-                            <div className="text-xs text-blue-600 flex items-center gap-1 mt-0.5">
+                            <div className="text-xs text-primary flex items-center gap-1 mt-0.5">
                                 <Building2 size={12} />
                                 {selectedUser.department}
                             </div>
@@ -94,7 +94,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                 </div>
                 <button
                     onClick={() => { setSelectedUser(null); onSelect(0); setSearchQuery(''); setDepartmentFilter('all'); }}
-                    className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors"
+                    className="px-3 py-1.5 text-sm text-primary hover:bg-primary/20 rounded-lg font-medium transition-colors"
                 >
                     Change
                 </button>
@@ -112,7 +112,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     placeholder="Search by name, email, or department..."
-                    className="w-full pl-10 pr-4 py-2.5 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                 />
             </div>
 
@@ -122,7 +122,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                     <button
                         onClick={() => setDepartmentFilter('all')}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${departmentFilter === 'all'
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-primary text-white'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                     >
@@ -133,7 +133,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                             key={dept}
                             onClick={() => setDepartmentFilter(dept)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${departmentFilter === dept
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-primary text-white'
                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                         >
@@ -147,7 +147,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
             <div className="border-2 border-slate-200 rounded-xl overflow-hidden max-h-80 overflow-y-auto">
                 {loading ? (
                     <div className="p-8 text-center text-slate-500">
-                        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                        <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
                         Loading users...
                     </div>
                 ) : filteredUsers.length === 0 ? (
@@ -162,9 +162,9 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                             <button
                                 key={user.id}
                                 onClick={() => { setSelectedUser(user); onSelect(user.id); }}
-                                className="w-full text-left p-4 hover:bg-blue-50 transition-colors flex items-center gap-3 group"
+                                className="w-full text-left p-4 hover:bg-primary/10 transition-colors flex items-center gap-3 group"
                             >
-                                <div className="w-10 h-10 rounded-full bg-slate-200 group-hover:bg-blue-600 text-slate-600 group-hover:text-white flex items-center justify-center font-bold transition-colors">
+                                <div className="w-10 h-10 rounded-full bg-slate-200 group-hover:bg-primary text-slate-600 group-hover:text-white flex items-center justify-center font-bold transition-colors">
                                     {user.name?.charAt(0).toUpperCase() || '?'}
                                 </div>
                                 <div className="flex-1 min-w-0">

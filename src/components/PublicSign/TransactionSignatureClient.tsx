@@ -191,7 +191,7 @@ export default function TransactionSignatureClient({
                                                 <p className="text-sm text-slate-500 font-medium">{item.category}</p>
                                             </div>
                                             <span className={`self-start sm:self-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${item.condition === 'Excellent' ? 'bg-emerald-50 text-emerald-700' :
-                                                item.condition === 'Good' ? 'bg-blue-50 text-blue-700' :
+                                                item.condition === 'Good' ? 'bg-primary/10 text-primary/90' :
                                                     item.condition === 'Fair' ? 'bg-amber-50 text-amber-700' :
                                                         'bg-rose-50 text-rose-700'
                                                 }`}>
@@ -344,7 +344,7 @@ export default function TransactionSignatureClient({
                 {/* Footer */}
                 <div className="mt-8 text-center">
                     <p className="text-slate-400 text-xs font-medium">
-                        School Asset Management • Powered by DeepMind & Ryu
+                        School Asset Management • Powered by IT Department
                     </p>
                 </div>
             </div >

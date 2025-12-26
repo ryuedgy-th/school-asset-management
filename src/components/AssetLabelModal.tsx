@@ -171,7 +171,7 @@ export default function AssetLabelModal({ isOpen, onClose, asset }: AssetLabelMo
                         onClick={handleCopyLink}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${copied
                             ? 'bg-emerald-600 text-white'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-primary text-white hover:bg-primary/90'
                             }`}
                     >
                         {copied ? <Check size={16} /> : <Link2 size={16} />}

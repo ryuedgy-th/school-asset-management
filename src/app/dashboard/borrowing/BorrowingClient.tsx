@@ -90,13 +90,13 @@ export default function BorrowingClient({ assignments }: BorrowingClientProps) {
                                 placeholder="Search assignment or user..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-64"
+                                className="pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 w-64"
                             />
                         </div>
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as 'All' | 'Active' | 'Closed')}
-                            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary/80/20"
                         >
                             <option value="All">All Status</option>
                             <option value="Active">Active Only</option>
@@ -134,7 +134,7 @@ export default function BorrowingClient({ assignments }: BorrowingClientProps) {
                                     key={assignment.id}
                                     className={`hover:bg-slate-50/50 ${assignment.status === 'Closed' ? 'opacity-60' : ''}`}
                                 >
-                                    <td className="px-6 py-4 font-medium text-slate-900 border-l-4 border-l-transparent hover:border-l-blue-500 transition-all">
+                                    <td className="px-6 py-4 font-medium text-slate-900 border-l-4 border-l-transparent hover:border-l-primary/80 transition-all">
                                         {assignment.assignmentNumber}
                                     </td>
                                     <td className="px-6 py-4 text-slate-900 font-medium">
@@ -185,7 +185,7 @@ export default function BorrowingClient({ assignments }: BorrowingClientProps) {
                                     <td className="px-6 py-4 text-right">
                                         <Link
                                             href={`/dashboard/borrowing/${assignment.id}`}
-                                            className="text-blue-600 font-medium hover:text-blue-800 transition-colors mr-2"
+                                            className="text-primary font-medium hover:text-blue-800 transition-colors mr-2"
                                         >
                                             {assignment.status === 'Active' ? 'Manage' : 'View'}
                                         </Link>

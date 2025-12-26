@@ -30,7 +30,7 @@ export default function MobileAssetCard({
     const Icon = getIcon(asset.category);
 
     return (
-        <div className={`bg-white rounded-xl border-2 transition-all ${isSelected ? 'border-blue-500 bg-blue-50/30' : 'border-slate-200'
+        <div className={`bg-white rounded-xl border-2 transition-all ${isSelected ? 'border-primary/80 bg-primary/10/30' : 'border-slate-200'
             }`}>
             {/* Header with checkbox and image */}
             <div className="p-4 flex items-start gap-3">
@@ -38,7 +38,7 @@ export default function MobileAssetCard({
                     type="checkbox"
                     checked={isSelected}
                     onChange={onToggleSelect}
-                    className="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-5 h-5"
+                    className="mt-1 rounded border-slate-300 text-primary focus:ring-primary/80 w-5 h-5"
                 />
 
                 {asset.image ? (
@@ -101,7 +101,7 @@ export default function MobileAssetCard({
                 </button>
                 <button
                     onClick={onEdit}
-                    className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors active:scale-95"
+                    className="p-2.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors active:scale-95"
                     title="Edit"
                 >
                     <Pencil size={20} />

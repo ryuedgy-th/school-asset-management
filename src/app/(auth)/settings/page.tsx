@@ -87,11 +87,11 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 pb-20">
+        <div className="max-w-5xl mx-auto space-y-8 pb-20 pt-6">
             {/* Header */}
             <div>
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/20">
+                    <div className="p-2 bg-gradient-to-br from-primary/80 to-primary rounded-xl shadow-lg shadow-primary/80/20">
                         <Shield className="text-white" size={28} />
                     </div>
                     <div>
@@ -105,7 +105,7 @@ export default function SettingsPage() {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
                     <div className="flex items-center gap-3">
-                        <Building2 className="text-blue-600" size={24} />
+                        <Building2 className="text-primary" size={24} />
                         <h2 className="text-xl font-bold text-slate-900">Organization Profile</h2>
                     </div>
                 </div>
@@ -115,7 +115,7 @@ export default function SettingsPage() {
                         <input
                             type="text"
                             defaultValue="International School Bangkok"
-                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -126,7 +126,7 @@ export default function SettingsPage() {
                                 <input
                                     type="email"
                                     defaultValue="it-support@school.ac.th"
-                                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                                 />
                             </div>
                         </div>
@@ -137,7 +137,7 @@ export default function SettingsPage() {
                                 <input
                                     type="text"
                                     defaultValue="02-123-4567"
-                                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                                 />
                             </div>
                         </div>
@@ -177,9 +177,9 @@ export default function SettingsPage() {
 
             {/* Email Settings (SMTP) */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-white">
+                <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-primary/10 to-white">
                     <div className="flex items-center gap-3">
-                        <Mail className="text-blue-600" size={24} />
+                        <Mail className="text-primary" size={24} />
                         <div>
                             <h2 className="text-xl font-bold text-slate-900">Email Settings (SMTP)</h2>
                             <p className="text-sm text-slate-500">Configure email delivery for assignment notifications</p>
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                                 placeholder="smtp.gmail.com"
                                 value={smtpSettings.smtp_host}
                                 onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_host: e.target.value })}
-                                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             />
                         </div>
                     </div>
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                                 type="text"
                                 value={smtpSettings.smtp_port}
                                 onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_port: e.target.value })}
-                                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             />
                         </div>
                         <div>
@@ -217,7 +217,7 @@ export default function SettingsPage() {
                                 placeholder="your-email@gmail.com"
                                 value={smtpSettings.smtp_user}
                                 onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_user: e.target.value })}
-                                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             />
                         </div>
                     </div>
@@ -229,7 +229,7 @@ export default function SettingsPage() {
                                 placeholder="••••••••••••••••"
                                 value={smtpSettings.smtp_password}
                                 onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_password: e.target.value })}
-                                className="w-full px-4 py-3 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                className="w-full px-4 py-3 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             />
                             <button
                                 type="button"
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                             </button>
                         </div>
                         <p className="text-xs text-slate-500 mt-2">
-                            For Gmail: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-blue-600 hover:underline font-medium">Create App Password →</a>
+                            For Gmail: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="text-primary hover:underline font-medium">Create App Password →</a>
                         </p>
                     </div>
                     <div>
@@ -250,7 +250,7 @@ export default function SettingsPage() {
                             placeholder="School Asset Management <noreply@school.edu>"
                             value={smtpSettings.smtp_from}
                             onChange={(e) => setSmtpSettings({ ...smtpSettings, smtp_from: e.target.value })}
-                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                         />
                     </div>
 
@@ -315,7 +315,7 @@ export default function SettingsPage() {
                 <button
                     onClick={handleSave}
                     disabled={isSaving}
-                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/30 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-8 py-3 bg-gradient-to-r from-primary to-primary text-white rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isSaving ? (
                         <>
@@ -348,7 +348,7 @@ function ToggleSwitch({ label, description, checked, onChange }: {
             </div>
             <button
                 onClick={() => onChange(!checked)}
-                className={`relative w-14 h-7 rounded-full transition-all duration-200 ${checked ? 'bg-blue-600' : 'bg-slate-300'
+                className={`relative w-14 h-7 rounded-full transition-all duration-200 ${checked ? 'bg-primary' : 'bg-slate-300'
                     }`}
             >
                 <div

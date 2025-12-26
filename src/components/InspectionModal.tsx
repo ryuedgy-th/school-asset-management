@@ -94,25 +94,36 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
         ).slice(0, 8);
     }, [assetSearch, assets]);
 
-    // Handle photo upload
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handle photo upload with optimization
+    const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length + photoFiles.length > 15) {
             alert('Maximum 15 photos allowed');
             return;
         }
 
-        // Add new files
-        setPhotoFiles([...photoFiles, ...files]);
+        // Show loading state (optional - you could add a loading indicator)
+        try {
+            // Import optimization utility
+            const { optimizeImages } = await import('@/lib/image-optimization');
 
-        // Create previews
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoPreviews(prev => [...prev, reader.result as string]);
-            };
-            reader.readAsDataURL(file);
-        });
+            // Optimize all images in parallel
+            const optimizedDataUrls = await optimizeImages(files, {
+                maxWidth: 1920,
+                maxHeight: 1080,
+                quality: 0.8,
+                format: 'webp'
+            });
+
+            // Add new files
+            setPhotoFiles([...photoFiles, ...files]);
+
+            // Add optimized previews
+            setPhotoPreviews(prev => [...prev, ...optimizedDataUrls]);
+        } catch (error) {
+            console.error('Failed to optimize images:', error);
+            alert('Failed to process images. Please try again.');
+        }
     };
 
     const removePhoto = (index: number) => {
@@ -222,10 +233,10 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                 }}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600">
+                <div className="flex items-center justify-between p-6 border-b border-slate-200 bg-gradient-to-r from-primary to-primary">
                     <div>
                         <h2 className="text-2xl font-bold text-white">Create Inspection</h2>
-                        <p className="text-blue-100 text-sm mt-1">Quick asset condition check</p>
+                        <p className="text-primary/20 text-sm mt-1">Quick asset condition check</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -239,7 +250,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                 <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
                     <div className="p-6 space-y-6">
                         {/* Step 1: Select Asset */}
-                        <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                        <div className="bg-primary/10 rounded-xl p-4 border border-blue-200">
                             <h3 className="font-semibold text-slate-900 mb-3">1. Select Asset</h3>
 
                             {!selectedAsset ? (
@@ -251,7 +262,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                             value={assetSearch}
                                             onChange={(e) => setAssetSearch(e.target.value)}
                                             placeholder="Search by name or code..."
-                                            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                         />
                                     </div>
 
@@ -261,7 +272,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                                 key={asset.id}
                                                 type="button"
                                                 onClick={() => setSelectedAsset(asset)}
-                                                className="p-3 text-left bg-white rounded-lg border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition-all"
+                                                className="p-3 text-left bg-white rounded-lg border border-slate-200 hover:border-primary/80 hover:bg-primary/10 transition-all"
                                             >
                                                 <div className="font-medium text-slate-900 text-sm">{asset.name}</div>
                                                 <div className="text-xs text-slate-500 font-mono mt-1">{asset.assetCode}</div>
@@ -270,7 +281,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     </div>
                                 </>
                             ) : (
-                                <div className="flex items-center justify-between bg-white rounded-lg p-3 border border-blue-300">
+                                <div className="flex items-center justify-between bg-white rounded-lg p-3 border border-primary/60">
                                     <div>
                                         <div className="font-medium text-slate-900">{selectedAsset.name}</div>
                                         <div className="text-sm text-slate-500 font-mono">{selectedAsset.assetCode}</div>
@@ -296,7 +307,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                         type="button"
                                         onClick={() => setFormData({ ...formData, inspectionType: type.value })}
                                         className={`p-4 rounded-lg border-2 transition-all text-left ${formData.inspectionType === type.value
-                                            ? 'border-blue-500 bg-blue-50 shadow-md'
+                                            ? 'border-primary/80 bg-primary/10 shadow-md'
                                             : 'border-slate-200 bg-white hover:border-slate-300'
                                             }`}
                                     >
@@ -319,7 +330,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     <select
                                         value={formData.exteriorCondition}
                                         onChange={(e) => setFormData({ ...formData, exteriorCondition: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                     >
                                         <option value="">Select condition...</option>
                                         {EXTERIOR_CONDITIONS.map((cond) => (
@@ -338,7 +349,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     <select
                                         value={formData.screenCondition}
                                         onChange={(e) => setFormData({ ...formData, screenCondition: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                     >
                                         <option value="">Select condition...</option>
                                         {SCREEN_CONDITIONS.map((cond) => (
@@ -357,7 +368,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     <select
                                         value={formData.buttonPortCondition}
                                         onChange={(e) => setFormData({ ...formData, buttonPortCondition: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                     >
                                         <option value="">Select condition...</option>
                                         {BUTTON_PORT_CONDITIONS.map((cond) => (
@@ -376,7 +387,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     <select
                                         value={formData.keyboardCondition}
                                         onChange={(e) => setFormData({ ...formData, keyboardCondition: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                     >
                                         <option value="">Select condition...</option>
                                         {KEYBOARD_CONDITIONS.map((cond) => (
@@ -395,7 +406,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     <select
                                         value={formData.touchpadCondition}
                                         onChange={(e) => setFormData({ ...formData, touchpadCondition: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                     >
                                         <option value="">Select condition...</option>
                                         {TOUCHPAD_CONDITIONS.map((cond) => (
@@ -414,7 +425,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     <select
                                         value={formData.batteryHealth}
                                         onChange={(e) => setFormData({ ...formData, batteryHealth: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                     >
                                         <option value="">Select condition...</option>
                                         {BATTERY_HEALTH.map((health) => (
@@ -442,7 +453,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                             {/* Fixed size thumbnail */}
                                             <div
                                                 onClick={() => setLightboxIndex(index)}
-                                                className="relative w-full h-full rounded-lg overflow-hidden border-2 border-slate-300 cursor-pointer hover:border-blue-500 transition-all group"
+                                                className="relative w-full h-full rounded-lg overflow-hidden border-2 border-slate-300 cursor-pointer hover:border-primary/80 transition-all group"
                                             >
                                                 <img
                                                     src={preview}
@@ -474,7 +485,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
 
                             {/* Upload Button */}
                             {photoFiles.length < 15 && (
-                                <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all cursor-pointer">
+                                <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-slate-300 rounded-lg hover:border-primary/80 hover:bg-primary/10 transition-all cursor-pointer">
                                     <Camera className="text-slate-400" size={32} />
                                     <div className="text-center">
                                         <span className="text-sm font-medium text-slate-700 block">
@@ -507,7 +518,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                                     <textarea
                                         value={formData.overallNotes}
                                         onChange={(e) => setFormData({ ...formData, overallNotes: e.target.value })}
-                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80 focus:border-primary/80"
                                         rows={2}
                                         placeholder="Any observations..."
                                     />
@@ -557,7 +568,7 @@ export default function InspectionModal({ isOpen, onClose, assets }: InspectionM
                         <button
                             type="submit"
                             disabled={loading || !selectedAsset}
-                            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-blue-600/20"
+                            className="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20"
                         >
                             {loading ? 'Creating...' : 'Create Inspection'}
                         </button>

@@ -130,7 +130,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
                     </button>
                     <button
                         onClick={openCreate}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
                     >
                         <Plus size={16} />
                         Add Category
@@ -156,7 +156,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
                                 <td className="px-6 py-4 text-slate-500">{cat.description || '-'}</td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex justify-end gap-2">
-                                        <button onClick={() => openEdit(cat)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                                        <button onClick={() => openEdit(cat)} className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-colors">
                                             <Pencil size={16} />
                                         </button>
                                         <button onClick={() => handleDelete(cat.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
@@ -191,7 +191,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
                                     required
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none"
                                     placeholder="e.g. Laptop"
                                 />
                             </div>
@@ -200,7 +200,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
                                 <textarea
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none resize-none h-24"
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none resize-none h-24"
                                     placeholder="Optional description..."
                                 />
                             </div>
@@ -216,7 +216,7 @@ export default function CategoryList({ categories }: CategoryListProps) {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
                                     {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                                     Save

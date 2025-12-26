@@ -93,7 +93,7 @@ export default function Pagination({ totalItems, currentPage, pageSize }: Pagina
                             key={idx}
                             onClick={() => handlePageChange(page)}
                             className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-all ${currentPage === page
-                                ? 'bg-blue-600 text-white shadow-sm'
+                                ? 'bg-primary text-white shadow-sm'
                                 : 'border border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                                 }`}
                         >

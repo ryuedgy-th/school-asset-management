@@ -23,15 +23,17 @@ export default async function MyAssignmentPage() {
     const assignment = await prisma.assignment.findFirst({
         where: {
             userId: user.id,
-            status: 'Active'
+            status: 'active' // Fixed: lowercase 'active'
         },
         include: {
             borrowTransactions: {
                 include: {
-                    items: {
+                    borrowItems: { // Fixed: borrowItems instead of items
                         include: {
                             asset: true,
-                            returnItems: true
+                        },
+                        where: {
+                            status: 'Borrowed'
                         }
                     }
                 },
@@ -39,22 +41,6 @@ export default async function MyAssignmentPage() {
                     borrowDate: 'desc'
                 }
             },
-            returnTransactions: {
-                include: {
-                    items: {
-                        include: {
-                            borrowItem: {
-                                include: {
-                                    asset: true
-                                }
-                            }
-                        }
-                    }
-                },
-                orderBy: {
-                    returnDate: 'desc'
-                }
-            }
         }
     });
 
@@ -63,29 +49,11 @@ export default async function MyAssignmentPage() {
         ...assignment,
         borrowTransactions: assignment.borrowTransactions.map(bt => ({
             ...bt,
-            items: bt.items.map(item => ({
+            borrowItems: bt.borrowItems.map(item => ({
                 ...item,
                 asset: {
                     ...item.asset,
                     cost: item.asset.cost ? Number(item.asset.cost) : null
-                },
-                returnItems: item.returnItems.map(ri => ({
-                    ...ri,
-                    damageCharge: ri.damageCharge ? Number(ri.damageCharge) : 0
-                }))
-            }))
-        })),
-        returnTransactions: assignment.returnTransactions.map(rt => ({
-            ...rt,
-            items: rt.items.map(item => ({
-                ...item,
-                damageCharge: item.damageCharge ? Number(item.damageCharge) : 0,
-                borrowItem: {
-                    ...item.borrowItem,
-                    asset: {
-                        ...item.borrowItem.asset,
-                        cost: item.borrowItem.asset.cost ? Number(item.borrowItem.asset.cost) : null
-                    }
                 }
             }))
         }))

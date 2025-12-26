@@ -79,7 +79,7 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
                             required
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             placeholder="John Doe"
                         />
                     </div>
@@ -93,7 +93,7 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             placeholder="john@school.com"
                         />
                     </div>
@@ -108,7 +108,7 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
                                 id="phoneNumber"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                                 placeholder="081-234-5678"
                             />
                         </div>
@@ -122,7 +122,7 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
                                 id="role"
                                 value={role}
                                 onChange={(e) => setRole(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all bg-white"
                             >
                                 <option value="User">User</option>
                                 <option value="Technician">Technician</option>
@@ -137,7 +137,7 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
                                 id="department"
                                 value={department}
                                 onChange={(e) => setDepartment(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all bg-white"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all bg-white"
                             >
                                 <option value="">Select Dept.</option>
                                 <option value="IT">IT</option>
@@ -154,7 +154,7 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Save size={18} />}
                             {isLoading ? 'Saving...' : 'Save Changes'}

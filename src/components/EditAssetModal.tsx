@@ -73,8 +73,8 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                                 file:mr-4 file:py-2 file:px-4
                                 file:rounded-full file:border-0
                                 file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100
+                                file:bg-primary/10 file:text-primary/90
+                                hover:file:bg-primary/20
                             "
                         />
                     </div>
@@ -86,7 +86,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                         name="name"
                         defaultValue={asset.name}
                         required
-                        className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                     />
                 </div>
 
@@ -97,7 +97,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                             name="assetCode"
                             defaultValue={asset.assetCode}
                             required
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-mono"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all font-mono"
                         />
                     </div>
                     <div className="space-y-1.5">
@@ -105,7 +105,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                         <input
                             name="location"
                             defaultValue={asset.location || ''}
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                             placeholder="e.g. Room 101"
                         />
                     </div>
@@ -117,7 +117,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                         <input
                             name="brand"
                             defaultValue={asset.brand || ''}
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                         />
                     </div>
                     <div className="space-y-1.5">
@@ -125,7 +125,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                         <input
                             name="model"
                             defaultValue={asset.model || ''}
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                         />
                     </div>
                 </div>
@@ -136,7 +136,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                         <select
                             name="category"
                             defaultValue={asset.category}
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                         >
                             <option value="Laptop">Laptop</option>
                             <option value="Tablet">Tablet</option>
@@ -151,7 +151,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                         <select
                             name="status"
                             defaultValue={asset.status}
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                         >
                             <option value="Available">Available</option>
                             <option value="Borrowed">Borrowed</option>
@@ -171,7 +171,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                             disabled={!!asset.serialNumber} // Disable if serialized
                             min={1}
                             required
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                         {asset.serialNumber && <p className="text-[10px] text-slate-400">Fixed for serialized assets</p>}
                     </div>
@@ -184,7 +184,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                             disabled={!!asset.serialNumber} // Disable if serialized
                             min={0}
                             required
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                     </div>
                 </div>
@@ -194,7 +194,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                     <input
                         name="serialNumber"
                         defaultValue={asset.serialNumber || ''}
-                        className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                         placeholder="Optional"
                     />
                 </div>
@@ -206,7 +206,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                             type="date"
                             name="purchaseDate"
                             defaultValue={asset.purchaseDate ? new Date(asset.purchaseDate).toISOString().split('T')[0] : ''}
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                         />
                     </div>
                     <div className="space-y-1.5">
@@ -215,7 +215,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                             type="date"
                             name="warrantyExp"
                             defaultValue={asset.warrantyExp ? new Date(asset.warrantyExp).toISOString().split('T')[0] : ''}
-                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="block w-full rounded-lg border-slate-200 bg-slate-50 p-2.5 text-sm font-medium outline-none focus:border-primary/80 focus:ring-2 focus:ring-primary/80/20 transition-all"
                         />
                     </div>
                 </div>
@@ -231,7 +231,7 @@ export default function EditAssetModal({ isOpen, onClose, asset }: EditAssetModa
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white shadow-lg shadow-primary/80/30 hover:bg-primary/90 hover:shadow-primary/40 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {loading && <Loader2 className="animate-spin" size={16} />}
                         Save Changes

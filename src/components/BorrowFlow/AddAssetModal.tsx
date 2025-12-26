@@ -108,10 +108,10 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-blue-50 to-white flex-shrink-0">
+                <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-gradient-to-r from-primary/10 to-white flex-shrink-0">
                     <div>
                         <h2 className="font-bold text-xl text-slate-800 flex items-center gap-2">
-                            <Plus className="text-blue-600" size={24} />
+                            <Plus className="text-primary" size={24} />
                             Add Assets to Assignment
                         </h2>
                         <p className="text-sm text-slate-500 mt-0.5">Select items to assign to this teacher</p>
@@ -129,7 +129,7 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
                         <input
                             type="text"
                             placeholder="Search by name, code, brand, or model..."
-                            className="w-full pl-10 pr-4 py-2.5 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                            className="w-full pl-10 pr-4 py-2.5 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             autoFocus
@@ -166,7 +166,7 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
                             <button
                                 onClick={() => setCategoryFilter('all')}
                                 className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${categoryFilter === 'all'
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-primary text-white'
                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                     }`}
                             >
@@ -177,7 +177,7 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
                                     key={cat}
                                     onClick={() => setCategoryFilter(cat)}
                                     className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${categoryFilter === cat
-                                        ? 'bg-blue-600 text-white'
+                                        ? 'bg-primary text-white'
                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                         }`}
                                 >
@@ -193,7 +193,7 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
                     {loading ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="text-center">
-                                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
                                 <p className="text-slate-500">Loading assets...</p>
                             </div>
                         </div>
@@ -217,9 +217,9 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
                                         disabled={!isAvailable || isSelected}
                                         onClick={() => !isSelected && setSelectedAssets([...selectedAssets, asset])}
                                         className={`text-left p-4 rounded-xl border-2 transition-all ${isSelected
-                                            ? 'bg-blue-50 border-blue-300 opacity-60'
+                                            ? 'bg-primary/10 border-primary/60 opacity-60'
                                             : isAvailable
-                                                ? 'hover:bg-slate-50 border-slate-200 hover:border-blue-300 hover:shadow-md'
+                                                ? 'hover:bg-slate-50 border-slate-200 hover:border-primary/60 hover:shadow-md'
                                                 : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'
                                             }`}
                                     >
@@ -280,7 +280,7 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
                         </div>
                         <div className="flex flex-wrap gap-2 mb-4 max-h-24 overflow-y-auto">
                             {selectedAssets.map(asset => (
-                                <span key={asset.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-blue-200 text-blue-700 rounded-lg text-sm shadow-sm">
+                                <span key={asset.id} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border-2 border-blue-200 text-primary/90 rounded-lg text-sm shadow-sm">
                                     <Package size={14} />
                                     <span className="font-medium">{asset.name}</span>
                                     <button
@@ -295,7 +295,7 @@ export default function AddAssetModal({ assignmentId, onClose }: AddAssetModalPr
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:bg-slate-300 transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 disabled:bg-slate-300 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                         >
                             {isSubmitting ? (
                                 <>

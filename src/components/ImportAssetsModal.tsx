@@ -170,7 +170,10 @@ export default function ImportAssetsModal({ isOpen, onClose }: ImportAssetsModal
             }
 
             const result = await res.json();
-            alert(`Successfully imported ${result.count} assets!`);
+            const message = result.created && result.updated !== undefined
+                ? `Successfully imported ${result.total} assets! (${result.created} created, ${result.updated} updated)`
+                : `Successfully imported ${result.count} assets!`;
+            alert(message);
             router.refresh();
             handleClose();
         } catch (error: any) {
@@ -188,23 +191,23 @@ export default function ImportAssetsModal({ isOpen, onClose }: ImportAssetsModal
 
                 {/* Steps Indicator */}
                 <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
-                    <span className={`px-2 py-1 rounded ${step === 'upload' ? 'bg-blue-100 text-blue-700 font-bold' : ''}`}>1. Upload</span>
+                    <span className={`px-2 py-1 rounded ${step === 'upload' ? 'bg-primary/20 text-primary/90 font-bold' : ''}`}>1. Upload</span>
                     <span>→</span>
-                    <span className={`px-2 py-1 rounded ${step === 'preview' ? 'bg-blue-100 text-blue-700 font-bold' : ''}`}>2. Preview & Validate</span>
+                    <span className={`px-2 py-1 rounded ${step === 'preview' ? 'bg-primary/20 text-primary/90 font-bold' : ''}`}>2. Preview & Validate</span>
                     <span>→</span>
-                    <span className={`px-2 py-1 rounded ${step === 'importing' ? 'bg-blue-100 text-blue-700 font-bold' : ''}`}>3. Finish</span>
+                    <span className={`px-2 py-1 rounded ${step === 'importing' ? 'bg-primary/20 text-primary/90 font-bold' : ''}`}>3. Finish</span>
                 </div>
 
                 {step === 'upload' && (
                     <div className="space-y-4">
                         <div className="border-2 border-dashed border-slate-300 rounded-xl p-10 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer group"
                             onClick={() => fileInputRef.current?.click()}>
-                            <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-100 transition-colors">
+                            <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                                 <Upload size={32} />
                             </div>
                             <h3 className="text-lg font-bold text-slate-900">Click to Upload CSV</h3>
                             <p className="text-slate-500 text-sm mt-2 max-w-xs">
-                                Format: Name, Category, Brand, Model, Serial, Stock, Location
+                                Format: Asset Code (optional), Name, Category, Brand, Model, Serial, Stock, Location
                             </p>
                             <input
                                 type="file"
@@ -219,7 +222,7 @@ export default function ImportAssetsModal({ isOpen, onClose }: ImportAssetsModal
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    const csvContent = "Name,Category,Brand,Model,Serial,Stock,Location,Purchase Date,Warranty Exp\nExample Laptop,Laptop,Dell,XPS 13,,10,IT Room,2024-01-01,2025-01-01\nMacBook Pro,Laptop,Apple,M3 Max,SN-99999,1,Management,2024-03-15,2025-03-15";
+                                    const csvContent = "Asset Code,Name,Category,Brand,Model,Serial,Stock,Location,Purchase Date,Warranty Exp\n,Example Laptop,Laptop,Dell,XPS 13,,10,IT Room,2024-01-01,2025-01-01\nMYISC001,MacBook Pro,Laptop,Apple,M3 Max,SN-99999,1,Management,2024-03-15,2025-03-15";
                                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                                     const link = document.createElement("a");
                                     const url = URL.createObjectURL(blob);
@@ -246,6 +249,7 @@ export default function ImportAssetsModal({ isOpen, onClose }: ImportAssetsModal
                                 <thead className="bg-slate-50 text-slate-500 font-bold sticky top-0">
                                     <tr>
                                         <th className="p-3">Status</th>
+                                        <th className="p-3">Asset Code</th>
                                         <th className="p-3">Name</th>
                                         <th className="p-3">Category</th>
                                         <th className="p-3">Stock</th>
@@ -266,6 +270,7 @@ export default function ImportAssetsModal({ isOpen, onClose }: ImportAssetsModal
                                                     </div>
                                                 )}
                                             </td>
+                                            <td className="p-3 font-mono text-xs text-primary">{asset.assetCode || <span className="text-slate-400 italic">auto-generated</span>}</td>
                                             <td className="p-3 font-medium text-slate-900">{asset.name || '-'}</td>
                                             <td className="p-3 text-slate-600">{asset.category || '-'}</td>
                                             <td className="p-3 text-slate-600">
@@ -294,7 +299,7 @@ export default function ImportAssetsModal({ isOpen, onClose }: ImportAssetsModal
                                 <button
                                     onClick={handleImport}
                                     disabled={parsedData.filter(d => d.isValid).length === 0}
-                                    className="px-6 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    className="px-6 py-2 rounded-lg text-sm font-bold bg-primary text-white shadow-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
                                     <Save size={16} />
                                     Confirm Import
@@ -306,7 +311,7 @@ export default function ImportAssetsModal({ isOpen, onClose }: ImportAssetsModal
 
                 {step === 'importing' && (
                     <div className="flex flex-col items-center justify-center py-12">
-                        <Loader2 className="animate-spin text-blue-600 mb-4" size={40} />
+                        <Loader2 className="animate-spin text-primary mb-4" size={40} />
                         <h3 className="text-lg font-bold text-slate-900">Importing Assets...</h3>
                         <p className="text-slate-500">Please wait while we process your data.</p>
                     </div>

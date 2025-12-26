@@ -92,7 +92,7 @@ export default function BorrowRequestModal({ isOpen, onClose, asset }: BorrowReq
                                 value={startDate}
                                 min={new Date().toISOString().split('T')[0]} // Min today
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all"
+                                className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/80 focus:border-primary/80 outline-none text-sm transition-all"
                             />
                         </div>
                         <div className="space-y-2">
@@ -105,7 +105,7 @@ export default function BorrowRequestModal({ isOpen, onClose, asset }: BorrowReq
                                 value={endDate}
                                 min={startDate || new Date().toISOString().split('T')[0]}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all"
+                                className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/80 focus:border-primary/80 outline-none text-sm transition-all"
                             />
                         </div>
                     </div>
@@ -119,7 +119,7 @@ export default function BorrowRequestModal({ isOpen, onClose, asset }: BorrowReq
                             value={reason}
                             placeholder="e.g. Teaching class 302, School project..."
                             onChange={(e) => setReason(e.target.value)}
-                            className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm min-h-[100px] resize-none transition-all"
+                            className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/80 focus:border-primary/80 outline-none text-sm min-h-[100px] resize-none transition-all"
                         />
                     </div>
 
@@ -127,7 +127,7 @@ export default function BorrowRequestModal({ isOpen, onClose, asset }: BorrowReq
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                            className="w-full py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
                         >
                             {isSubmitting ? (
                                 <>

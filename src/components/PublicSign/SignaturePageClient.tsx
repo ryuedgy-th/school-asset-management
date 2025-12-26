@@ -126,7 +126,7 @@ export default function SignaturePageClient({ token, data }: SignaturePageProps)
                 {/* Header */}
                 <div className="text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg">
                             <Building2 size={24} />
                         </div>
                     </div>
@@ -137,7 +137,7 @@ export default function SignaturePageClient({ token, data }: SignaturePageProps)
                 {/* Teacher Info */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
-                        <FileText size={18} className="text-blue-500" />
+                        <FileText size={18} className="text-primary/80" />
                         <h2 className="font-semibold text-slate-800">Teacher Information</h2>
                     </div>
                     <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -167,7 +167,7 @@ export default function SignaturePageClient({ token, data }: SignaturePageProps)
                 {/* Assets */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
-                        <Building2 size={18} className="text-blue-500" />
+                        <Building2 size={18} className="text-primary/80" />
                         <h2 className="font-semibold text-slate-800">Assigned Assets</h2>
                     </div>
                     <div className="p-6">
@@ -202,7 +202,7 @@ export default function SignaturePageClient({ token, data }: SignaturePageProps)
                         <h2 className="font-semibold text-slate-800">Privacy & Consent Agreement</h2>
                     </div>
                     <div className="p-6 space-y-4">
-                        <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg flex gap-3 text-sm text-blue-800 mb-4">
+                        <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg flex gap-3 text-sm text-blue-800 mb-4">
                             <ShieldCheck size={20} className="flex-shrink-0" />
                             <div>
                                 <strong>Data Protection Notice:</strong> We collect and process your personal data in accordance with the Personal Data Protection Act (PDPA).
@@ -219,7 +219,7 @@ export default function SignaturePageClient({ token, data }: SignaturePageProps)
                                 <div className="relative flex items-center">
                                     <input
                                         type="checkbox"
-                                        className="peer h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-600/20"
+                                        className="peer h-5 w-5 rounded border-slate-300 text-primary focus:ring-primary/20"
                                         checked={(agreements as any)[item.id]}
                                         onChange={(e) => setAgreements(prev => ({ ...prev, [item.id]: e.target.checked }))}
                                     />
@@ -251,7 +251,7 @@ export default function SignaturePageClient({ token, data }: SignaturePageProps)
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                                    className="h-4 w-4 rounded border-slate-300 text-primary"
                                     checked={agreements.terms}
                                     onChange={(e) => setAgreements(prev => ({ ...prev, terms: e.target.checked }))}
                                 />
@@ -270,7 +270,7 @@ export default function SignaturePageClient({ token, data }: SignaturePageProps)
                         <button
                             onClick={handleSign}
                             disabled={isSubmitting}
-                            className="mt-6 w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all active:transform active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="mt-6 w-full py-4 px-6 bg-primary hover:bg-primary/90 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all active:transform active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             {isSubmitting ? (
                                 <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />

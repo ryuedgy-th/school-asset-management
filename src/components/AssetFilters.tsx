@@ -105,7 +105,7 @@ export default function AssetFilters({ categories = [], locations = [], statuses
                         <input
                             type="text"
                             placeholder="Search assets by name or serial..."
-                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 transition-all"
                             onChange={(e) => handleSearch(e.target.value)}
                             defaultValue={searchParams.get('q')?.toString()}
                         />
@@ -125,14 +125,14 @@ export default function AssetFilters({ categories = [], locations = [], statuses
                         <button
                             onClick={() => setShowFilters(!showFilters)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeFilterCount > 0
-                                    ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                                    ? 'bg-primary text-white shadow-sm hover:bg-primary/90'
                                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                                 }`}
                         >
                             <Filter size={18} />
                             <span className="hidden sm:inline">Filters</span>
                             {activeFilterCount > 0 && (
-                                <span className="bg-white text-blue-600 px-2 py-0.5 rounded-full text-xs font-bold">
+                                <span className="bg-white text-primary px-2 py-0.5 rounded-full text-xs font-bold">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -143,7 +143,7 @@ export default function AssetFilters({ categories = [], locations = [], statuses
 
                         <span className="text-sm text-gray-600 hidden sm:inline">Show</span>
                         <select
-                            className="border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                            className="border rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80"
                             onChange={(e) => {
                                 const params = new URLSearchParams(searchParams);
                                 params.set('pageSize', e.target.value);
@@ -165,7 +165,7 @@ export default function AssetFilters({ categories = [], locations = [], statuses
                     <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-semibold text-slate-500">Active Filters:</span>
                         {selectedCategories.map(cat => (
-                            <span key={cat} className="inline-flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-xs font-medium">
+                            <span key={cat} className="inline-flex items-center gap-1 bg-primary/20 text-primary/90 px-2 py-1 rounded-md text-xs font-medium">
                                 {cat}
                                 <button onClick={() => toggleCategory(cat)} className="hover:bg-blue-200 rounded-full p-0.5">
                                     <X size={12} />
@@ -211,7 +211,7 @@ export default function AssetFilters({ categories = [], locations = [], statuses
                                                 type="checkbox"
                                                 checked={selectedCategories.includes(cat)}
                                                 onChange={() => toggleCategory(cat)}
-                                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                className="rounded border-slate-300 text-primary focus:ring-primary/80"
                                             />
                                             <span className="text-sm text-slate-700">{cat}</span>
                                         </label>
@@ -230,7 +230,7 @@ export default function AssetFilters({ categories = [], locations = [], statuses
                                             type="checkbox"
                                             checked={selectedStatuses.includes(status)}
                                             onChange={() => toggleStatus(status)}
-                                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                            className="rounded border-slate-300 text-primary focus:ring-primary/80"
                                         />
                                         <span className="text-sm text-slate-700">{status}</span>
                                     </label>
@@ -249,7 +249,7 @@ export default function AssetFilters({ categories = [], locations = [], statuses
                                                 type="checkbox"
                                                 checked={selectedLocations.includes(loc)}
                                                 onChange={() => toggleLocation(loc)}
-                                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                className="rounded border-slate-300 text-primary focus:ring-primary/80"
                                             />
                                             <span className="text-sm text-slate-700">{loc}</span>
                                         </label>
@@ -272,7 +272,7 @@ export default function AssetFilters({ categories = [], locations = [], statuses
                             </button>
                             <button
                                 onClick={applyFilters}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
                             >
                                 Apply Filters
                             </button>

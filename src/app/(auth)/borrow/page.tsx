@@ -35,7 +35,7 @@ export default async function BorrowPage() {
     const pastAssignments = assignments.filter(a => a.status === 'Closed');
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8 pt-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">My Equipment</h1>
@@ -43,7 +43,7 @@ export default async function BorrowPage() {
                 </div>
                 <Link
                     href="/borrow/new"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center gap-2"
+                    className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-lg shadow-primary/80/30 hover:bg-primary/90 transition-all flex items-center gap-2"
                 >
                     <Plus size={18} />
                     New Request
@@ -53,7 +53,7 @@ export default async function BorrowPage() {
             {/* Active Assignments */}
             <div className="space-y-4">
                 <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <Clock className="text-blue-600" size={20} />
+                    <Clock className="text-primary" size={20} />
                     Active Assignments
                 </h2>
 
@@ -84,7 +84,7 @@ export default async function BorrowPage() {
                                                 Academic Year: {assignment.academicYear} | Semester: {assignment.semester}
                                             </p>
                                         </div>
-                                        <Link href={`/borrow/${assignment.id}`} className="text-sm font-medium text-blue-600 hover:text-blue-800">
+                                        <Link href={`/borrow/${assignment.id}`} className="text-sm font-medium text-primary hover:text-blue-800">
                                             View Details →
                                         </Link>
                                     </div>
@@ -142,7 +142,7 @@ export default async function BorrowPage() {
                                             {assignment.closedAt?.toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Link href={`/borrow/${assignment.id}`} className="text-blue-600 hover:underline">
+                                            <Link href={`/borrow/${assignment.id}`} className="text-primary hover:underline">
                                                 View
                                             </Link>
                                         </td>

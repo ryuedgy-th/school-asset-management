@@ -157,7 +157,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                     <button
                         onClick={() => setShowBulkPrint(true)}
                         disabled={loading}
-                        className="flex items-center gap-2 text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 text-sm font-bold text-primary/70 hover:text-primary/60 transition-colors disabled:opacity-50"
                     >
                         <Printer size={16} />
                         <span className="hidden sm:inline">Print</span>
@@ -221,7 +221,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                                         type="checkbox"
                                         checked={selectedIds.size === assets.length && assets.length > 0}
                                         onChange={toggleSelectAll}
-                                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                        className="rounded border-slate-300 text-primary focus:ring-primary/80"
                                     />
                                 </th>
                                 <th className="px-6 py-4 font-semibold text-slate-700 w-[40px]"></th>
@@ -238,13 +238,13 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                                 const Icon = getIcon(asset.category);
                                 const isSelected = selectedIds.has(asset.id);
                                 return (
-                                    <tr key={asset.id} className={`group transition-colors ${isSelected ? 'bg-blue-50/50 hover:bg-blue-50' : 'hover:bg-slate-50/50'}`}>
+                                    <tr key={asset.id} className={`group transition-colors ${isSelected ? 'bg-primary/10/50 hover:bg-primary/10' : 'hover:bg-slate-50/50'}`}>
                                         <td className="px-6 py-4">
                                             <input
                                                 type="checkbox"
                                                 checked={isSelected}
                                                 onChange={() => toggleSelect(asset.id)}
-                                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                                className="rounded border-slate-300 text-primary focus:ring-primary/80"
                                             />
                                         </td>
                                         <td className="px-6 py-4">
@@ -259,7 +259,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <Link href={`/assets/${asset.id}`} className="flex flex-col hover:text-blue-600 transition-colors">
+                                            <Link href={`/assets/${asset.id}`} className="flex flex-col hover:text-primary transition-colors">
                                                 <span className="font-semibold text-slate-900">{asset.name}</span>
                                                 <span className="text-[10px] text-slate-400 font-mono">{asset.assetCode}</span>
                                             </Link>
@@ -310,7 +310,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                                                 </button>
                                                 <button
                                                     onClick={() => setEditingAsset(asset)}
-                                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
                                                     title="Edit"
                                                 >
                                                     <Pencil size={16} />
