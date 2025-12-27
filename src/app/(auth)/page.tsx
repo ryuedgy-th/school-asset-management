@@ -12,6 +12,9 @@ import {
 import { prisma } from '@/lib/prisma';
 import StatCard from '@/components/StatCard';
 import Badge from '@/components/ui/Badge';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import { getDepartmentFilter } from '@/lib/permissions';
 
 async function seedIfEmpty() {
   const count = await prisma.user.count();
@@ -23,15 +26,37 @@ async function seedIfEmpty() {
 export default async function Home() {
   await seedIfEmpty();
 
-  const totalAssets = await prisma.asset.count();
+  // Auth check
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
+
+  // Get user with department info
+  const user = await prisma.user.findUnique({
+    where: { id: parseInt(session.user.id) },
+    include: {
+      userRole: true,
+      userDepartment: true,
+    },
+  });
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  // Department filter for all queries
+  const deptFilter = getDepartmentFilter(user);
+
+  const totalAssets = await prisma.asset.count({ where: deptFilter });
   const availableAssets = await prisma.asset.count({
-    where: { status: 'Available' }
+    where: { ...deptFilter, status: 'Available' }
   });
   const borrowedAssets = await prisma.asset.count({
-    where: { status: 'Borrowed' }
+    where: { ...deptFilter, status: 'Borrowed' }
   });
   const maintenanceAssets = await prisma.asset.count({
-    where: { status: 'Maintenance' }
+    where: { ...deptFilter, status: 'Maintenance' }
   });
 
   const activeAssignments = await prisma.assignment.count({
@@ -42,6 +67,7 @@ export default async function Home() {
   });
 
   const recentAssets = await prisma.asset.findMany({
+    where: deptFilter,
     take: 4,
     orderBy: { id: 'desc' }
   });

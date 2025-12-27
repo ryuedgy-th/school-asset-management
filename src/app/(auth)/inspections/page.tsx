@@ -2,6 +2,9 @@ import InspectionsClient from './InspectionsClient';
 import { prisma } from '@/lib/prisma';
 import { Metadata } from 'next';
 import { ClipboardCheck, Calendar, User } from 'lucide-react';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import { getDepartmentFilter } from '@/lib/permissions';
 
 export const metadata: Metadata = {
     title: 'Asset Inspections | AssetMaster',
@@ -9,8 +12,30 @@ export const metadata: Metadata = {
 };
 
 export default async function InspectionsPage() {
-    // Fetch recent inspections
+    // Auth check
+    const session = await auth();
+    if (!session?.user?.id) {
+        redirect('/login');
+    }
+
+    // Get user with department info
+    const user = await prisma.user.findUnique({
+        where: { id: parseInt(session.user.id) },
+        include: {
+            userRole: true,
+            userDepartment: true,
+        },
+    });
+
+    if (!user) {
+        redirect('/login');
+    }
+
+    // Fetch recent inspections (filtered by department)
     const inspections = await prisma.inspection.findMany({
+        where: {
+            ...getDepartmentFilter(user), // 🔒 Department isolation
+        },
         include: {
             asset: {
                 select: {
@@ -33,8 +58,11 @@ export default async function InspectionsPage() {
         take: 50
     });
 
-    // Fetch all assets for the create modal
+    // Fetch all assets for the create modal (filtered by department)
     const assets = await prisma.asset.findMany({
+        where: {
+            ...getDepartmentFilter(user), // 🔒 Department isolation
+        },
         select: {
             id: true,
             name: true,

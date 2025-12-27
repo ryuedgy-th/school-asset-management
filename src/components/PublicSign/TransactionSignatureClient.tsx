@@ -95,23 +95,23 @@ export default function TransactionSignatureClient({
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div className="min-h-screen bg-slate-50 flex items-start md:items-center justify-center p-4 md:p-8 pt-16 md:pt-8">
+                <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
                     <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle size={32} />
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-900 mb-2">Transaction Signed Successfully!</h1>
-                    <p className="text-slate-500 mb-6">
+                    <h1 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">Transaction Signed Successfully!</h1>
+                    <p className="text-sm md:text-base text-slate-500 mb-6">
                         Thank you! Your acknowledgment for these additional items has been recorded.
                     </p>
                     <div className="space-y-2 mb-6">
                         <div className="p-3 bg-slate-50 rounded-lg text-sm">
                             <span className="text-slate-600">Transaction:</span>{' '}
-                            <span className="font-mono font-medium text-slate-900">{data.transactionNumber}</span>
+                            <span className="font-mono font-medium text-slate-900 break-all">{data.transactionNumber}</span>
                         </div>
                         <div className="p-3 bg-slate-50 rounded-lg text-sm">
                             <span className="text-slate-600">Assignment:</span>{' '}
-                            <span className="font-mono font-medium text-slate-900">{data.assignmentNumber}</span>
+                            <span className="font-mono font-medium text-slate-900 break-all">{data.assignmentNumber}</span>
                         </div>
                     </div>
                     <p className="text-xs text-slate-400">

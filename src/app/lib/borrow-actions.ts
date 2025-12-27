@@ -30,7 +30,6 @@ export async function createAssignment(data: {
             userId: data.userId,
             academicYear: data.academicYear,
             semester: data.semester,
-            createdSignature: data.signaturePath,
             status: 'Active'
         }
     });
@@ -43,7 +42,7 @@ export async function createAssignment(data: {
         Number(session.user.id)
     );
 
-    revalidatePath('/borrow');
+    revalidatePath('/assignments');
     return assignment;
 }
 
@@ -60,7 +59,8 @@ export async function closeAssignment(id: number, signaturePath?: string) {
         data: {
             status: 'Closed',
             closedAt: new Date(),
-            closedSignature: signaturePath
+            itClosureSignature: signaturePath,
+            closedById: Number(session.user.id)
         }
     });
 
@@ -72,7 +72,7 @@ export async function closeAssignment(id: number, signaturePath?: string) {
         Number(session.user.id)
     );
 
-    revalidatePath('/borrow');
+    revalidatePath('/assignments');
     return assignment;
 }
 
@@ -149,7 +149,7 @@ export async function deleteAssignment(id: number) {
         Number(session.user.id)
     );
 
-    revalidatePath('/dashboard/borrowing');
+    revalidatePath('/assignments');
     return { success: true };
 }
 
@@ -513,8 +513,8 @@ export async function deleteBorrowTransaction(transactionId: number) {
             Number(session.user.id)
         );
 
-        revalidatePath('/dashboard/borrowing');
-        revalidatePath(`/dashboard/borrowing/${transaction.assignmentId}`);
+        revalidatePath('/assignments');
+        revalidatePath(`/assignments/${transaction.assignmentId}`);
 
         return {
             success: true,

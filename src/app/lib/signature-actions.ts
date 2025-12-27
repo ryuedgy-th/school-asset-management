@@ -74,8 +74,8 @@ export async function confirmBorrowSignature(data: {
             Number(session.user.id)
         );
 
-        revalidatePath('/dashboard/borrowing');
-        revalidatePath(`/dashboard/borrowing/${transaction.assignmentId}`);
+        revalidatePath('/assignments');
+        revalidatePath(`/assignments/${transaction.assignmentId}`);
 
         return {
             success: true,

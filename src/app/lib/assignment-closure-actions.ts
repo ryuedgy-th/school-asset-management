@@ -87,8 +87,8 @@ export async function closeAssignment(data: {
             }
         });
 
-        revalidatePath(`/dashboard/borrowing/${data.assignmentId}`);
-        revalidatePath('/dashboard/borrowing');
+        revalidatePath(`/assignments/${data.assignmentId}`);
+        revalidatePath('/assignments');
 
         return {
             success: true,
@@ -145,8 +145,8 @@ export async function reopenAssignment(assignmentId: number) {
             }
         });
 
-        revalidatePath(`/dashboard/borrowing/${assignmentId}`);
-        revalidatePath('/dashboard/borrowing');
+        revalidatePath(`/assignments/${assignmentId}`);
+        revalidatePath('/assignments');
 
         return { success: true, message: 'Assignment reopened successfully' };
     } catch (error: any) {

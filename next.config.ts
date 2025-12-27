@@ -1,10 +1,17 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Performance optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb'
-    }
+    },
+    // Optimize package imports
+    optimizePackageImports: ['lucide-react', 'date-fns'],
   },
   images: {
     remotePatterns: [
@@ -53,6 +60,40 @@ const nextConfig: NextConfig = {
           }
         ]
       }
+    ]
+  },
+  async redirects() {
+    return [
+      {
+        source: '/borrow',
+        destination: '/assignments',
+        permanent: true,
+      },
+      {
+        source: '/borrow/:path*',
+        destination: '/assignments/:path*',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/borrowing',
+        destination: '/assignments',
+        permanent: true,
+      },
+      {
+        source: '/dashboard/borrowing/:path*',
+        destination: '/assignments/:path*',
+        permanent: true,
+      },
+      {
+        source: '/settings/departments',
+        destination: '/settings/organization',
+        permanent: true,
+      },
+      {
+        source: '/settings/roles',
+        destination: '/settings/organization',
+        permanent: true,
+      },
     ]
   }
 };

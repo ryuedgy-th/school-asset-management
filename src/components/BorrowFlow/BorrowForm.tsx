@@ -5,11 +5,8 @@ import { useRouter } from 'next/navigation';
 import AssetSelector from '@/components/BorrowFlow/AssetSelector';
 import SignaturePad from '@/components/SignaturePad';
 import { createBorrowTransaction, createAssignment } from '@/app/lib/borrow-actions';
-import { uploadFile } from '@/lib/upload-client'; // We need a client-side upload helper or upload to API
 
-// Mock upload client for now or implement.
-// Actually, safer to upload via server action if possible but SignaturePad returns File.
-// We can use FormData with server action.
+// Upload is handled via /api/upload endpoint
 
 interface BorrowFormProps {
     userId: number;
@@ -107,7 +104,7 @@ export default function BorrowForm({ userId, activeAssignmentId, academicYear, s
                 notes: 'Self-service borrow'
             });
 
-            router.push('/borrow');
+            router.push('/assignments');
             router.refresh();
 
         } catch (err: any) {

@@ -1,5 +1,10 @@
 import nodemailer from 'nodemailer';
+import { prisma } from '@/lib/prisma';
+import { decrypt } from '@/lib/encryption';
+import { sendEmailViaGmailAPI } from '@/lib/gmail-oauth';
+import { wrapEmailTemplate } from '@/lib/email-template-wrapper';
 
+// Legacy transporter for backwards compatibility
 // Use standard email environment variable names
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_SERVER_HOST || process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -11,24 +16,279 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+/**
+ * Get email transporter from database (default email account)
+ * Supports both SMTP and Google OAuth
+ */
+async function getEmailTransporter() {
+    const account = await prisma.emailAccount.findFirst({
+        where: {
+            isDefault: true,
+            isActive: true,
+        },
+    });
+
+    if (!account) {
+        // Fallback to legacy transporter
+        console.warn('⚠️ No default email account found. Using legacy transporter.');
+        return { type: 'SMTP', transporter, from: process.env.EMAIL_FROM || '"School IT Asset" <it@school.edu>' };
+    }
+
+    if (account.type === 'GOOGLE_OAUTH') {
+        return {
+            type: 'GOOGLE_OAUTH',
+            account,
+            from: `"${account.name}" <${account.email}>`,
+        };
+    }
+
+    // SMTP account
+    if (!account.smtpHost || !account.smtpUser || !account.smtpPassword) {
+        throw new Error('SMTP account is missing required configuration');
+    }
+
+    const smtpTransporter = nodemailer.createTransport({
+        host: account.smtpHost,
+        port: account.smtpPort || 587,
+        secure: account.smtpSecure,
+        auth: {
+            user: account.smtpUser,
+            pass: decrypt(account.smtpPassword),
+        },
+    });
+
+    return {
+        type: 'SMTP',
+        transporter: smtpTransporter,
+        from: `"${account.name}" <${account.email}>`,
+    };
+}
+
+/**
+ * Send email using default email account from database
+ */
+export async function sendEmail(options: {
+    to: string | string[];
+    subject: string;
+    html: string;
+    cc?: string | string[];
+    bcc?: string | string[];
+    replyTo?: string;
+}) {
+    try {
+        const emailConfig = await getEmailTransporter();
+
+        if (emailConfig.type === 'GOOGLE_OAUTH') {
+            // Send via Gmail API
+            if (!emailConfig.account) {
+                throw new Error('Email account configuration is missing');
+            }
+
+            const recipients = Array.isArray(options.to) ? options.to : [options.to];
+
+            // Note: Gmail API sendEmail needs to be updated to support CC/BCC
+            // For now, we'll send to all recipients in TO field
+            const allRecipients = [
+                ...recipients,
+                ...(options.cc ? (Array.isArray(options.cc) ? options.cc : [options.cc]) : []),
+            ];
+
+            for (const recipient of allRecipients) {
+                await sendEmailViaGmailAPI(
+                    emailConfig.account.id,
+                    recipient,
+                    options.subject,
+                    options.html
+                );
+            }
+
+            console.log(`✅ Email sent via Gmail API to ${allRecipients.join(', ')}`);
+            return { success: true };
+        } else {
+            // Send via SMTP
+            if (!emailConfig.transporter) {
+                throw new Error('Email transporter is not configured');
+            }
+
+            // Wrap HTML content in professional template
+            const wrappedHtml = wrapEmailTemplate(options.subject, options.html);
+
+            await emailConfig.transporter.sendMail({
+                from: emailConfig.from,
+                to: options.to,
+                cc: options.cc,
+                bcc: options.bcc,
+                replyTo: options.replyTo,
+                subject: options.subject,
+                html: wrappedHtml,
+            });
+
+            const recipients = Array.isArray(options.to) ? options.to.join(', ') : options.to;
+            const ccList = options.cc ? (Array.isArray(options.cc) ? options.cc.join(', ') : options.cc) : '';
+            console.log(`✅ Email sent via SMTP to ${recipients}${ccList ? ` (CC: ${ccList})` : ''}`);
+            return { success: true };
+        }
+    } catch (error: any) {
+        console.error('❌ Failed to send email:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Send templated email with automatic recipient resolution
+ * Integrates Email Templates with Notification Recipients using category-based linking
+ */
+export async function sendTemplatedEmail(options: {
+    category: string;
+    variables: Record<string, string>;
+    dynamicRecipients?: {
+        inspector?: { email: string | null; name: string | null };
+        user?: { email: string | null; name: string | null };
+    };
+    overrideRecipients?: {
+        to?: string[];
+        cc?: string[];
+        bcc?: string[];
+        replyTo?: string;
+    };
+    fallbackHtml?: string;
+    fallbackSubject?: string;
+}) {
+    try {
+        // 1. Fetch template by category
+        const template = await prisma.emailTemplate.findFirst({
+            where: {
+                category: options.category,
+                isActive: true,
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        // 2. Fetch recipients by category
+        const { getNotificationRecipients } = await import('@/lib/notification-recipients');
+        const recipients = await getNotificationRecipients(
+            options.category,
+            options.dynamicRecipients
+        );
+
+        // 3. Prepare email content
+        let subject = template?.subject || options.fallbackSubject || 'Notification';
+        let html = template?.body || options.fallbackHtml || '';
+
+        // Replace variables in subject and body
+        for (const [key, value] of Object.entries(options.variables)) {
+            const regex = new RegExp(`\\{${key}\\}`, 'g');
+            subject = subject.replace(regex, value);
+            html = html.replace(regex, value);
+        }
+
+        // Wrap in premium template if not already HTML
+        if (!html.includes('<!DOCTYPE') && !html.includes('<html')) {
+            html = wrapInPremiumTemplate(html, subject);
+        }
+
+        // 4. Merge recipients (overrides take precedence)
+        const finalRecipients = {
+            to: options.overrideRecipients?.to || recipients.to,
+            cc: options.overrideRecipients?.cc || recipients.cc,
+            bcc: options.overrideRecipients?.bcc || recipients.bcc,
+            replyTo: options.overrideRecipients?.replyTo || recipients.replyTo,
+        };
+
+        // 5. Send email
+        return await sendEmail({
+            to: finalRecipients.to.length > 0 ? finalRecipients.to : finalRecipients.cc,
+            cc: finalRecipients.to.length > 0 ? finalRecipients.cc : undefined,
+            bcc: finalRecipients.bcc.length > 0 ? finalRecipients.bcc : undefined,
+            replyTo: finalRecipients.replyTo || undefined,
+            subject,
+            html,
+        });
+    } catch (error: any) {
+        console.error('❌ Failed to send templated email:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Wrap plain text content in a premium HTML email template
+ * For Magic Years International School - Premium branding
+ */
+function wrapInPremiumTemplate(content: string, subject: string): string {
+    // Convert newlines to paragraphs
+    const paragraphs = content.split('\n\n').map(p =>
+        `<p style="margin: 0 0 16px; color: #374151; font-size: 16px; line-height: 24px;">${p.replace(/\n/g, '<br>')}</p>`
+    ).join('');
+
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>${subject}</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-height: 100vh;">
+                <tr>
+                    <td align="center" style="padding: 40px 20px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);">
+                            
+                            <!-- Header -->
+                            <tr>
+                                <td style="padding: 40px 40px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-align: center;">
+                                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">Magic Years International School</h1>
+                                    <p style="margin: 12px 0 0; color: #e0e7ff; font-size: 15px; font-weight: 500;">Asset Management System</p>
+                                </td>
+                            </tr>
+
+                            <!-- Content -->
+                            <tr>
+                                <td style="padding: 40px;">
+                                    ${paragraphs}
+                                </td>
+                            </tr>
+
+                            <!-- Footer -->
+                            <tr>
+                                <td style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;">
+                                    <p style="margin: 0 0 8px; color: #6b7280; font-size: 13px; text-align: center; line-height: 20px;">
+                                        <strong style="color: #374151;">Magic Years International School</strong><br>
+                                        Excellence in Education Since 2010
+                                    </p>
+                                    <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center; line-height: 18px;">
+                                        This is an automated message from the Asset Management System.<br>
+                                        For assistance, please contact the IT Department.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+    `;
+}
+
+
+
 export async function sendSignatureRequest(
     to: string,
     teacherName: string,
     signatureUrl: string
 ) {
-    const emailUser = process.env.EMAIL_SERVER_USER || process.env.SMTP_USER;
+    // Prepare variables for template
+    const variables: Record<string, string> = {
+        userName: teacherName,
+        teacherName: teacherName,
+        userEmail: to,
+        signatureUrl: signatureUrl,
+        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+    };
 
-    if (!emailUser) {
-        console.warn("⚠️ Email not configured. Skipping email send.");
-        console.log(`📧 [EMAIL SIMULATION] To: ${to}`);
-        console.log(`🔗 Signature Link: ${signatureUrl}`);
-        return {
-            success: false,
-            error: 'Email not configured. Please set EMAIL_SERVER_USER and EMAIL_SERVER_PASSWORD in .env file.'
-        };
-    }
-
-    const html = `
+    // Fallback HTML
+    const fallbackHtml = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -95,19 +355,22 @@ export async function sendSignatureRequest(
         </html>
     `;
 
-    try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_FROM || process.env.SMTP_FROM || '"School IT Asset" <it@school.edu>',
-            to,
-            subject: `Action Required: Sign Asset Assignment`,
-            html,
-        });
-        console.log(`✅ Email sent successfully to ${to}`);
-        return { success: true };
-    } catch (error: any) {
-        console.error("❌ Failed to send email:", error.message);
-        return { success: false, error: error.message };
-    }
+    // Use sendTemplatedEmail with category 'assignment_signature'
+    return await sendTemplatedEmail({
+        category: 'assignment_signature',
+        variables,
+        dynamicRecipients: {
+            user: {
+                email: to,
+                name: teacherName,
+            },
+        },
+        overrideRecipients: {
+            to: [to], // Always send to the teacher
+        },
+        fallbackHtml,
+        fallbackSubject: 'Action Required: Sign Asset Assignment',
+    });
 }
 
 /**
@@ -133,6 +396,7 @@ export async function sendInspectionReport(inspectionData: {
     } | null;
     inspector: {
         name: string | null;
+        email?: string | null;
     };
     inspectionDate: Date;
     inspectionType: string;
@@ -147,40 +411,8 @@ export async function sendInspectionReport(inspectionData: {
     photoUrls?: string | null;
     notes?: string | null;
 }) {
-    const emailUser = process.env.EMAIL_SERVER_USER || process.env.SMTP_USER;
-
-    if (!emailUser) {
-        console.warn("⚠️ Email not configured. Skipping inspection report email.");
-        return {
-            success: false,
-            error: 'Email not configured'
-        };
-    }
-
     // Parse photo URLs
     const photos: string[] = inspectionData.photoUrls ? JSON.parse(inspectionData.photoUrls) : [];
-
-    // Get recipients
-    const recipients: string[] = [];
-
-    // Add borrower email
-    if (inspectionData.assignment?.user.email) {
-        recipients.push(inspectionData.assignment.user.email);
-    }
-
-    // Add directors and IT head from environment variables
-    const director1 = process.env.DIRECTOR1_EMAIL;
-    const director2 = process.env.DIRECTOR2_EMAIL;
-    const itHead = process.env.IT_HEAD_EMAIL;
-
-    if (director1) recipients.push(director1);
-    if (director2) recipients.push(director2);
-    if (itHead) recipients.push(itHead);
-
-    if (recipients.length === 0) {
-        console.warn("⚠️ No recipients configured for inspection report");
-        return { success: false, error: 'No recipients configured' };
-    }
 
     // Format condition labels
     const conditionLabels: Record<string, string> = {
@@ -189,7 +421,6 @@ export async function sendInspectionReport(inspectionData: {
         'fair': '⚠️ Fair',
         'poor': '⚠️ Poor',
         'broken': '❌ Broken',
-        // Detailed conditions
         'no_damage': 'No Damage',
         'minor_wear': 'Minor Wear',
         'moderate_wear': 'Moderate Wear',
@@ -216,7 +447,38 @@ export async function sendInspectionReport(inspectionData: {
 
     const borrowDate = inspectionData.assignment?.borrowTransactions[0]?.borrowDate;
 
-    const html = `
+    // Prepare variables for template
+    const variables: Record<string, string> = {
+        userName: inspectionData.assignment?.user.name || 'User',
+        assetName: inspectionData.asset.name,
+        assetCode: inspectionData.asset.assetCode,
+        assetCategory: inspectionData.asset.category,
+        assignmentNumber: inspectionData.assignment?.assignmentNumber || 'N/A',
+        inspectorName: inspectionData.inspector.name || 'Inspector',
+        inspectionDate: new Date(inspectionData.inspectionDate).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        }),
+        borrowDate: borrowDate ? new Date(borrowDate).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        }) : 'N/A',
+        overallCondition: conditionLabels[inspectionData.overallCondition] || inspectionData.overallCondition,
+        exteriorCondition: inspectionData.exteriorCondition ?
+            (conditionLabels[inspectionData.exteriorCondition] || inspectionData.exteriorCondition) : 'N/A',
+        screenCondition: inspectionData.screenCondition ?
+            (conditionLabels[inspectionData.screenCondition] || inspectionData.screenCondition) : 'N/A',
+        keyboardCondition: inspectionData.keyboardCondition ?
+            (conditionLabels[inspectionData.keyboardCondition] || inspectionData.keyboardCondition) : 'N/A',
+        batteryHealth: inspectionData.batteryHealth ?
+            (conditionLabels[inspectionData.batteryHealth] || inspectionData.batteryHealth) : 'N/A',
+        damageDescription: inspectionData.damageDescription || 'No damage details',
+        estimatedCost: inspectionData.estimatedCost ?
+            `${inspectionData.estimatedCost.toLocaleString()} THB` : 'N/A',
+        notes: inspectionData.notes || 'No additional notes',
+        photoCount: photos.length.toString(),
+    };
+
+    // Fallback HTML (current implementation)
+    const fallbackHtml = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -403,17 +665,21 @@ export async function sendInspectionReport(inspectionData: {
         </html>
     `;
 
-    try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_FROM || process.env.SMTP_FROM || '"School IT Asset" <it@school.edu>',
-            to: recipients.join(', '),
-            subject: `Equipment Inspection Report - ${inspectionData.asset.name} (${inspectionData.asset.assetCode})`,
-            html,
-        });
-        console.log(`✅ Inspection report sent to: ${recipients.join(', ')}`);
-        return { success: true };
-    } catch (error: any) {
-        console.error("❌ Failed to send inspection report:", error.message);
-        return { success: false, error: error.message };
-    }
+    // Use sendTemplatedEmail with fallback
+    return await sendTemplatedEmail({
+        category: 'inspection',
+        variables,
+        dynamicRecipients: {
+            inspector: {
+                email: inspectionData.inspector.email || null,
+                name: inspectionData.inspector.name,
+            },
+            user: {
+                email: inspectionData.assignment?.user.email || null,
+                name: inspectionData.assignment?.user.name || null,
+            },
+        },
+        fallbackHtml,
+        fallbackSubject: `Equipment Inspection Report - ${inspectionData.asset.name} (${inspectionData.asset.assetCode})`,
+    });
 }

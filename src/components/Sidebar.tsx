@@ -21,74 +21,84 @@ import {
     Menu,
     X as CloseIcon,
     Mail,
+    Wrench,
+    Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import MobileHeader from './MobileHeader';
+import type { ModuleName, PermissionAction } from '@/lib/permissions';
 
 type SubMenuItem = {
     label: string;
     href: string;
-    roles?: string[];
+    module?: ModuleName;
+    requirePermission?: PermissionAction; // Optional: require specific permission to see this item
 };
 
 type MenuItem = {
     icon: any;
     label: string;
     href: string;
-    roles?: string[];
+    module?: ModuleName; // Module required to access this menu
     subItems?: SubMenuItem[];
 };
 
+// Menu configuration with module-based access control
 const menuItems: MenuItem[] = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
+    { icon: LayoutDashboard, label: 'Dashboard', href: '/' }, // Always visible
     {
         icon: Box,
         label: 'IT Assets',
         href: '/assets',
+        module: 'assets',
         subItems: [
-            { label: 'All IT Assets', href: '/assets' },
-            { label: 'Categories', href: '/assets/categories' },
-            { label: 'Domains', href: '/domains' },
-            { label: 'Software Licenses', href: '/licenses' }
+            { label: 'All IT Assets', href: '/assets', module: 'assets' },
+            { label: 'Categories', href: '/assets/categories', module: 'assets' },
+            { label: 'Domains', href: '/domains', module: 'assets' },
+            { label: 'Software Licenses', href: '/licenses', module: 'assets' }
         ]
     },
     {
         icon: Calendar,
         label: 'Maintenance',
         href: '/pm',
+        module: 'maintenance',
         subItems: [
-            { label: 'PM Schedule', href: '/pm' },
-            { label: 'Inspections', href: '/inspections' }
+            { label: 'PM Schedule', href: '/pm', module: 'maintenance' },
+            { label: 'Inspections', href: '/inspections', module: 'inspections' }
         ]
     },
     {
-        label: 'Asset Assignment',
+        label: 'Assignments',
         icon: ShoppingBag,
-        href: '/dashboard/borrowing',
-        subItems: [
-            { label: 'Borrowing Management', href: '/dashboard/borrowing', roles: ['Admin', 'Technician'] },
-            { label: 'My Assignment', href: '/borrow' }
-        ]
+        href: '/assignments',
+        module: 'assignments',
+    },
+    {
+        label: 'Stationary',
+        icon: FileText,
+        href: '/stationary',
+        module: 'stationary',
     },
     {
         label: 'Users',
         icon: Users,
         href: '/users',
-        roles: ['Admin'],
+        module: 'users',
         subItems: [
-            { label: 'All Users', href: '/users' },
-            { label: 'Roles', href: '/roles' },
-            { label: 'Audit Logs', href: '/audit' }
+            { label: 'All Users', href: '/users', module: 'users' },
+            { label: 'Audit Logs', href: '/audit', module: 'users' }
         ]
     },
     {
         icon: Settings,
         label: 'Settings',
         href: '/settings',
+        module: 'settings',
         subItems: [
-            { label: 'Email Accounts', href: '/settings/email/accounts' },
-            { label: 'Email Templates', href: '/settings/email/templates' },
+            { label: 'Organization', href: '/settings/organization', module: 'settings' },
+            { label: 'Email & Integration', href: '/settings/email', module: 'settings' },
         ]
     },
 ];
@@ -101,9 +111,19 @@ interface SidebarProps {
         email?: string | null;
         image?: string | null;
     };
+    accessibleModules?: ModuleName[];
+    userPermissions?: any; // Full permission config from database
 }
 
-function SidebarMenu({ items, role }: { items: MenuItem[], role: string }) {
+function SidebarMenu({
+    items,
+    accessibleModules,
+    userPermissions
+}: {
+    items: MenuItem[],
+    accessibleModules: ModuleName[],
+    userPermissions?: any
+}) {
     const pathname = usePathname();
     const [openItems, setOpenItems] = useState<string[]>([]);
 
@@ -125,25 +145,43 @@ function SidebarMenu({ items, role }: { items: MenuItem[], role: string }) {
         );
     };
 
+    // Filter menu items based on accessible modules
+    const filteredItems = items.filter(item => {
+        // Dashboard is always visible
+        if (!item.module) return true;
+        // Check if user has access to this module
+        return accessibleModules.includes(item.module);
+    });
+
     return (
         <div className="space-y-1">
-            {items.map((item) => {
+            {filteredItems.map((item) => {
                 const isMainActive = pathname === item.href;
                 const isChildActive = item.subItems?.some(sub => pathname === sub.href);
                 const isActive = isMainActive || isChildActive;
                 const isExpanded = openItems.includes(item.label);
                 const hasSubItems = item.subItems && item.subItems.length > 0;
 
-                // Filter subItems based on role (case-insensitive)
+                // Filter subItems based on accessible modules AND required permissions
                 const filteredSubItems = item.subItems?.filter(subItem => {
-                    if (!subItem.roles) return true;
-                    return subItem.roles.some(r => r.toLowerCase() === role.toLowerCase());
+                    if (!subItem.module) return true;
+                    if (!accessibleModules.includes(subItem.module)) return false;
+
+                    // Check if subItem requires specific permission
+                    if (subItem.requirePermission && userPermissions) {
+                        const moduleConfig = userPermissions.modules?.[subItem.module];
+                        if (!moduleConfig?.permissions?.includes(subItem.requirePermission)) {
+                            return false; // User doesn't have required permission
+                        }
+                    }
+
+                    return true;
                 });
 
-                // If menu has subitems but role filters all of them out, treat as no subitems?
-                // For now assuming if subItems defined, it's a parent. But if filteredSubItems is empty, should we hide parent?
-                // Maybe not, usually parent is clickable if it has href.
-                // But here parent href directs to a page too.
+                // Don't show parent if all subitems are filtered out
+                if (hasSubItems && (!filteredSubItems || filteredSubItems.length === 0)) {
+                    return null;
+                }
 
                 return (
                     <div key={item.label}>
@@ -158,7 +196,7 @@ function SidebarMenu({ items, role }: { items: MenuItem[], role: string }) {
                                 className={cn(
                                     "w-full group flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 select-none",
                                     isActive || isExpanded
-                                        ? "text-gray-900 bg-gray-100" // Active parent style
+                                        ? "text-gray-900 bg-gray-100"
                                         : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                 )}
                             >
@@ -236,16 +274,11 @@ function SidebarMenu({ items, role }: { items: MenuItem[], role: string }) {
     );
 }
 
-export default function Sidebar({ permissions, role, user }: SidebarProps) {
+export default function Sidebar({ permissions, role, user, accessibleModules = [], userPermissions }: SidebarProps) {
     const pathname = usePathname();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-    console.log('🔍 Sidebar role:', role); // Debug log
-
-    const filteredItems = menuItems.filter(item => {
-        if (!item.roles) return true;
-        return item.roles.some(r => r.toLowerCase() === role.toLowerCase());
-    });
+    console.log('🔍 Sidebar accessible modules:', accessibleModules);
 
     // Close mobile menu when route changes
     useEffect(() => {
@@ -268,7 +301,6 @@ export default function Sidebar({ permissions, role, user }: SidebarProps) {
             {/* Sidebar */}
             <aside className={cn(
                 "fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 shadow-sm transition-transform duration-300 ease-in-out flex flex-col",
-                // Mobile: slide in from left
                 "lg:translate-x-0",
                 isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
             )}>
@@ -296,7 +328,11 @@ export default function Sidebar({ permissions, role, user }: SidebarProps) {
                     <p className="mb-4 px-4 text-xs font-bold uppercase tracking-wider text-gray-400">
                         Main Menu
                     </p>
-                    <SidebarMenu items={filteredItems} role={role} />
+                    <SidebarMenu
+                        items={menuItems}
+                        accessibleModules={accessibleModules}
+                        userPermissions={userPermissions}
+                    />
                 </nav>
 
 

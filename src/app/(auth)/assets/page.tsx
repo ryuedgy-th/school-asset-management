@@ -5,6 +5,9 @@ import { Metadata } from 'next';
 import AssetGrid from '@/components/AssetGrid';
 import AssetFilters from '@/components/AssetFilters';
 import Pagination from '@/components/Pagination';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import { getDepartmentFilter } from '@/lib/permissions';
 
 export const metadata: Metadata = {
     title: 'IT Assets | AssetMaster',
@@ -21,6 +24,25 @@ export default async function AssetsPage(props: {
         pageSize?: string;
     }>;
 }) {
+    // Auth check
+    const session = await auth();
+    if (!session?.user?.id) {
+        redirect('/login');
+    }
+
+    // Get user with department info
+    const user = await prisma.user.findUnique({
+        where: { id: parseInt(session.user.id) },
+        include: {
+            userRole: true,
+            userDepartment: true,
+        },
+    });
+
+    if (!user) {
+        redirect('/login');
+    }
+
     const searchParams = await props.searchParams;
     const query = searchParams?.q || '';
     const categoriesParam = searchParams?.categories || '';
@@ -29,7 +51,9 @@ export default async function AssetsPage(props: {
     const page = Number(searchParams?.page) || 1;
     const pageSize = Number(searchParams?.pageSize) || 25;
 
-    const whereClause: any = {};
+    const whereClause: any = {
+        ...getDepartmentFilter(user), // 🔒 Department isolation
+    };
 
     // Search query
     if (query) {

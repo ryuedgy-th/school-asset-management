@@ -29,7 +29,7 @@ export default function NewAssignmentModal({ onClose }: NewAssignmentModalProps)
             });
 
             // Redirect to the new assignment detail page
-            router.push(`/dashboard/borrowing/${assignment.id}`);
+            router.push(`/assignments/${assignment.id}`);
             onClose();
         } catch (error: any) {
             console.error(error);

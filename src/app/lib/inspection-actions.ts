@@ -328,7 +328,10 @@ export async function createInspection(data: {
                 id: inspection.id,
                 asset: inspection.asset,
                 assignment: inspection.assignment,
-                inspector: inspection.inspector,
+                inspector: {
+                    name: inspection.inspector.name,
+                    email: inspection.inspector.email, // Include email for CC
+                },
                 inspectionDate: inspection.inspectionDate,
                 inspectionType: inspection.inspectionType,
                 overallCondition: inspection.overallCondition,
@@ -450,7 +453,10 @@ export async function updateInspectionCost(
                 id: inspection.id,
                 asset: inspection.asset,
                 assignment: inspection.assignment,
-                inspector: inspection.inspector,
+                inspector: {
+                    name: inspection.inspector.name,
+                    email: inspection.inspector.email, // Include email for CC
+                },
                 inspectionDate: inspection.inspectionDate,
                 inspectionType: inspection.inspectionType,
                 overallCondition: inspection.overallCondition,

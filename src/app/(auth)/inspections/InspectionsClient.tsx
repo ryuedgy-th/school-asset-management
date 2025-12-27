@@ -181,6 +181,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                         <table className="w-full">
                             <thead className="bg-slate-50 border-b border-slate-200">
                                 <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Inspection #</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Date</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Asset</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Type</th>
@@ -193,7 +194,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                             <tbody className="divide-y divide-slate-100">
                                 {filteredInspections.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                                        <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
                                             <ClipboardCheck size={48} className="mx-auto mb-3 text-slate-300" />
                                             <div className="font-medium">
                                                 {inspections.length === 0 ? 'No inspections yet' : 'No inspections match your filters'}
@@ -209,6 +210,11 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                 ) : (
                                     filteredInspections.map((inspection) => (
                                         <tr key={inspection.id} className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <div className="font-mono text-sm font-medium text-primary">
+                                                    {inspection.inspectionNumber || `#${inspection.id}`}
+                                                </div>
+                                            </td>
                                             <td className="px-4 py-3 text-sm text-slate-600">
                                                 <div className="flex items-center gap-2">
                                                     <Calendar size={14} className="text-slate-400" />
@@ -226,19 +232,19 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${inspection.inspectionType === 'checkout' ? 'bg-primary/20 text-primary/90' :
-                                                        inspection.inspectionType === 'checkin' ? 'bg-green-100 text-green-700' :
-                                                            inspection.inspectionType === 'periodic' ? 'bg-purple-100 text-purple-700' :
-                                                                'bg-orange-100 text-orange-700'
+                                                    inspection.inspectionType === 'checkin' ? 'bg-green-100 text-green-700' :
+                                                        inspection.inspectionType === 'periodic' ? 'bg-purple-100 text-purple-700' :
+                                                            'bg-orange-100 text-orange-700'
                                                     }`}>
                                                     {inspection.inspectionType}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${inspection.overallCondition === 'excellent' ? 'bg-emerald-100 text-emerald-700' :
-                                                        inspection.overallCondition === 'good' ? 'bg-green-100 text-green-700' :
-                                                            inspection.overallCondition === 'fair' ? 'bg-yellow-100 text-yellow-700' :
-                                                                inspection.overallCondition === 'poor' ? 'bg-orange-100 text-orange-700' :
-                                                                    'bg-red-100 text-red-700'
+                                                    inspection.overallCondition === 'good' ? 'bg-green-100 text-green-700' :
+                                                        inspection.overallCondition === 'fair' ? 'bg-yellow-100 text-yellow-700' :
+                                                            inspection.overallCondition === 'poor' ? 'bg-orange-100 text-orange-700' :
+                                                                'bg-red-100 text-red-700'
                                                     }`}>
                                                     {inspection.overallCondition}
                                                 </span>
