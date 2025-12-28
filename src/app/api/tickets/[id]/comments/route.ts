@@ -93,6 +93,7 @@ export async function POST(
                 ticketId,
                 comment: body.content.trim(),
                 userId: parseInt(session.user.id),
+                images: body.images ? JSON.stringify(body.images) : null,
             },
             include: {
                 user: {

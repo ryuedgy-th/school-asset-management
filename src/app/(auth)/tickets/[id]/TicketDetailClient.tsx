@@ -17,6 +17,8 @@ import {
     UserPlus,
     CheckCircle,
     ClipboardCheck,
+    ImagePlus,
+    X,
 } from 'lucide-react';
 import { formatTimeRemaining } from '@/lib/sla';
 import TicketActions from '@/components/TicketActions';
@@ -99,6 +101,7 @@ interface Ticket {
 interface Comment {
     id: number;
     comment: string;
+    images: string | null;
     createdAt: string;
     user: {
         id: number;
@@ -123,6 +126,8 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'comments' | 'activity' | 'asset'>('comments');
     const [newComment, setNewComment] = useState('');
+    const [commentImages, setCommentImages] = useState<string[]>([]);
+    const [uploadingImages, setUploadingImages] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<number>(0);
@@ -163,19 +168,54 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
         }
     };
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        try {
+            setUploadingImages(true);
+
+            // Import optimization utility
+            const { optimizeImages } = await import('@/lib/image-optimization');
+
+            // Optimize all images
+            const optimizedDataUrls = await optimizeImages(Array.from(files), {
+                maxWidth: 1920,
+                maxHeight: 1080,
+                quality: 0.8,
+                format: 'webp'
+            });
+
+            setCommentImages([...commentImages, ...optimizedDataUrls]);
+        } catch (error) {
+            console.error('Error uploading images:', error);
+            alert('Failed to upload images');
+        } finally {
+            setUploadingImages(false);
+        }
+    };
+
+    const removeImage = (index: number) => {
+        setCommentImages(commentImages.filter((_, i) => i !== index));
+    };
+
     const handleAddComment = async () => {
-        if (!newComment.trim() || submitting) return;
+        if ((!newComment.trim() && commentImages.length === 0) || submitting) return;
 
         try {
             setSubmitting(true);
             const response = await fetch(`/api/tickets/${ticketId}/comments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: newComment }),
+                body: JSON.stringify({
+                    content: newComment.trim() || '(Image attachment)',
+                    images: commentImages.length > 0 ? commentImages : null
+                }),
             });
 
             if (response.ok) {
                 setNewComment('');
+                setCommentImages([]);
                 fetchTicket(); // Refresh to show new comment
             }
         } catch (error) {
@@ -508,21 +548,71 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                 {activeTab === 'comments' && (
                                     <div className="space-y-4">
                                         {/* Add Comment */}
-                                        <div className="flex gap-3">
-                                            <textarea
-                                                value={newComment}
-                                                onChange={(e) => setNewComment(e.target.value)}
-                                                placeholder="Add a comment..."
-                                                className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                                                rows={3}
-                                            />
-                                            <button
-                                                onClick={handleAddComment}
-                                                disabled={!newComment.trim() || submitting}
-                                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed h-fit"
-                                            >
-                                                <Send size={20} />
-                                            </button>
+                                        <div className="space-y-3">
+                                            <div className="flex gap-3">
+                                                <div className="flex-1 space-y-2">
+                                                    <textarea
+                                                        value={newComment}
+                                                        onChange={(e) => setNewComment(e.target.value)}
+                                                        placeholder="Add a comment..."
+                                                        className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                                                        rows={3}
+                                                    />
+
+                                                    {/* Image Previews */}
+                                                    {commentImages.length > 0 && (
+                                                        <div className="grid grid-cols-4 gap-2">
+                                                            {commentImages.map((url, index) => (
+                                                                <div key={index} className="relative group">
+                                                                    <img
+                                                                        src={url}
+                                                                        alt={`Preview ${index + 1}`}
+                                                                        className="w-full h-20 object-cover rounded border border-slate-200"
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => removeImage(index)}
+                                                                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    >
+                                                                        <X size={12} />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    {/* Action Buttons */}
+                                                    <div className="flex items-center gap-2">
+                                                        <label className="cursor-pointer text-slate-600 hover:text-primary transition-colors">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                multiple
+                                                                onChange={handleImageUpload}
+                                                                className="hidden"
+                                                                disabled={uploadingImages}
+                                                            />
+                                                            <div className="flex items-center gap-1 text-sm">
+                                                                <ImagePlus size={18} />
+                                                                <span>{uploadingImages ? 'Uploading...' : 'Attach Images'}</span>
+                                                            </div>
+                                                        </label>
+                                                        {commentImages.length > 0 && (
+                                                            <span className="text-xs text-slate-500">
+                                                                {commentImages.length} image(s) attached
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <button
+                                                    onClick={handleAddComment}
+                                                    disabled={(!newComment.trim() && commentImages.length === 0) || submitting}
+                                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed h-fit"
+                                                >
+                                                    <Send size={20} />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {/* Comments List */}
@@ -543,6 +633,21 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                                                 </span>
                                                             </div>
                                                             <p className="text-slate-700 mt-1">{comment.comment}</p>
+
+                                                            {/* Comment Images */}
+                                                            {comment.images && (
+                                                                <div className="grid grid-cols-4 gap-2 mt-3">
+                                                                    {JSON.parse(comment.images).map((url: string, index: number) => (
+                                                                        <img
+                                                                            key={index}
+                                                                            src={url}
+                                                                            alt={`Comment image ${index + 1}`}
+                                                                            className="w-full h-24 object-cover rounded border border-slate-200 cursor-pointer hover:opacity-75 transition-opacity"
+                                                                            onClick={() => window.open(url, '_blank')}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 ))
