@@ -72,16 +72,24 @@ interface Ticket {
     } | null;
     inspection: {
         id: number;
-        inspectionNumber: string | null;
         inspectionDate: string;
         inspectionType: string;
         overallCondition: string;
+        damageFound: boolean;
         damageDescription: string | null;
+        damageSeverity: string | null;
         estimatedCost: number | null;
         photoUrls: string | null;
+        exteriorCondition: string | null;
+        screenCondition: string | null;
+        keyboardCondition: string | null;
+        buttonPortCondition: string | null;
+        batteryHealth: string | null;
+        notes: string | null;
         inspector: {
             id: number;
             name: string;
+            email: string;
         };
     } | null;
     comments: Comment[];
@@ -269,9 +277,20 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                         {/* Inspection Info */}
                         {ticket.inspection && (
                             <div className="bg-purple-50 border border-purple-200 rounded-xl shadow-sm p-6">
-                                <div className="flex items-center gap-2 mb-4">
-                                    <ClipboardCheck className="text-purple-600" size={24} />
-                                    <h2 className="text-lg font-semibold text-purple-900">Created from Inspection</h2>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <ClipboardCheck className="text-purple-600" size={24} />
+                                        <h2 className="text-lg font-semibold text-purple-900">Created from Inspection</h2>
+                                    </div>
+                                    {ticket.inspection.damageSeverity && (
+                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                                            ticket.inspection.damageSeverity === 'severe' ? 'bg-red-100 text-red-800' :
+                                            ticket.inspection.damageSeverity === 'moderate' ? 'bg-orange-100 text-orange-800' :
+                                            'bg-yellow-100 text-yellow-800'
+                                        }`}>
+                                            {ticket.inspection.damageSeverity.toUpperCase()} DAMAGE
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
@@ -281,7 +300,7 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                                 href={`/inspections/${ticket.inspection.id}`}
                                                 className="text-purple-900 font-semibold hover:underline"
                                             >
-                                                {ticket.inspection.inspectionNumber || `#${ticket.inspection.id}`}
+                                                #{ticket.inspection.id}
                                             </Link>
                                         </div>
                                         <div>
@@ -299,19 +318,20 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                             <p className="text-purple-900">{ticket.inspection.inspector?.name}</p>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-purple-600 font-medium">Condition</p>
-                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${ticket.inspection.overallCondition === 'excellent' ? 'bg-green-100 text-green-800' :
-                                                    ticket.inspection.overallCondition === 'good' ? 'bg-blue-100 text-blue-800' :
-                                                        ticket.inspection.overallCondition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
-                                                            ticket.inspection.overallCondition === 'poor' ? 'bg-orange-100 text-orange-800' :
-                                                                'bg-red-100 text-red-800'
-                                                }`}>
+                                            <p className="text-sm text-purple-600 font-medium">Overall Condition</p>
+                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                                ticket.inspection.overallCondition === 'excellent' ? 'bg-green-100 text-green-800' :
+                                                ticket.inspection.overallCondition === 'good' ? 'bg-blue-100 text-blue-800' :
+                                                ticket.inspection.overallCondition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                                ticket.inspection.overallCondition === 'poor' ? 'bg-orange-100 text-orange-800' :
+                                                'bg-red-100 text-red-800'
+                                            }`}>
                                                 {ticket.inspection.overallCondition}
                                             </span>
                                         </div>
                                         {ticket.inspection.estimatedCost && (
                                             <div>
-                                                <p className="text-sm text-purple-600 font-medium">Estimated Cost</p>
+                                                <p className="text-sm text-purple-600 font-medium">Estimated Repair Cost</p>
                                                 <p className="text-purple-900 font-semibold">
                                                     ฿{ticket.inspection.estimatedCost.toLocaleString()}
                                                 </p>
@@ -319,11 +339,98 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                         )}
                                     </div>
 
+                                    {/* Damage Description */}
                                     {ticket.inspection.damageDescription && (
                                         <div>
                                             <p className="text-sm text-purple-600 font-medium mb-1">Damage Description</p>
                                             <p className="text-purple-900 bg-purple-100/50 p-3 rounded">
                                                 {ticket.inspection.damageDescription}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Detailed Condition Checklist */}
+                                    {(ticket.inspection.exteriorCondition || ticket.inspection.screenCondition ||
+                                      ticket.inspection.keyboardCondition || ticket.inspection.buttonPortCondition ||
+                                      ticket.inspection.batteryHealth) && (
+                                        <div className="bg-white/60 rounded-lg p-4">
+                                            <p className="text-sm text-purple-600 font-medium mb-3">Detailed Condition Assessment</p>
+                                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                                {ticket.inspection.exteriorCondition && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-purple-800">Exterior:</span>
+                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                            ticket.inspection.exteriorCondition === 'excellent' ? 'bg-green-100 text-green-800' :
+                                                            ticket.inspection.exteriorCondition === 'good' ? 'bg-blue-100 text-blue-800' :
+                                                            ticket.inspection.exteriorCondition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {ticket.inspection.exteriorCondition}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {ticket.inspection.screenCondition && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-purple-800">Screen:</span>
+                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                            ticket.inspection.screenCondition === 'excellent' ? 'bg-green-100 text-green-800' :
+                                                            ticket.inspection.screenCondition === 'good' ? 'bg-blue-100 text-blue-800' :
+                                                            ticket.inspection.screenCondition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {ticket.inspection.screenCondition}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {ticket.inspection.keyboardCondition && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-purple-800">Keyboard:</span>
+                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                            ticket.inspection.keyboardCondition === 'excellent' ? 'bg-green-100 text-green-800' :
+                                                            ticket.inspection.keyboardCondition === 'good' ? 'bg-blue-100 text-blue-800' :
+                                                            ticket.inspection.keyboardCondition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {ticket.inspection.keyboardCondition}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {ticket.inspection.buttonPortCondition && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-purple-800">Buttons/Ports:</span>
+                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                            ticket.inspection.buttonPortCondition === 'excellent' ? 'bg-green-100 text-green-800' :
+                                                            ticket.inspection.buttonPortCondition === 'good' ? 'bg-blue-100 text-blue-800' :
+                                                            ticket.inspection.buttonPortCondition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {ticket.inspection.buttonPortCondition}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {ticket.inspection.batteryHealth && (
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-purple-800">Battery Health:</span>
+                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                            ticket.inspection.batteryHealth === 'excellent' ? 'bg-green-100 text-green-800' :
+                                                            ticket.inspection.batteryHealth === 'good' ? 'bg-blue-100 text-blue-800' :
+                                                            ticket.inspection.batteryHealth === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {ticket.inspection.batteryHealth}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Inspector Notes */}
+                                    {ticket.inspection.notes && (
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium mb-1">Inspector Notes</p>
+                                            <p className="text-purple-800 bg-white/60 p-3 rounded text-sm italic">
+                                                {ticket.inspection.notes}
                                             </p>
                                         </div>
                                     )}
@@ -338,7 +445,7 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                                         key={index}
                                                         src={url}
                                                         alt={`Damage photo ${index + 1}`}
-                                                        className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity"
+                                                        className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity border-2 border-purple-200"
                                                         onClick={() => window.open(url, '_blank')}
                                                     />
                                                 ))}

@@ -94,11 +94,27 @@ export async function GET(
                     },
                 },
                 inspection: {
-                    include: {
+                    select: {
+                        id: true,
+                        inspectionDate: true,
+                        inspectionType: true,
+                        overallCondition: true,
+                        damageFound: true,
+                        damageDescription: true,
+                        damageSeverity: true,
+                        estimatedCost: true,
+                        photoUrls: true,
+                        exteriorCondition: true,
+                        screenCondition: true,
+                        keyboardCondition: true,
+                        buttonPortCondition: true,
+                        batteryHealth: true,
+                        notes: true,
                         inspector: {
                             select: {
                                 id: true,
                                 name: true,
+                                email: true,
                             },
                         },
                     },
