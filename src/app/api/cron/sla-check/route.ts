@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
         const alertsToSend: any[] = [];
 
         for (const ticket of tickets) {
-            const currentStatus = checkSLAStatus(ticket.slaDeadline);
+            const currentStatus = await checkSLAStatus(ticket.slaDeadline, new Date(), ticket.reportedAt);
             const previousStatus = ticket.slaStatus;
 
             // Only update if status changed

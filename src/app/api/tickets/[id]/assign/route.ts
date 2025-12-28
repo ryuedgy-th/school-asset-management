@@ -52,8 +52,11 @@ export async function POST(
         // Calculate SLA deadline if not already set
         let slaDeadline = existingTicket.slaDeadline;
         if (!slaDeadline) {
-            slaDeadline = calculateSLADeadline(existingTicket.priority, existingTicket.reportedAt);
+            slaDeadline = await calculateSLADeadline(existingTicket.priority, existingTicket.reportedAt);
         }
+
+        // Check SLA status
+        const slaStatus = await checkSLAStatus(slaDeadline, new Date(), existingTicket.reportedAt);
 
         // Update ticket
         const ticket = await prisma.ticket.update({
@@ -63,7 +66,7 @@ export async function POST(
                 assignedAt: new Date(),
                 status: existingTicket.status === 'open' ? 'assigned' : existingTicket.status,
                 slaDeadline,
-                slaStatus: checkSLAStatus(slaDeadline),
+                slaStatus,
             },
             include: {
                 reportedBy: {

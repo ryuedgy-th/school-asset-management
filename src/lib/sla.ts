@@ -1,53 +1,145 @@
 /**
  * SLA (Service Level Agreement) Management
- * 
- * Calculates SLA deadlines based on ticket priority and tracks status
+ *
+ * Calculates SLA deadlines based on ticket priority and tracks status.
+ * SLA values are now configurable via database settings.
  */
 
 export type Priority = 'urgent' | 'high' | 'medium' | 'low';
 export type SLAStatus = 'within_sla' | 'at_risk' | 'breached' | null;
 
 /**
- * SLA Resolution Times (in hours)
+ * Default SLA Resolution Times (in hours)
+ * Used as fallback if database settings are not available
  */
-const SLA_HOURS: Record<Priority, number> = {
+const DEFAULT_SLA_HOURS: Record<Priority, number> = {
     urgent: 2,   // 2 hours
     high: 8,     // 8 hours
     medium: 24,  // 24 hours (1 day)
     low: 72,     // 72 hours (3 days)
 };
 
+const DEFAULT_AT_RISK_THRESHOLD = 20; // 20%
+
+/**
+ * In-memory cache for SLA settings
+ */
+let slaCache: {
+    hours: Record<Priority, number>;
+    atRiskThreshold: number;
+    lastFetch: number;
+} | null = null;
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Fetch SLA settings from database
+ * Uses in-memory cache to reduce database queries
+ */
+async function getSLASettings(): Promise<{
+    hours: Record<Priority, number>;
+    atRiskThreshold: number;
+}> {
+    // Check cache
+    if (slaCache && Date.now() - slaCache.lastFetch < CACHE_TTL) {
+        return {
+            hours: slaCache.hours,
+            atRiskThreshold: slaCache.atRiskThreshold,
+        };
+    }
+
+    try {
+        // Import prisma dynamically to avoid issues on client-side
+        const { prisma } = await import('@/lib/prisma');
+
+        const settings = await prisma.systemSettings.findMany({
+            where: { category: 'sla' },
+        });
+
+        const hours: Record<Priority, number> = { ...DEFAULT_SLA_HOURS };
+        let atRiskThreshold = DEFAULT_AT_RISK_THRESHOLD;
+
+        settings.forEach((setting) => {
+            const value = parseInt(setting.value || '0');
+            switch (setting.key) {
+                case 'sla_urgent_hours':
+                    hours.urgent = value;
+                    break;
+                case 'sla_high_hours':
+                    hours.high = value;
+                    break;
+                case 'sla_medium_hours':
+                    hours.medium = value;
+                    break;
+                case 'sla_low_hours':
+                    hours.low = value;
+                    break;
+                case 'sla_at_risk_threshold':
+                    atRiskThreshold = value;
+                    break;
+            }
+        });
+
+        // Update cache
+        slaCache = {
+            hours,
+            atRiskThreshold,
+            lastFetch: Date.now(),
+        };
+
+        return { hours, atRiskThreshold };
+    } catch (error) {
+        console.error('Error fetching SLA settings from database, using defaults:', error);
+        // Return defaults on error
+        return {
+            hours: DEFAULT_SLA_HOURS,
+            atRiskThreshold: DEFAULT_AT_RISK_THRESHOLD,
+        };
+    }
+}
+
+/**
+ * Clear SLA cache
+ * Call this after updating SLA settings
+ */
+export function clearSLACache(): void {
+    slaCache = null;
+}
+
 /**
  * Calculate SLA deadline based on priority and creation time
- * 
+ *
  * @param priority - Ticket priority
  * @param createdAt - Ticket creation timestamp
- * @returns SLA deadline date
+ * @returns Promise<Date> - SLA deadline date
  */
-export function calculateSLADeadline(
+export async function calculateSLADeadline(
     priority: string,
     createdAt: Date = new Date()
-): Date {
+): Promise<Date> {
     const priorityKey = priority.toLowerCase() as Priority;
-    const hours = SLA_HOURS[priorityKey] || SLA_HOURS.medium;
+    const { hours } = await getSLASettings();
+    const slaHours = hours[priorityKey] || hours.medium;
 
     const deadline = new Date(createdAt);
-    deadline.setHours(deadline.getHours() + hours);
+    deadline.setHours(deadline.getHours() + slaHours);
 
     return deadline;
 }
 
 /**
  * Check SLA status based on deadline
- * 
+ *
  * @param deadline - SLA deadline
  * @param currentTime - Current timestamp (defaults to now)
- * @returns SLA status
+ * @param createdAt - Ticket creation time (optional, for calculating total SLA time)
+ * @returns Promise<SLAStatus> - SLA status
  */
-export function checkSLAStatus(
+export async function checkSLAStatus(
     deadline: Date | null,
-    currentTime: Date = new Date()
-): SLAStatus {
+    currentTime: Date = new Date(),
+    createdAt?: Date
+): Promise<SLAStatus> {
     if (!deadline) return null;
 
     const now = currentTime.getTime();
@@ -59,13 +151,19 @@ export function checkSLAStatus(
         return 'breached';
     }
 
-    // Calculate total SLA time to determine thresholds
-    // We use 20% as threshold for "at risk"
-    const totalTime = deadlineTime - now;
-    const twentyPercent = totalTime * 0.2;
+    // Get threshold from settings
+    const { atRiskThreshold } = await getSLASettings();
+    const thresholdPercent = atRiskThreshold / 100;
 
-    // At risk if less than 20% time remaining
-    if (timeRemaining <= twentyPercent) {
+    // Calculate total SLA time if createdAt is provided
+    const totalTime = createdAt
+        ? deadlineTime - new Date(createdAt).getTime()
+        : timeRemaining;
+
+    const thresholdTime = totalTime * thresholdPercent;
+
+    // At risk if remaining time is less than threshold
+    if (timeRemaining <= thresholdTime) {
         return 'at_risk';
     }
 

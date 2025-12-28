@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ClipboardCheck, Plus, Calendar, User, Eye, Search, Filter } from 'lucide-react';
+import { ClipboardCheck, Plus, Calendar, User, Search, Filter } from 'lucide-react';
 import InspectionModal from '@/components/InspectionModal';
 import Link from 'next/link';
 
@@ -188,13 +188,12 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Condition</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Inspector</th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Damage</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {filteredInspections.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
+                                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
                                             <ClipboardCheck size={48} className="mx-auto mb-3 text-slate-300" />
                                             <div className="font-medium">
                                                 {inspections.length === 0 ? 'No inspections yet' : 'No inspections match your filters'}
@@ -211,9 +210,12 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                     filteredInspections.map((inspection) => (
                                         <tr key={inspection.id} className="hover:bg-slate-50 transition-colors">
                                             <td className="px-4 py-3">
-                                                <div className="font-mono text-sm font-medium text-primary">
+                                                <Link
+                                                    href={`/inspections/${inspection.id}`}
+                                                    className="font-mono text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-colors cursor-pointer"
+                                                >
                                                     {inspection.inspectionNumber || `#${inspection.id}`}
-                                                </div>
+                                                </Link>
                                             </td>
                                             <td className="px-4 py-3 text-sm text-slate-600">
                                                 <div className="flex items-center gap-2">
@@ -263,15 +265,6 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                                 ) : (
                                                     <span className="text-xs text-slate-400">No damage</span>
                                                 )}
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <Link
-                                                    href={`/inspections/${inspection.id}`}
-                                                    className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                                >
-                                                    <Eye size={14} />
-                                                    View
-                                                </Link>
                                             </td>
                                         </tr>
                                     ))

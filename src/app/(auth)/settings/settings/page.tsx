@@ -1,6 +1,7 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import EmailSettingsClient from '@/components/Settings/EmailSettingsClient';
+import SLASettingsClient from '@/components/Settings/SLASettingsClient';
 import { Settings as SettingsIcon } from 'lucide-react';
 
 export default async function SettingsPage() {
@@ -21,6 +22,10 @@ export default async function SettingsPage() {
                 <p className="text-slate-500">Configure system-wide settings and preferences</p>
             </div>
 
+            {/* SLA Settings */}
+            <SLASettingsClient />
+
+            {/* Email Settings */}
             <EmailSettingsClient />
 
             {/* Future: Add more settings sections here */}

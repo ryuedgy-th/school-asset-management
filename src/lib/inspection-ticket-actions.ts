@@ -87,23 +87,10 @@ export async function createTicketFromInspection(inspectionId: number) {
     // Determine affected user (person who borrowed the asset)
     const affectedUserId = inspection.assignment?.user?.id || null;
 
-    // Calculate SLA deadlines based on priority
+    // Calculate SLA deadline based on priority using centralized SLA settings
+    const { calculateSLADeadline } = await import('@/lib/sla');
     const now = new Date();
-    const slaDeadline = new Date(now);
-
-    switch (priority) {
-        case 'urgent':
-            slaDeadline.setHours(now.getHours() + 4); // 4 hours
-            break;
-        case 'high':
-            slaDeadline.setHours(now.getHours() + 24); // 24 hours
-            break;
-        case 'medium':
-            slaDeadline.setHours(now.getHours() + 72); // 3 days
-            break;
-        default:
-            slaDeadline.setDate(now.getDate() + 7); // 7 days
-    }
+    const slaDeadline = await calculateSLADeadline(priority, now);
 
     // Generate ticket number
     const year = now.getFullYear();
