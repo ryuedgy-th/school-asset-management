@@ -867,7 +867,7 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                     <div className="relative max-w-7xl max-h-full">
                         <button
                             onClick={() => setLightboxImage(null)}
-                            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors backdrop-blur-sm"
+                            className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-black/80 rounded-full text-white transition-colors backdrop-blur-sm border border-white/20"
                             aria-label="Close"
                         >
                             <X size={24} />
