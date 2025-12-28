@@ -861,15 +861,16 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
             {/* Image Lightbox Modal */}
             {lightboxImage && (
                 <div
-                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
                     onClick={() => setLightboxImage(null)}
                 >
                     <div className="relative max-w-7xl max-h-full">
                         <button
                             onClick={() => setLightboxImage(null)}
-                            className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+                            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors backdrop-blur-sm"
+                            aria-label="Close"
                         >
-                            <X size={32} />
+                            <X size={24} />
                         </button>
                         <img
                             src={lightboxImage}
