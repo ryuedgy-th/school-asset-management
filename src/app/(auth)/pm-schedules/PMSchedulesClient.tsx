@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, AlertCircle, CheckCircle, Clock, Plus, Edit, Trash2, Play } from 'lucide-react';
+import PMScheduleModal from '@/components/PMScheduleModal';
 
 interface PMSchedule {
     id: number;
@@ -36,6 +37,8 @@ export default function PMSchedulesClient({ schedules, users, assets, user }: PM
     const router = useRouter();
     const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editingSchedule, setEditingSchedule] = useState<PMSchedule | null>(null);
 
     const now = new Date();
     const nextWeek = new Date();
@@ -172,7 +175,10 @@ export default function PMSchedulesClient({ schedules, users, assets, user }: PM
                             </select>
                         </div>
                         <button
-                            onClick={() => alert('Create PM Schedule - Modal coming soon')}
+                            onClick={() => {
+                                setEditingSchedule(null);
+                                setShowModal(true);
+                            }}
                             className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
                         >
                             <Plus size={20} />
@@ -242,16 +248,27 @@ export default function PMSchedulesClient({ schedules, users, assets, user }: PM
                                                         <Play size={18} />
                                                     </button>
                                                     <button
-                                                        onClick={() => alert('Edit - Modal coming soon')}
+                                                        onClick={() => {
+                                                            setEditingSchedule(schedule);
+                                                            setShowModal(true);
+                                                        }}
                                                         className="p-1 text-primary hover:bg-primary/10 rounded-lg transition-colors"
                                                         title="Edit"
                                                     >
                                                         <Edit size={18} />
                                                     </button>
                                                     <button
-                                                        onClick={() => {
-                                                            if (confirm('Delete this schedule?')) {
-                                                                alert('Delete functionality coming soon');
+                                                        onClick={async () => {
+                                                            if (confirm(`Delete schedule "${schedule.name}"?`)) {
+                                                                try {
+                                                                    const res = await fetch(`/api/pm-schedules/${schedule.id}`, {
+                                                                        method: 'DELETE',
+                                                                    });
+                                                                    if (!res.ok) throw new Error('Failed to delete');
+                                                                    router.refresh();
+                                                                } catch (error) {
+                                                                    alert('Failed to delete schedule');
+                                                                }
                                                             }
                                                         }}
                                                         className="p-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -269,6 +286,43 @@ export default function PMSchedulesClient({ schedules, users, assets, user }: PM
                     </div>
                 </div>
             </div>
+
+            {/* PM Schedule Modal */}
+            <PMScheduleModal
+                isOpen={showModal}
+                onClose={() => {
+                    setShowModal(false);
+                    setEditingSchedule(null);
+                }}
+                onSubmit={async (data) => {
+                    try {
+                        const url = editingSchedule
+                            ? `/api/pm-schedules/${editingSchedule.id}`
+                            : '/api/pm-schedules';
+                        const method = editingSchedule ? 'PUT' : 'POST';
+
+                        const res = await fetch(url, {
+                            method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data),
+                        });
+
+                        if (!res.ok) {
+                            const error = await res.json();
+                            throw new Error(error.error || 'Failed to save schedule');
+                        }
+
+                        router.refresh();
+                        setShowModal(false);
+                        setEditingSchedule(null);
+                    } catch (error: any) {
+                        throw error;
+                    }
+                }}
+                schedule={editingSchedule}
+                assets={assets}
+                users={users}
+            />
         </div>
     );
 }

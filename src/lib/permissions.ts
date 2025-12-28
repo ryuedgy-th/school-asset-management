@@ -1,476 +1,149 @@
 /**
- * Permission System for Multi-Department Asset Management
- * Supports module-based permissions with department isolation
+ * Permission Helper - Backward Compatibility Wrapper
+ * This provides sync-like interface for Server Components and API routes
+ * while using the new async permission system
  */
 
-import { User, Role, Department } from '@prisma/client';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+import * as PermissionsV2 from './permissions-v2';
 
 // ========================================
-// Types & Interfaces
+// Helper: Get Current User ID
 // ========================================
 
-export type ModuleName =
-    | 'assets'
-    | 'inspections'
-    | 'assignments'
-    | 'maintenance'  // FM only
-    | 'stationary'   // Stationary only
-    | 'users'
-    | 'reports'
-    | 'settings'
-    | 'roles'
-    | 'departments'
-    | 'fm_assets'
-    | 'tickets'      // IT & FM tickets
-    | 'pm_schedules' // FM PM schedules
-    | 'spare_parts'; // FM spare parts inventory
+async function getCurrentUserId(): Promise<number | null> {
+    const session = await auth();
+    if (!session?.user?.email) return null;
 
-export type PermissionAction =
-    | 'view'
-    | 'create'
-    | 'edit'
-    | 'delete'
-    | 'approve'
-    | 'export';
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true }
+    });
 
-export type PermissionScope = 'department' | 'cross-department' | 'global';
-
-export interface ModulePermission {
-    enabled: boolean;
-    permissions?: PermissionAction[];
-    filters?: {
-        ownDepartmentOnly?: boolean;
-        crossDepartment?: boolean;
-        categories?: string[];
-    };
-}
-
-export interface PermissionConfig {
-    scope: PermissionScope;
-    department?: string;  // Department code (IT, FM, STATIONARY)
-    modules: Partial<Record<ModuleName, ModulePermission>>;
-}
-
-export interface UserWithRole extends User {
-    userRole?: Role | null;
-    userDepartment?: Department | null;
+    return user?.id || null;
 }
 
 // ========================================
-// Default Permission Configs
-// ========================================
-
-export const DEFAULT_PERMISSIONS: Record<string, PermissionConfig> = {
-    // IT Department Roles
-    IT_ADMIN: {
-        scope: 'department',
-        department: 'IT',
-        modules: {
-            assets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { ownDepartmentOnly: true },
-            },
-            inspections: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
-                filters: { ownDepartmentOnly: true },
-            },
-            assignments: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-            },
-            users: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit'],
-            },
-            reports: {
-                enabled: true,
-                permissions: ['view', 'export'],
-                filters: { ownDepartmentOnly: true },
-            },
-            settings: {
-                enabled: true,
-                permissions: ['view', 'edit'],
-            },
-            tickets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { ownDepartmentOnly: true },
-            },
-            maintenance: { enabled: false },
-            stationary: { enabled: false },
-        },
-    },
-
-    IT_TECHNICIAN: {
-        scope: 'department',
-        department: 'IT',
-        modules: {
-            assets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit'],
-                filters: { ownDepartmentOnly: true },
-            },
-            inspections: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit'],
-                filters: { ownDepartmentOnly: true },
-            },
-            assignments: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit'],
-            },
-            reports: {
-                enabled: true,
-                permissions: ['view'],
-                filters: { ownDepartmentOnly: true },
-            },
-            tickets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit'],
-                filters: { ownDepartmentOnly: true },
-            },
-            maintenance: { enabled: false },
-            stationary: { enabled: false },
-        },
-    },
-
-    // FM Department Roles
-    FM_MANAGER: {
-        scope: 'department',
-        department: 'FM',
-        modules: {
-            assets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { ownDepartmentOnly: true },
-            },
-            maintenance: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
-                filters: { ownDepartmentOnly: true },
-            },
-            reports: {
-                enabled: true,
-                permissions: ['view', 'export'],
-                filters: { ownDepartmentOnly: true },
-            },
-            inspections: { enabled: false },
-            stationary: { enabled: false },
-            fm_assets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { ownDepartmentOnly: true },
-            },
-            tickets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { ownDepartmentOnly: true },
-            },
-            pm_schedules: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
-                filters: { ownDepartmentOnly: true },
-            },
-            spare_parts: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { ownDepartmentOnly: true },
-            },
-        },
-    },
-
-    // Stationary Department Roles
-    STATIONARY_MANAGER: {
-        scope: 'department',
-        department: 'STATIONARY',
-        modules: {
-            stationary: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
-                filters: { ownDepartmentOnly: true },
-            },
-            reports: {
-                enabled: true,
-                permissions: ['view', 'export'],
-                filters: { ownDepartmentOnly: true },
-            },
-            assets: { enabled: false },
-            inspections: { enabled: false },
-            maintenance: { enabled: false },
-        },
-    },
-
-    // Cross-Department Roles
-    EXECUTIVE: {
-        scope: 'cross-department',
-        modules: {
-            assets: {
-                enabled: true,
-                permissions: ['view'],
-                filters: { crossDepartment: true },
-            },
-            inspections: {
-                enabled: true,
-                permissions: ['view'],
-                filters: { crossDepartment: true },
-            },
-            maintenance: {
-                enabled: true,
-                permissions: ['view'],
-                filters: { crossDepartment: true },
-            },
-            stationary: {
-                enabled: true,
-                permissions: ['view'],
-                filters: { crossDepartment: true },
-            },
-            reports: {
-                enabled: true,
-                permissions: ['view', 'export'],
-                filters: { crossDepartment: true },
-            },
-            users: {
-                enabled: true,
-                permissions: ['view'],
-            },
-        },
-    },
-
-    SUPER_ADMIN: {
-        scope: 'global',
-        modules: {
-            assets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { crossDepartment: true },
-            },
-            inspections: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
-                filters: { crossDepartment: true },
-            },
-            assignments: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-            },
-            maintenance: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { crossDepartment: true },
-            },
-            fm_assets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { crossDepartment: true },
-            },
-            pm_schedules: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
-                filters: { crossDepartment: true },
-            },
-            spare_parts: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { crossDepartment: true },
-            },
-            tickets: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { crossDepartment: true },
-            },
-            stationary: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-                filters: { crossDepartment: true },
-            },
-            users: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-            },
-            roles: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-            },
-            departments: {
-                enabled: true,
-                permissions: ['view', 'create', 'edit', 'delete'],
-            },
-            reports: {
-                enabled: true,
-                permissions: ['view', 'export'],
-                filters: { crossDepartment: true },
-            },
-            settings: {
-                enabled: true,
-                permissions: ['view', 'edit'],
-            },
-        },
-    },
-
-    // General User Roles
-    TEACHER: {
-        scope: 'department',
-        modules: {
-            assignments: {
-                enabled: true,
-                permissions: ['view'],
-            },
-            assets: {
-                enabled: true,
-                permissions: ['view'],
-            },
-        },
-    },
-
-    USER: {
-        scope: 'department',
-        modules: {
-            assets: {
-                enabled: true,
-                permissions: ['view'],
-            },
-        },
-    },
-};
-
-// ========================================
-// Permission Functions
+// Server Component Helpers
 // ========================================
 
 /**
- * Parse permissions JSON from database
+ * Check permission for current logged-in user (Server Component)
  */
-export function parsePermissions(permissionsJson: string): PermissionConfig {
-    try {
-        return JSON.parse(permissionsJson) as PermissionConfig;
-    } catch (error) {
-        console.error('Failed to parse permissions:', error);
-        return DEFAULT_PERMISSIONS.USER;
+export async function checkPermission(
+    moduleCode: string,
+    action: string
+): Promise<boolean> {
+    const userId = await getCurrentUserId();
+    if (!userId) return false;
+    return PermissionsV2.hasPermission(userId, moduleCode, action);
+}
+
+/**
+ * Check module access for current logged-in user (Server Component)
+ */
+export async function checkModuleAccess(moduleCode: string): Promise<boolean> {
+    const userId = await getCurrentUserId();
+    if (!userId) return false;
+    return PermissionsV2.hasModuleAccess(userId, moduleCode);
+}
+
+/**
+ * Require permission - throws or redirects if not authorized (Server Component)
+ */
+export async function requirePermission(
+    moduleCode: string,
+    action: string
+): Promise<void> {
+    const hasIt = await checkPermission(moduleCode, action);
+    if (!hasIt) {
+        throw new Error('Forbidden: Insufficient permissions');
     }
 }
 
 /**
- * Get user's permission configuration
+ * Require module access - throws or redirects if not authorized (Server Component)
  */
-export function getUserPermissions(user: UserWithRole): PermissionConfig {
-    // Super admin check (legacy role field)
-    if (user.role === 'Admin') {
-        return DEFAULT_PERMISSIONS.SUPER_ADMIN;
+export async function requireModuleAccess(moduleCode: string): Promise<void> {
+    const hasIt = await checkModuleAccess(moduleCode);
+    if (!hasIt) {
+        throw new Error('Forbidden: No access to this module');
     }
+}
 
-    // Get from role
-    if (user.userRole?.permissions) {
-        return parsePermissions(user.userRole.permissions);
-    }
+// ========================================
+// API Route Helpers (with user object)
+// ========================================
 
-    // Default to basic user
-    return DEFAULT_PERMISSIONS.USER;
+/**
+ * Check if user has permission (API Route)
+ */
+export async function hasPermissionForUser(
+    userId: number,
+    moduleCode: string,
+    action: string
+): Promise<boolean> {
+    return PermissionsV2.hasPermission(userId, moduleCode, action);
 }
 
 /**
- * Check if user has access to a specific module
+ * Check if user has module access (API Route)  
  */
-export function hasModuleAccess(
-    user: UserWithRole,
-    module: ModuleName
-): boolean {
-    const permissions = getUserPermissions(user);
-    const moduleConfig = permissions.modules[module];
-    return moduleConfig?.enabled ?? false;
+export async function hasModuleAccessForUser(
+    userId: number,
+    moduleCode: string
+): Promise<boolean> {
+    return PermissionsV2.hasModuleAccess(userId, moduleCode);
 }
 
 /**
- * Check if user has specific permission for a module
+ * Get department filter for user (for data isolation)
  */
-export function hasPermission(
-    user: UserWithRole,
-    module: ModuleName,
-    action: PermissionAction
-): boolean {
-    const permissions = getUserPermissions(user);
-    const moduleConfig = permissions.modules[module];
+export async function getDepartmentFilterForUser(userId: number) {
+    return PermissionsV2.getDepartmentFilter(userId);
+}
 
-    if (!moduleConfig?.enabled) {
-        return false;
-    }
+// ========================================
+// Re-export V2 Functions
+// ========================================
 
-    return moduleConfig.permissions?.includes(action) ?? false;
+export {
+    getUserPermissions,
+    getAccessibleModules,
+    getAllModules,
+    getUserModules,
+    getModulePermissions,
+    isAdmin,
+    getUserRole,
+    canAccessCrossDepartment,
+} from './permissions-v2';
+
+// ========================================
+// Legacy Compatibility Layer
+// ========================================
+
+/**
+ * @deprecated Use checkModuleAccess() instead
+ * Legacy sync-style wrapper for backward compatibility
+ * WARNING: This is async now! Update call sites.
+ */
+export async function hasModuleAccess(
+    user: { id: number },
+    moduleCode: string
+): Promise<boolean> {
+    console.warn(`⚠️ hasModuleAccess() called with user object - use checkModuleAccess() or hasModuleAccessForUser() instead`);
+    return PermissionsV2.hasModuleAccess(user.id, moduleCode);
 }
 
 /**
- * Check if user can access cross-department data
+ * @deprecated Use checkPermission() instead
  */
-export function canAccessCrossDepartment(user: UserWithRole): boolean {
-    const permissions = getUserPermissions(user);
-    return permissions.scope === 'cross-department' || permissions.scope === 'global';
-}
-
-/**
- * Get user's department code
- */
-export function getUserDepartmentCode(user: UserWithRole): string | null {
-    return user.userDepartment?.code ?? null;
-}
-
-/**
- * Check if user belongs to specific department
- */
-export function isInDepartment(
-    user: UserWithRole,
-    departmentCode: string
-): boolean {
-    return getUserDepartmentCode(user) === departmentCode;
-}
-
-/**
- * Filter data by department (for queries)
- */
-export function getDepartmentFilter(user: UserWithRole) {
-    const permissions = getUserPermissions(user);
-
-    // Global scope - no filter
-    if (permissions.scope === 'global') {
-        return {};
-    }
-
-    // Cross-department - no filter
-    if (permissions.scope === 'cross-department') {
-        return {};
-    }
-
-    // Department scope - filter by user's department
-    if (user.departmentId) {
-        return { departmentId: user.departmentId };
-    }
-
-    // Fallback - no data
-    return { departmentId: -1 };
-}
-
-/**
- * Get list of modules user can access
- */
-export function getAccessibleModules(user: UserWithRole): ModuleName[] {
-    const permissions = getUserPermissions(user);
-    if (!permissions?.modules) return [];
-    return Object.entries(permissions.modules)
-        .filter(([_, config]) => config.enabled)
-        .map(([module]) => module as ModuleName);
-}
-
-/**
- * Check if user is admin (any level)
- */
-export function isAdmin(user: UserWithRole): boolean {
-    return user.role === 'Admin' || user.userRole?.name === 'SUPER_ADMIN';
-}
-
-/**
- * Check if user is department admin
- */
-export function isDepartmentAdmin(user: UserWithRole): boolean {
-    const roleName = user.userRole?.name;
-    return roleName === 'IT_ADMIN' || roleName === 'FM_MANAGER' || roleName === 'STATIONARY_MANAGER';
+export async function hasPermission(
+    user: { id: number },
+    moduleCode: string,
+    action: string
+): Promise<boolean> {
+    console.warn(`⚠️ hasPermission() called with user object - use checkPermission() or hasPermissionForUser() instead`);
+    return PermissionsV2.hasPermission(user.id, moduleCode, action);
 }

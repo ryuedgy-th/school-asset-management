@@ -31,17 +31,17 @@ model Department {
 model User {
   id             Int         @id @default(autoincrement())
   name           String?
-  nickname       String? // Thai nickname for common use
+  nickname       String?     // Thai nickname for common use
   email          String?     @unique
   emailVerified  DateTime?
   image          String?
   password       String?
-  role           String      @default("User") // Deprecated: Migration to roleId in progress
-  roleId         Int?
-  userRole       Role?       @relation(fields: [roleId], references: [id])
-  department     String? // Deprecated: Migration to departmentId in progress
-  departmentId   Int?
-  userDepartment Department? @relation(fields: [departmentId], references: [id])
+  
+  // Role and Department (REQUIRED)
+  roleId         Int
+  userRole       Role        @relation(fields: [roleId], references: [id])
+  departmentId   Int
+  userDepartment Department  @relation(fields: [departmentId], references: [id])
   phoneNumber    String?
 
   // Account Lockout
@@ -78,18 +78,81 @@ model User {
   inspectionRecords     ACInspectionRecord[]
 }
 
+// ============================================
+// 14.1 RBAC: Module Registry
+// ============================================
+model Module {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique // "assets", "pm_schedules", "tickets"
+  name        String // "IT Assets", "PM Schedules", "Tickets"
+  description String?
+  category    String? // "IT", "FM", "STATIONARY", "System"
+  icon        String? // Icon name for UI (lucide-react icon name)
+  routePath   String? // "/assets", "/pm-schedules" (for navigation)
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0) // For UI ordering
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions ModulePermission[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+// ============================================
+// 14.2 RBAC: Module Permission Templates
+// ============================================
+model ModulePermission {
+  id          Int    @id @default(autoincrement())
+  moduleId    Int
+  module      Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  action      String // "view", "create", "edit", "delete", "approve", "export"
+  name        String // "View Assets", "Create Assets", "Delete Assets"
+  description String? // Detailed description of what this permission allows
+
+  rolePermissions RolePermission[]
+
+  @@unique([moduleId, action])
+  @@index([moduleId])
+}
+
+// ============================================
+// 14.3 RBAC: Role Permissions (Junction Table)
+// ============================================
+model RolePermission {
+  id           Int              @id @default(autoincrement())
+  roleId       Int
+  role         Role             @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId Int
+  permission   ModulePermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  // Optional: Scope filters (stored as JSON)
+  // Example: { "departmentOnly": true, "ownOnly": false, "categories": ["hardware"] }
+  scopeFilter String? // JSON string for additional filters
+
+  createdAt DateTime @default(now())
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
 model Role {
   id           Int         @id @default(autoincrement())
   name         String
-  departmentId Int? // null = cross-department (Admin, Executive)
+  description  String?     // Role description for UI
+  departmentId Int?        // null = cross-department (Admin, Executive)
   department   Department? @relation(fields: [departmentId], references: [id])
-  permissions  String // JSON: module-based permissions
   scope        String      @default("department") // "department", "cross-department", "global"
   isActive     Boolean     @default(true)
+  isSystem     Boolean     @default(false) // NEW: Built-in roles (cannot be deleted)
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  users User[]
+  users           User[]
+  rolePermissions RolePermission[] // NEW: Link to new permission system
 
   @@unique([name, departmentId])
 }

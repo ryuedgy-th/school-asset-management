@@ -118,6 +118,7 @@ const menuItems: MenuItem[] = [
         href: '/settings',
         module: 'settings',
         subItems: [
+            { label: 'System Settings', href: '/settings/settings', module: 'settings' },
             { label: 'Organization', href: '/settings/organization', module: 'settings' },
             { label: 'Email & Integration', href: '/settings/email', module: 'settings' },
             { label: 'Security', href: '/settings/security', module: 'settings' },

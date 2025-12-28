@@ -57,13 +57,9 @@ async function main() {
         create: {
             name: 'Admin',
             departmentId: itDept.id,
-            permissions: JSON.stringify({
-                tickets: { view_all: true, create: true, update: true, delete: true, assign: true },
-                assets: { view_all: true, create: true, update: true, delete: true },
-                inspections: { view_all: true, create: true, update: true, delete: true }
-            }),
-            scope: 'GLOBAL',
+            scope: 'global',
             isActive: true,
+            isSystem: true,
         },
     });
 
@@ -78,12 +74,9 @@ async function main() {
         create: {
             name: 'Technician',
             departmentId: maintenanceDept.id,
-            permissions: JSON.stringify({
-                tickets: { view_all: true, create: true, update: true },
-                assets: { view_all: true }
-            }),
-            scope: 'DEPARTMENT',
+            scope: 'department',
             isActive: true,
+            isSystem: true,
         },
     });
 
@@ -98,12 +91,9 @@ async function main() {
         create: {
             name: 'Inspector',
             departmentId: itDept.id,
-            permissions: JSON.stringify({
-                inspections: { view_all: true, create: true, update: true },
-                assets: { view_all: true }
-            }),
-            scope: 'DEPARTMENT',
+            scope: 'department',
             isActive: true,
+            isSystem: true,
         },
     });
 
@@ -118,14 +108,12 @@ async function main() {
     const adminUser = await prisma.user.upsert({
         where: { email: 'admin@school.com' },
         update: {
-            role: 'admin',
             roleId: adminRole.id,
         },
         create: {
             email: 'admin@school.com',
             name: 'Admin User',
             password: hashedPassword,
-            role: 'admin',
             roleId: adminRole.id,
             departmentId: itDept.id,
         },
@@ -138,7 +126,6 @@ async function main() {
             email: 'inspector1@school.com',
             name: 'Somchai Inspector',
             password: hashedPassword,
-            role: 'user',
             roleId: inspectorRole.id,
             departmentId: itDept.id,
         },
@@ -151,7 +138,6 @@ async function main() {
             email: 'inspector2@school.com',
             name: 'Siriwan Inspector',
             password: hashedPassword,
-            role: 'user',
             roleId: inspectorRole.id,
             departmentId: itDept.id,
         },
@@ -164,7 +150,6 @@ async function main() {
             email: 'tech1@school.com',
             name: 'Manop Technician',
             password: hashedPassword,
-            role: 'user',
             roleId: technicianRole.id,
             departmentId: maintenanceDept.id,
         },
@@ -177,7 +162,6 @@ async function main() {
             email: 'tech2@school.com',
             name: 'Wichai Technician',
             password: hashedPassword,
-            role: 'user',
             roleId: technicianRole.id,
             departmentId: maintenanceDept.id,
         },
