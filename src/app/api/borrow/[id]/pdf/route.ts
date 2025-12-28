@@ -128,12 +128,12 @@ export async function GET(
             transaction: serializedTransaction as any
         });
 
-        const stream = await renderToStream(pdfDoc);
+        const stream = await renderToStream(pdfDoc as any);
 
         // Convert stream to buffer
         const chunks: Uint8Array[] = [];
         for await (const chunk of stream) {
-            chunks.push(chunk);
+            chunks.push(chunk instanceof Uint8Array ? chunk : new Uint8Array(Buffer.from(chunk)));
         }
         const buffer = Buffer.concat(chunks);
 

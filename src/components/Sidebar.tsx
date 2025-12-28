@@ -23,6 +23,8 @@ import {
     Mail,
     Wrench,
     Package,
+    Warehouse,
+    TicketIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -60,8 +62,27 @@ const menuItems: MenuItem[] = [
         ]
     },
     {
+        icon: Warehouse,
+        label: 'FM Assets',
+        href: '/fm-assets',
+        module: 'fm_assets',
+        subItems: [
+            { label: 'All FM Assets', href: '/fm-assets', module: 'fm_assets' },
+            { label: 'Categories', href: '/fm-assets/categories', module: 'fm_assets' },
+            { label: 'PM Schedules', href: '/pm-schedules', module: 'pm_schedules' },
+            { label: 'Spare Parts', href: '/spare-parts', module: 'spare_parts' },
+            { label: 'Maintenance Logs', href: '/maintenance-logs', module: 'fm_assets' }
+        ]
+    },
+    {
+        icon: TicketIcon,
+        label: 'Tickets',
+        href: '/tickets',
+        module: 'tickets',
+    },
+    {
         icon: Calendar,
-        label: 'Maintenance',
+        label: 'IT Maintenance',
         href: '/pm',
         module: 'maintenance',
         subItems: [
@@ -99,6 +120,7 @@ const menuItems: MenuItem[] = [
         subItems: [
             { label: 'Organization', href: '/settings/organization', module: 'settings' },
             { label: 'Email & Integration', href: '/settings/email', module: 'settings' },
+            { label: 'Security', href: '/settings/security', module: 'settings' },
         ]
     },
 ];

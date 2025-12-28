@@ -19,7 +19,11 @@ export type ModuleName =
     | 'reports'
     | 'settings'
     | 'roles'
-    | 'departments';
+    | 'departments'
+    | 'fm_assets'
+    | 'tickets'      // IT & FM tickets
+    | 'pm_schedules' // FM PM schedules
+    | 'spare_parts'; // FM spare parts inventory
 
 export type PermissionAction =
     | 'view'
@@ -33,7 +37,7 @@ export type PermissionScope = 'department' | 'cross-department' | 'global';
 
 export interface ModulePermission {
     enabled: boolean;
-    permissions: PermissionAction[];
+    permissions?: PermissionAction[];
     filters?: {
         ownDepartmentOnly?: boolean;
         crossDepartment?: boolean;
@@ -89,6 +93,11 @@ export const DEFAULT_PERMISSIONS: Record<string, PermissionConfig> = {
                 enabled: true,
                 permissions: ['view', 'edit'],
             },
+            tickets: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete'],
+                filters: { ownDepartmentOnly: true },
+            },
             maintenance: { enabled: false },
             stationary: { enabled: false },
         },
@@ -115,6 +124,11 @@ export const DEFAULT_PERMISSIONS: Record<string, PermissionConfig> = {
             reports: {
                 enabled: true,
                 permissions: ['view'],
+                filters: { ownDepartmentOnly: true },
+            },
+            tickets: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit'],
                 filters: { ownDepartmentOnly: true },
             },
             maintenance: { enabled: false },
@@ -144,6 +158,26 @@ export const DEFAULT_PERMISSIONS: Record<string, PermissionConfig> = {
             },
             inspections: { enabled: false },
             stationary: { enabled: false },
+            fm_assets: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete'],
+                filters: { ownDepartmentOnly: true },
+            },
+            tickets: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete'],
+                filters: { ownDepartmentOnly: true },
+            },
+            pm_schedules: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
+                filters: { ownDepartmentOnly: true },
+            },
+            spare_parts: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete'],
+                filters: { ownDepartmentOnly: true },
+            },
         },
     },
 
@@ -222,6 +256,26 @@ export const DEFAULT_PERMISSIONS: Record<string, PermissionConfig> = {
                 permissions: ['view', 'create', 'edit', 'delete'],
             },
             maintenance: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete'],
+                filters: { crossDepartment: true },
+            },
+            fm_assets: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete'],
+                filters: { crossDepartment: true },
+            },
+            pm_schedules: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete', 'approve'],
+                filters: { crossDepartment: true },
+            },
+            spare_parts: {
+                enabled: true,
+                permissions: ['view', 'create', 'edit', 'delete'],
+                filters: { crossDepartment: true },
+            },
+            tickets: {
                 enabled: true,
                 permissions: ['view', 'create', 'edit', 'delete'],
                 filters: { crossDepartment: true },
@@ -342,7 +396,7 @@ export function hasPermission(
         return false;
     }
 
-    return moduleConfig.permissions.includes(action);
+    return moduleConfig.permissions?.includes(action) ?? false;
 }
 
 /**

@@ -24,11 +24,6 @@ export default async function PublicSignaturePage({
                             ? "This document has already been signed."
                             : "This signature link is invalid or has expired."}
                     </p>
-                    {result.signedAt && (
-                        <p className="text-xs text-slate-400">
-                            Signed on {new Date(result.signedAt).toLocaleDateString()}
-                        </p>
-                    )}
                     <p className="text-sm text-slate-400 mt-4">
                         Please contact the IT Department if you need assistance.
                     </p>

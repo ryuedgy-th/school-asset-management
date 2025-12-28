@@ -34,7 +34,7 @@ export default async function ProfilePage() {
         id: user.id,
         name: user.name ?? null,
         nickname: user.nickname ?? null,
-        email: user.email,
+        email: user.email!, // Non-null assertion safe because we checked session.user.email exists
         role: user.role,
         image: user.image ?? null,
     }} isOAuthUser={isOAuthUser} />;

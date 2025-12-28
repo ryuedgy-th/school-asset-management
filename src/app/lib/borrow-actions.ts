@@ -29,7 +29,7 @@ export async function createAssignment(data: {
             assignmentNumber,
             userId: data.userId,
             academicYear: data.academicYear,
-            semester: data.semester,
+            term: data.semester,
             status: 'Active'
         }
     });

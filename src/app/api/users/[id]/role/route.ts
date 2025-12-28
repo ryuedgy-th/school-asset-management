@@ -9,7 +9,7 @@ import { isAdmin } from '@/lib/permissions';
  */
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -29,6 +29,7 @@ export async function PUT(
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
+        const params = await context.params;
         const userId = parseInt(params.id);
         const body = await request.json();
         const { roleId, departmentId } = body;
@@ -141,7 +142,7 @@ export async function PUT(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -161,6 +162,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
+        const params = await context.params;
         const userId = parseInt(params.id);
 
         // Remove role (keep department)

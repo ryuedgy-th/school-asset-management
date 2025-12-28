@@ -22,7 +22,7 @@ export async function createUser(formData: FormData) {
     const validation = createUserSchema.safeParse(rawData);
 
     if (!validation.success) {
-        const errors = validation.error.errors.map(e => e.message).join(', ');
+        const errors = validation.error.issues.map(e => e.message).join(', ');
         return { error: errors };
     }
 

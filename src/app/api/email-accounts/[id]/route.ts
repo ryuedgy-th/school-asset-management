@@ -29,8 +29,8 @@ export async function GET(
                 smtpPort: true,
                 smtpUser: true,
                 smtpSecure: true,
-                oauthProvider: true,
-                tokenExpiry: true,
+                oauthClientId: true,
+                oauthTokenExpiry: true,
                 createdAt: true,
                 updatedAt: true,
             }

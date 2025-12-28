@@ -545,8 +545,13 @@ export async function approveDamage(
                     estimatedCost: inspection.estimatedCost ? Number(inspection.estimatedCost) : null,
                     damageDescription: inspection.damageDescription
                 },
-                user: inspection.assignment.user,
-                approver: inspection.approver!,
+                user: {
+                    name: inspection.assignment.user.name || 'User',
+                    email: inspection.assignment.user.email || 'no-email@example.com'
+                },
+                approver: {
+                    name: inspection.approver?.name || 'Approver'
+                },
                 approvalNotes: inspection.approvalNotes
             });
             console.log(`✅ Damage approval email sent for inspection #${inspectionId}`);
@@ -616,8 +621,13 @@ export async function waiveDamage(
                     estimatedCost: inspection.estimatedCost ? Number(inspection.estimatedCost) : null,
                     damageDescription: inspection.damageDescription
                 },
-                user: inspection.assignment.user,
-                approver: inspection.approver!,
+                user: {
+                    name: inspection.assignment.user.name || 'User',
+                    email: inspection.assignment.user.email || 'no-email@example.com'
+                },
+                approver: {
+                    name: inspection.approver?.name || 'Approver'
+                },
                 waiverReason: reason
             });
             console.log(`✅ Damage waiver email sent for inspection #${inspectionId}`);

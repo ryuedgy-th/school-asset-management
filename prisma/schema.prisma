@@ -57,13 +57,23 @@ model User {
   logs     AuditLog[]
 
   // Relations
-  assignments         Assignment[]
+  assignments         Assignment[]        @relation
   closedAssignments   Assignment[]        @relation("ClosedAssignments")
   checkedReturns      ReturnTransaction[] @relation("CheckedReturns")
   createdTransactions BorrowTransaction[]
   assignedTasks       PMTask[]
   inspections         Inspection[]        @relation("InspectorInspections")
   approvedInspections Inspection[]        @relation("InspectionApprover")
+
+  // FM Asset Management Relations
+  createdFMAssets       FMAsset[]              @relation("FMAssetCreatedBy")
+  assignedPMSchedules   PMSchedule[]
+  reportedTickets       Ticket[]               @relation("TicketReporter")
+  assignedTickets       Ticket[]               @relation("TicketAssignee")
+  ticketComments        TicketComment[]
+  ticketActivities      TicketActivity[]
+  inventoryTransactions InventoryTransaction[]
+  inspectionRecords     ACInspectionRecord[]
 }
 
 model Role {
@@ -171,6 +181,7 @@ model Asset {
   pmTasks      PMTask[]
   issueReports IssueReport[]
   inspections  Inspection[]
+  Ticket       Ticket[]
 }
 
 // Asset Inspection Model
@@ -286,7 +297,7 @@ model Assignment {
   assignmentNumber String    @unique // e.g. AS-2024-001
   userId           Int
   academicYear     String // "2024"
-  semester         Int // 1 or 2
+  term             Int // 1 or 2 (Term 1, Term 2)
   status           String    @default("Active") // Active, Closed
   createdAt        DateTime  @default(now())
   closedAt         DateTime?
@@ -301,6 +312,11 @@ model Assignment {
   borrowTransactions BorrowTransaction[]
   returnTransactions ReturnTransaction[]
   inspections        Inspection[]
+
+  // Public Signature Link (for assignments)
+  signatureToken       String?   @unique
+  signatureTokenExpiry DateTime?
+  signedPdfPath        String? // Path to signed PDF
 }
 
 model BorrowTransaction {
@@ -487,14 +503,479 @@ model SystemSettings {
 // 15. Notification Recipients
 model NotificationRecipient {
   id            Int      @id @default(autoincrement())
-  category      String   // "inspection", "damage_approval", "damage_waiver", "assignment_signature"
-  recipientType String   // "to", "cc", "bcc", "reply_to"
-  role          String   // "director", "it_head", "department_head", "inspector", "user"
-  email         String?  // null = dynamic (e.g., inspector's email from inspection record)
-  name          String?  // Display name
+  category      String // "inspection", "damage_approval", "damage_waiver", "assignment_signature"
+  recipientType String // "to", "cc", "bcc", "reply_to"
+  role          String // "director", "it_head", "department_head", "inspector", "user"
+  email         String? // null = dynamic (e.g., inspector's email from inspection record)
+  name          String? // Display name
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([category, isActive])
+}
+
+// ============================================================
+// FM ASSET MANAGEMENT SYSTEM
+// ============================================================
+
+// 16. FM Asset Categories
+model FMAssetCategory {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  icon        String? // Icon name for UI
+  color       String? // Color code for UI
+  assets      FMAsset[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// 17. FM Assets (Facilities, Vehicles, Equipment)
+model FMAsset {
+  id          Int     @id @default(autoincrement())
+  assetCode   String  @unique
+  name        String
+  description String?
+
+  // Category
+  categoryId Int
+  category   FMAssetCategory @relation(fields: [categoryId], references: [id])
+
+  // Type & Details
+  type         String? // "Air Conditioner", "Vehicle", "Generator"
+  brand        String?
+  model        String?
+  serialNumber String?
+
+  // Location
+  location String?
+  building String?
+  floor    String?
+  room     String?
+
+  // Dates
+  purchaseDate   DateTime?
+  installDate    DateTime?
+  warrantyExpiry DateTime?
+
+  // Specifications (JSON for flexibility)
+  specifications String? // { "capacity": "24000 BTU", "voltage": "220V" }
+
+  // Condition
+  condition String @default("good") // "excellent", "good", "fair", "poor"
+  status    String @default("active") // "active", "inactive", "maintenance", "retired"
+
+  // Maintenance
+  requiresMaintenance Boolean @default(false) // true = needs PM, false = no PM (furniture)
+
+  // Hierarchy (Parent-Child)
+  parentAssetId Int?
+  parentAsset   FMAsset?  @relation("AssetHierarchy", fields: [parentAssetId], references: [id], onDelete: Restrict)
+  childAssets   FMAsset[] @relation("AssetHierarchy")
+
+  // Cost
+  purchaseCost Decimal?
+  currentValue Decimal?
+
+  // Images & QR
+  images String? // Array of image URLs
+  qrCode String? @unique
+
+  // Relations
+  components        AssetComponent[]
+  pmSchedules       PMSchedule[]
+  maintenanceLogs   MaintenanceLog[]
+  tickets           Ticket[]
+  inspectionRecords ACInspectionRecord[]
+
+  // Audit
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById Int?
+  createdBy   User?    @relation("FMAssetCreatedBy", fields: [createdById], references: [id])
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([location])
+}
+
+// 18. Asset Components (Parts of an asset)
+model AssetComponent {
+  id      Int     @id @default(autoincrement())
+  assetId Int
+  asset   FMAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  name          String // "Compressor", "Air Filter", "Engine"
+  componentType String // "Mechanical", "Electrical", "Electronic"
+  description   String?
+
+  // Identification
+  serialNumber String?
+  partNumber   String?
+  manufacturer String?
+  model        String?
+
+  // Installation
+  installDate DateTime?
+  installedBy String?
+
+  // Service
+  lastServiceDate DateTime?
+  nextServiceDue  DateTime?
+  serviceInterval Int? // Days
+
+  // Lifecycle
+  expectedLifespan Int? // Months
+  replacementCost  Decimal?
+
+  // Condition
+  condition String @default("good")
+  status    String @default("active")
+
+  // Notes
+  notes String?
+
+  // Relations
+  serviceHistory ComponentService[]
+  spareParts     ComponentSparePart[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assetId])
+}
+
+// 19. Component Service History
+model ComponentService {
+  id          Int            @id @default(autoincrement())
+  componentId Int
+  component   AssetComponent @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  serviceDate DateTime
+  serviceType String // "inspection", "cleaning", "repair", "replacement"
+  description String
+  performedBy String
+
+  cost          Decimal?
+  partsReplaced String?
+
+  nextServiceDue DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([componentId])
+  @@index([serviceDate])
+}
+
+// 20. PM Schedules
+model PMSchedule {
+  id      Int     @id @default(autoincrement())
+  assetId Int
+  asset   FMAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+
+  // Schedule Type
+  scheduleType String // "time", "usage", "condition"
+
+  // Time-Based
+  frequency     String? // "daily", "weekly", "monthly", "quarterly", "yearly"
+  intervalValue Int? // e.g., 2 for "every 2 weeks"
+  intervalUnit  String? // "days", "weeks", "months", "years"
+
+  // Usage-Based
+  usageMetric   String? // "km", "hours", "cycles"
+  usageInterval Int?
+
+  // Next Due
+  lastPerformed DateTime?
+  nextDueDate   DateTime?
+  nextDueUsage  Int?
+
+  // Checklist
+  checklistItems String? // [{ "task": "Clean filter", "required": true }]
+
+  // Work Order Settings
+  autoCreateWO Boolean @default(true)
+  leadTimeDays Int     @default(7)
+  priority     String  @default("medium")
+
+  // Assignment
+  assignedToId Int?
+  assignedTo   User? @relation(fields: [assignedToId], references: [id])
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([assetId])
+  @@index([nextDueDate])
+}
+
+// 21. Unified Ticket System (IT + FM)
+model Ticket {
+  id           Int    @id @default(autoincrement())
+  ticketNumber String @unique // "IT-2024-001", "FM-2024-001"
+
+  // Type & Category
+  type        String // "IT", "FM"
+  category    String // "Hardware", "HVAC", "Vehicle", etc.
+  subCategory String? // "AC Maintenance", "Laptop Repair"
+
+  // Asset Reference
+  itAssetId Int?
+  itAsset   Asset? @relation(fields: [itAssetId], references: [id])
+
+  fmAssetId Int?
+  fmAsset   FMAsset? @relation(fields: [fmAssetId], references: [id])
+
+  // Ticket Details
+  title       String
+  description String
+  priority    String @default("medium") // "low", "medium", "high", "urgent"
+  status      String @default("open") // "open", "assigned", "in_progress", "resolved", "closed"
+
+  // Assignment
+  reportedById Int
+  reportedBy   User @relation("TicketReporter", fields: [reportedById], references: [id])
+
+  assignedToId Int?
+  assignedTo   User? @relation("TicketAssignee", fields: [assignedToId], references: [id])
+
+  // Dates
+  reportedAt DateTime  @default(now())
+  assignedAt DateTime?
+  resolvedAt DateTime?
+  closedAt   DateTime?
+
+  // Resolution
+  resolution      String?
+  resolutionNotes String?
+
+  // Attachments
+  images    String? // Array of image URLs
+  documents String?
+
+  // Relations
+  comments   TicketComment[]
+  activities TicketActivity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([status])
+  @@index([assignedToId])
+  @@index([reportedById])
+}
+
+// 22. Ticket Comments
+model TicketComment {
+  id       Int    @id @default(autoincrement())
+  ticketId Int
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  comment String
+  images  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+// 23. Ticket Activity Log
+model TicketActivity {
+  id       Int    @id @default(autoincrement())
+  ticketId Int
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id])
+
+  action  String // "created", "assigned", "status_changed", "commented"
+  details String? // { "from": "open", "to": "in_progress" }
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+// 24. Spare Parts
+model SparePart {
+  id          Int     @id @default(autoincrement())
+  partNumber  String  @unique
+  name        String
+  description String?
+  category    String // "Filter", "Belt", "Oil", "Refrigerant", "Tire"
+
+  // Supplier
+  supplier       String?
+  supplierPartNo String?
+  unitCost       Decimal?
+
+  // Inventory
+  currentStock Int @default(0)
+  minStock     Int @default(0)
+  maxStock     Int @default(0)
+  reorderPoint Int @default(0)
+
+  // Unit
+  unit String // "piece", "liter", "kg", "meter"
+
+  // Location
+  storageLocation String?
+  binLocation     String?
+
+  // Status
+  isActive Boolean @default(true)
+
+  // Relations
+  components   ComponentSparePart[]
+  transactions InventoryTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([currentStock])
+}
+
+// 25. Link Components to Spare Parts
+model ComponentSparePart {
+  id          Int            @id @default(autoincrement())
+  componentId Int
+  component   AssetComponent @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  sparePartId Int
+  sparePart   SparePart @relation(fields: [sparePartId], references: [id], onDelete: Cascade)
+
+  quantity      Int     @default(1)
+  isRecommended Boolean @default(true)
+  notes         String?
+
+  @@unique([componentId, sparePartId])
+}
+
+// 26. Inventory Transactions
+model InventoryTransaction {
+  id          Int       @id @default(autoincrement())
+  sparePartId Int
+  sparePart   SparePart @relation(fields: [sparePartId], references: [id])
+
+  type     String // "in", "out", "adjustment"
+  quantity Int
+
+  // Reference
+  referenceType String? // "work_order", "purchase", "adjustment"
+  referenceId   Int?
+
+  // Cost
+  unitCost  Decimal?
+  totalCost Decimal?
+
+  // Stock After Transaction
+  stockAfter Int
+
+  notes String?
+
+  performedById Int?
+  performedBy   User? @relation(fields: [performedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([sparePartId])
+  @@index([createdAt])
+}
+
+// 27. Maintenance Logs
+model MaintenanceLog {
+  id      Int     @id @default(autoincrement())
+  assetId Int
+  asset   FMAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  date DateTime @default(now())
+  type String // "preventive", "corrective", "inspection"
+
+  performedBy String
+  description String
+
+  // Readings (for Condition Monitoring)
+  readings String? // { "temperature": 25, "pressure": 120, "vibration": 0.5 }
+
+  // Cost
+  cost Decimal?
+
+  // Parts
+  partsChanged String?
+
+  // Next Service
+  nextServiceDue DateTime?
+
+  // Attachments
+  images String?
+
+  createdAt DateTime @default(now())
+
+  @@index([assetId])
+  @@index([date])
+}
+
+// 28. AC Inspection Template
+model ACInspectionTemplate {
+  id          Int     @id @default(autoincrement())
+  name        String // "Monthly AC Inspection"
+  description String?
+
+  checklistItems String // Array of checklist items
+  // [
+  //   { "id": 1, "item": "และตรวจสอบ", "description": "ทำความสะอาดตัวเครื่องภายนอก..." },
+  //   { "id": 2, "item": "ทำความสะอาดแผง", "description": "ปัดฝุ่นทำความสะอาดแผง..." }
+  // ]
+
+  isActive Boolean              @default(true)
+  records  ACInspectionRecord[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 29. AC Inspection Records
+model ACInspectionRecord {
+  id Int @id @default(autoincrement())
+
+  fmAssetId Int
+  fmAsset   FMAsset @relation(fields: [fmAssetId], references: [id])
+
+  templateId Int
+  template   ACInspectionTemplate @relation(fields: [templateId], references: [id])
+
+  inspectionDate DateTime @default(now())
+  inspectedById  Int
+  inspectedBy    User     @relation(fields: [inspectedById], references: [id])
+
+  // Checklist Results
+  checklistResults String // Array of results
+  // [
+  //   { "itemId": 1, "status": "P", "note": "" },
+  //   { "itemId": 2, "status": "A", "note": "พบฝุ่นมาก" }
+  // ]
+
+  // Overall
+  overallStatus String // "pass", "fail", "needs_attention"
+  notes         String?
+  images        String?
+
+  // Next Inspection
+  nextInspectionDue DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([fmAssetId])
+  @@index([inspectionDate])
 }

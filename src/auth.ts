@@ -19,6 +19,7 @@ async function getUser(email: string): Promise<User | null> {
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
+    // @ts-expect-error - Type mismatch between @auth/core versions is expected
     adapter: PrismaAdapter(prisma),
     // Use JWT with minimal data to avoid HTTP 431
     session: {
@@ -118,6 +119,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         email: true,
                         name: true,
                         role: true,
+                        userRole: true,
+                        userDepartment: true,
                         // Never include image or large fields
                     }
                 });
@@ -125,8 +128,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 if (user) {
                     session.user.id = user.id.toString();
                     session.user.role = user.role;
+                    session.user.userRole = user.userRole;
+                    session.user.userDepartment = user.userDepartment;
                     session.user.name = user.name ?? undefined;
-                    session.user.email = user.email;
+                    session.user.email = user.email ?? '';
                 }
             }
             return session;

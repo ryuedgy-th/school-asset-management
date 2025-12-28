@@ -31,7 +31,7 @@ export const createUserSchema = z.object({
     email: emailSchema,
     password: passwordSchema,
     role: z.enum(['Admin', 'Technician', 'User'], {
-        errorMap: () => ({ message: 'Invalid role' }),
+        message: 'Invalid role',
     }),
     department: z.string().max(100, 'Department name is too long').optional(),
     phoneNumber: z.string().max(20, 'Phone number is too long').optional(),
@@ -94,7 +94,7 @@ export const fileUploadSchema = z.object({
         'image/webp',
         'application/pdf',
     ], {
-        errorMap: () => ({ message: 'Invalid file type. Only images and PDFs are allowed.' }),
+        message: 'Invalid file type. Only images and PDFs are allowed.',
     }),
     size: z.number().max(10 * 1024 * 1024, 'File size must be less than 10MB'),
 });

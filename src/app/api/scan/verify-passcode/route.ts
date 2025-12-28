@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getScanPasscode } from '@/lib/system-settings';
 
 // Check if user has valid passcode cookie
 export async function GET() {
@@ -22,8 +23,8 @@ export async function POST(req: NextRequest) {
     try {
         const { passcode } = await req.json();
 
-        // Get passcode from environment variable
-        const correctPasscode = process.env.SCAN_PASSCODE || 'MYIS2024';
+        // Get passcode from database (with fallback to env)
+        const correctPasscode = await getScanPasscode();
 
         if (passcode === correctPasscode) {
             // Set secure cookie for scan access (20 minutes)

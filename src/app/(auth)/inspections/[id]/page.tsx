@@ -37,10 +37,8 @@ export default async function InspectionDetailPage({ params }: { params: Promise
             ...inspection.asset,
             cost: inspection.asset.cost ? Number(inspection.asset.cost) : null
         },
-        assignment: inspection.assignment ? {
-            ...inspection.assignment,
-            // No Decimal fields in assignment
-        } : null,
+        inspector: inspection.inspector,
+        assignmentId: inspection.assignmentId,
         approver: inspection.approver || null
     };
 

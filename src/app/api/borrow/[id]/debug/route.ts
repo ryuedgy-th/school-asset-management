@@ -21,8 +21,7 @@ export async function GET(
                     include: {
                         asset: true
                     }
-                },
-                checkoutInspection: true
+                }
             }
         });
 
@@ -34,16 +33,6 @@ export async function GET(
         return NextResponse.json({
             transactionId: transaction.id,
             transactionNumber: transaction.transactionNumber,
-            hasInspection: !!transaction.checkoutInspection,
-            inspection: transaction.checkoutInspection ? {
-                id: transaction.checkoutInspection.id,
-                overallCondition: transaction.checkoutInspection.overallCondition,
-                photoUrlsRaw: transaction.checkoutInspection.photoUrls,
-                photoUrlsType: typeof transaction.checkoutInspection.photoUrls,
-                photoUrlsParsed: transaction.checkoutInspection.photoUrls
-                    ? JSON.parse(transaction.checkoutInspection.photoUrls)
-                    : null
-            } : null,
             signature: transaction.borrowerSignature,
             isSigned: transaction.isSigned
         });

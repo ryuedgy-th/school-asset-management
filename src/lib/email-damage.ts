@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { getNotificationRecipients } from '@/lib/notification-recipients';
 
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_SERVER_HOST,
@@ -32,11 +33,12 @@ export async function sendDamageApprovalEmail(data: {
     };
     approvalNotes?: string | null;
 }) {
+    // Get recipients from database
+    const dbRecipients = await getNotificationRecipients('damage_approval');
     const recipients = [
         data.user.email,
-        process.env.DIRECTOR1_EMAIL,
-        process.env.DIRECTOR2_EMAIL,
-        process.env.IT_HEAD_EMAIL
+        ...dbRecipients.to,
+        ...dbRecipients.cc
     ].filter(Boolean);
 
     const html = `
@@ -159,11 +161,12 @@ export async function sendDamageWaiverEmail(data: {
     };
     waiverReason: string;
 }) {
+    // Get recipients from database
+    const dbRecipients = await getNotificationRecipients('damage_waiver');
     const recipients = [
         data.user.email,
-        process.env.DIRECTOR1_EMAIL,
-        process.env.DIRECTOR2_EMAIL,
-        process.env.IT_HEAD_EMAIL
+        ...dbRecipients.to,
+        ...dbRecipients.cc
     ].filter(Boolean);
 
     const html = `

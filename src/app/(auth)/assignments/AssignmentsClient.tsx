@@ -176,7 +176,7 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                             {assignment.user.department || '-'}
                                         </td>
                                         <td className="px-6 py-4 text-slate-500">
-                                            {assignment.academicYear} / Term {assignment.semester}
+                                            {assignment.academicYear} / Term {assignment.term}
                                         </td>
                                         <td className="px-6 py-4 text-slate-500">
                                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
@@ -278,7 +278,7 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                                 </span>
                                             </div>
                                             <p className="text-sm text-slate-500">
-                                                Academic Year: {assignment.academicYear} | Term: {assignment.semester}
+                                                Academic Year: {assignment.academicYear} / Term {assignment.term}
                                             </p>
                                         </div>
                                         <Link href={`/assignments/${assignment.id}`} className="text-sm font-medium text-primary hover:text-blue-800">
@@ -326,7 +326,7 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                 {pastAssignments.map(assignment => (
                                     <tr key={assignment.id} className="hover:bg-slate-50/50">
                                         <td className="px-6 py-4 font-medium text-slate-900">{assignment.assignmentNumber}</td>
-                                        <td className="px-6 py-4 text-slate-500">{assignment.academicYear}/{assignment.semester}</td>
+                                        <td className="px-6 py-4 text-slate-500">{assignment.academicYear} / Term {assignment.term}</td>
                                         <td className="px-6 py-4 text-slate-500">
                                             {assignment.borrowTransactions.reduce((acc, tx) => acc + tx.items.length, 0)} items
                                         </td>

@@ -57,7 +57,7 @@ export default function MyAssignmentClient({ assignment, user }: MyAssignmentCli
                         </div>
                         <div className="p-4 bg-purple-50 rounded-xl">
                             <div className="text-xs text-purple-600 font-semibold uppercase mb-1">Academic Year</div>
-                            <div className="text-lg font-bold text-slate-900">{assignment.academicYear}</div>
+                            <div className="text-lg font-bold text-slate-900">{assignment.academicYear} / Term {assignment.term}</div>
                         </div>
                         <div className="p-4 bg-green-50 rounded-xl">
                             <div className="text-xs text-green-600 font-semibold uppercase mb-1">Term</div>

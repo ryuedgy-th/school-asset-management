@@ -69,7 +69,7 @@ export async function generateBorrowTransactionToken(
         // Use existing email function for now
         emailResult = await sendSignatureRequest(
             transaction.assignment.user.email,
-            transaction.assignment.user.name,
+            transaction.assignment.user.name || 'User',
             signatureUrl
         );
     }
@@ -90,7 +90,15 @@ export async function verifyBorrowTransactionToken(token: string) {
     const transaction = await prisma.borrowTransaction.findUnique({
         where: { signatureToken: token },
         include: {
-            assignment: { include: { user: true } },
+            assignment: {
+                include: {
+                    user: {
+                        include: {
+                            userDepartment: true
+                        }
+                    }
+                }
+            },
             items: {
                 include: {
                     asset: true,
@@ -134,9 +142,9 @@ export async function verifyBorrowTransactionToken(token: string) {
         name: item.asset.name,
         category: item.asset.category,
         serialNumber: item.asset.serialNumber,
+        condition: item.checkoutInspection?.overallCondition || 'Good',
         notes: item.asset.brand + " " + (item.asset.model || ""),
         inspection: item.checkoutInspection ? {
-            condition: item.checkoutInspection.overallCondition,
             exteriorCondition: item.checkoutInspection.exteriorCondition,
             exteriorNotes: item.checkoutInspection.exteriorNotes,
             screenCondition: item.checkoutInspection.screenCondition,
@@ -149,8 +157,7 @@ export async function verifyBorrowTransactionToken(token: string) {
             batteryHealth: item.checkoutInspection.batteryHealth,
             photos: item.checkoutInspection.photoUrls
                 ? JSON.parse(item.checkoutInspection.photoUrls)
-                : [],
-            date: item.checkoutInspection.inspectionDate
+                : []
         } : null
     }));
 
@@ -160,9 +167,9 @@ export async function verifyBorrowTransactionToken(token: string) {
             id: transaction.id,
             transactionNumber: transaction.transactionNumber,
             assignmentNumber: transaction.assignment.assignmentNumber,
-            teacherName: transaction.assignment.user.name,
-            teacherEmail: transaction.assignment.user.email,
-            department: transaction.assignment.user.department || "N/A",
+            teacherName: transaction.assignment.user.name || 'User',
+            teacherEmail: transaction.assignment.user.email || 'no-email@example.com',
+            department: transaction.assignment.user.userDepartment?.name || "N/A",
             borrowDate: transaction.borrowDate,
             items: items
         }

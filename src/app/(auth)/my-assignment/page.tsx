@@ -28,7 +28,7 @@ export default async function MyAssignmentPage() {
         include: {
             borrowTransactions: {
                 include: {
-                    borrowItems: { // Fixed: borrowItems instead of items
+                    items: { // Changed from borrowItems to items
                         include: {
                             asset: true,
                         },
@@ -47,9 +47,11 @@ export default async function MyAssignmentPage() {
     // Serialize Decimal fields for Client Component
     const serializedAssignment = assignment ? {
         ...assignment,
+        // Flat map all borrowed items
+        allBorrowedItems: assignment.borrowTransactions.flatMap(tx => tx.items || []),
         borrowTransactions: assignment.borrowTransactions.map(bt => ({
             ...bt,
-            borrowItems: bt.borrowItems.map(item => ({
+            items: bt.items.map(item => ({ // Changed from borrowItems to items
                 ...item,
                 asset: {
                     ...item.asset,

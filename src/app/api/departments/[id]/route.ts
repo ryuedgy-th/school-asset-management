@@ -9,7 +9,7 @@ import { isAdmin } from '@/lib/permissions';
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -17,6 +17,7 @@ export async function GET(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        const params = await context.params;
         const departmentId = parseInt(params.id);
         const department = await prisma.department.findUnique({
             where: { id: departmentId },
@@ -73,7 +74,7 @@ export async function GET(
  */
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -93,6 +94,7 @@ export async function PUT(
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
+        const params = await context.params;
         const departmentId = parseInt(params.id);
         const body = await request.json();
         const { name, description, isActive } = body;
@@ -145,7 +147,7 @@ export async function PUT(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -165,6 +167,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
+        const params = await context.params;
         const departmentId = parseInt(params.id);
 
         // Check if department has any data

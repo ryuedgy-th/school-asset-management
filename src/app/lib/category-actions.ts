@@ -24,7 +24,7 @@ export async function createCategory(formData: FormData) {
             },
         });
 
-        await logAudit(session?.user?.id, 'CREATE_CATEGORY', 'Category', category.id.toString(), JSON.stringify({ name }));
+        await logAudit('CREATE_CATEGORY', 'Category', category.id.toString(), JSON.stringify({ name }), session?.user?.id ? Number(session.user.id) : undefined);
         revalidatePath('/assets/categories');
         return { success: true, category };
     } catch (error) {
@@ -48,7 +48,7 @@ export async function updateCategory(id: number, formData: FormData) {
             },
         });
 
-        await logAudit(session?.user?.id, 'UPDATE_CATEGORY', 'Category', category.id.toString(), JSON.stringify({ name }));
+        await logAudit('UPDATE_CATEGORY', 'Category', category.id.toString(), JSON.stringify({ name }), session?.user?.id ? Number(session.user.id) : undefined);
         revalidatePath('/assets/categories');
         return { success: true, category };
     } catch (error) {
@@ -65,7 +65,7 @@ export async function deleteCategory(id: number) {
             where: { id },
         });
 
-        await logAudit(session?.user?.id, 'DELETE_CATEGORY', 'Category', id.toString(), null);
+        await logAudit('DELETE_CATEGORY', 'Category', id.toString(), null, session?.user?.id ? Number(session.user.id) : undefined);
         revalidatePath('/assets/categories');
         return { success: true };
     } catch (error) {
@@ -110,11 +110,11 @@ export async function syncCategoriesFromAssets() {
 
         if (createdStats.count > 0) {
             await logAudit(
-                session?.user?.id,
                 'SYNC_CATEGORIES',
                 'Category',
                 'BATCH',
-                JSON.stringify(createdStats)
+                JSON.stringify(createdStats),
+                session?.user?.id ? Number(session.user.id) : undefined
             );
         }
 

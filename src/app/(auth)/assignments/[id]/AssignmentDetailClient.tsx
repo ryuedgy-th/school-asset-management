@@ -49,7 +49,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
     }
 }
 
-export default function AssignDetailClient({ assignment }: { assignment: FullAssignment }) {
+export default function AssignmentDetailClient({ assignment, isAdmin }: { assignment: FullAssignment; isAdmin: boolean }) {
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
     const [isAddAssetModalOpen, setIsAddAssetModalOpen] = useState(false);
     const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
@@ -80,7 +80,7 @@ export default function AssignDetailClient({ assignment }: { assignment: FullAss
                         Borrowed by <span className="font-semibold text-slate-900">{assignment.user.name}</span> • {assignment.user.department}
                     </div>
                     <div className="text-sm text-slate-400 mt-1">
-                        AY {assignment.academicYear} / Sem {assignment.semester}
+                        AY {assignment.academicYear} / Term {assignment.term}
                     </div>
                 </div>
 

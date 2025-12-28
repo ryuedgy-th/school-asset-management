@@ -405,8 +405,8 @@ export default function EnhancedTemplateEditor({
                                 <button
                                     onClick={() => setPreviewMode('desktop')}
                                     className={`p-1.5 rounded-lg transition-colors ${previewMode === 'desktop'
-                                        ? 'bg-primary text-white'
-                                        : 'text-slate-600 hover:bg-slate-100'
+                                            ? 'bg-primary text-white'
+                                            : 'text-slate-600 hover:bg-slate-100'
                                         }`}
                                     title="Desktop view"
                                 >
@@ -415,8 +415,8 @@ export default function EnhancedTemplateEditor({
                                 <button
                                     onClick={() => setPreviewMode('mobile')}
                                     className={`p-1.5 rounded-lg transition-colors ${previewMode === 'mobile'
-                                        ? 'bg-primary text-white'
-                                        : 'text-slate-600 hover:bg-slate-100'
+                                            ? 'bg-primary text-white'
+                                            : 'text-slate-600 hover:bg-slate-100'
                                         }`}
                                     title="Mobile view"
                                 >
@@ -424,18 +424,24 @@ export default function EnhancedTemplateEditor({
                                 </button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-auto p-3 flex items-start justify-center">
-                            <div
-                                className={`bg-white rounded-lg shadow-lg transition-all duration-300 ${previewMode === 'mobile' ? 'w-[375px]' : 'w-full'
-                                    }`}
-                                style={{ minHeight: '300px' }}
-                            >
-                                <iframe
-                                    srcDoc={renderPreview()}
-                                    className="w-full h-full min-h-[300px] border-0 rounded-lg"
-                                    title="Email Preview"
-                                    sandbox="allow-same-origin"
-                                />
+                        <div className="flex-1 overflow-auto p-3 bg-slate-100 min-h-0">
+                            <div className="w-full h-full flex items-start justify-center">
+                                <div
+                                    className={`bg-white rounded-lg shadow-lg transition-all duration-300 origin-top ${previewMode === 'mobile' ? 'w-[375px]' : 'w-full max-w-[600px]'
+                                        }`}
+                                    style={{
+                                        transform: previewMode === 'mobile' ? 'scale(0.8)' : 'scale(1)',
+                                        transformOrigin: 'top center',
+                                    }}
+                                >
+                                    <iframe
+                                        srcDoc={renderPreview()}
+                                        className="w-full border-0 rounded-lg"
+                                        style={{ height: '600px' }}
+                                        title="Email Preview"
+                                        sandbox="allow-same-origin"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

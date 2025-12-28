@@ -89,3 +89,153 @@ export async function confirmBorrowSignature(data: {
         };
     }
 }
+
+/**
+ * Verify assignment token for public signature page
+ */
+export async function verifyAssignmentToken(token: string) {
+    try {
+        const assignment = await prisma.assignment.findFirst({
+            where: {
+                signatureToken: token,
+                signatureTokenExpiry: {
+                    gt: new Date()
+                }
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        userDepartment: true
+                    }
+                },
+                borrowTransactions: {
+                    include: {
+                        items: {
+                            include: {
+                                asset: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!assignment) {
+            return { success: false, error: 'Invalid or expired token' };
+        }
+
+        return {
+            success: true,
+            data: {
+                id: assignment.id,
+                assignmentNumber: assignment.assignmentNumber,
+                teacherName: assignment.user.name || 'Unknown',
+                teacherEmail: assignment.user.email || 'no-email@example.com',
+                department: assignment.user.userDepartment?.name || 'Unknown',
+                createdAt: assignment.createdAt,
+                items: assignment.borrowTransactions.flatMap(transaction =>
+                    transaction.items.map(item => ({
+                        id: item.id,
+                        assetTag: item.asset.assetCode,
+                        name: item.asset.name,
+                        category: item.asset.category,
+                        serialNumber: item.asset.serialNumber
+                    }))
+                )
+            }
+        };
+    } catch (error: any) {
+        console.error('[verifyAssignmentToken] Error:', error);
+        return {
+            success: false,
+            error: error.message || 'Failed to verify token'
+        };
+    }
+}
+
+/**
+ * Sign public assignment (from public link)
+ */
+export async function signPublicAssignment(data: {
+    token: string;
+    signatureData: string;
+}) {
+    try {
+        // Verify token first
+        const assignment = await prisma.assignment.findFirst({
+            where: {
+                signatureToken: data.token,
+                signatureTokenExpiry: {
+                    gt: new Date()
+                }
+            },
+            include: {
+                borrowTransactions: {
+                    include: {
+                        items: {
+                            include: {
+                                asset: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!assignment) {
+            return { success: false, error: 'Invalid or expired token' };
+        }
+
+        if (assignment.signedPdfPath) {
+            return { success: false, error: 'Assignment already signed' };
+        }
+
+        // Save signature (in real implementation, save to file system)
+        const signaturePath = `/signatures/assignment-${assignment.id}-${Date.now()}.png`;
+
+        // Update assignment
+        await prisma.assignment.update({
+            where: { id: assignment.id },
+            data: {
+                signedPdfPath: signaturePath,
+                signatureToken: null, // Invalidate token
+                signatureTokenExpiry: null
+            }
+        });
+
+        // Update assets to Borrowed status
+        const allItems = assignment.borrowTransactions.flatMap(t => t.items);
+        for (const item of allItems) {
+            if (item.asset.totalStock === 1 && item.asset.status === 'Reserved') {
+                await prisma.asset.update({
+                    where: { id: item.asset.id },
+                    data: { status: 'Borrowed' }
+                });
+            }
+        }
+
+        await logAudit(
+            'SIGN_ASSIGNMENT',
+            'Assignment',
+            assignment.id,
+            `Signed assignment ${assignment.assignmentNumber} via public link`,
+            assignment.userId
+        );
+
+        revalidatePath('/assignments');
+
+        return {
+            success: true,
+            message: 'Assignment signed successfully'
+        };
+    } catch (error: any) {
+        console.error('[signPublicAssignment] Error:', error);
+        return {
+            success: false,
+            error: error.message || 'Failed to sign assignment'
+        };
+    }
+}

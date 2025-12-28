@@ -9,7 +9,7 @@ import { hasPermission } from '@/lib/permissions';
  */
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -27,6 +27,7 @@ export async function PUT(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
+        const params = await context.params;
         const id = parseInt(params.id);
         if (isNaN(id)) {
             return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
@@ -92,7 +93,7 @@ export async function PUT(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         const session = await auth();
@@ -110,6 +111,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
+        const params = await context.params;
         const id = parseInt(params.id);
         if (isNaN(id)) {
             return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
