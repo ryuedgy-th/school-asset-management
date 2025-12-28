@@ -26,6 +26,15 @@ export async function GET(
                         email: true,
                     },
                 },
+                affectedUser: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        department: true,
+                        phoneNumber: true,
+                    },
+                },
                 assignedTo: {
                     select: {
                         id: true,
@@ -106,7 +115,8 @@ export async function GET(
 
         // Check if user can view this ticket
         const isOwnTicket = ticket.reportedById === parseInt(session.user.id) ||
-            ticket.assignedToId === parseInt(session.user.id);
+            ticket.assignedToId === parseInt(session.user.id) ||
+            ticket.affectedUserId === parseInt(session.user.id);
 
         if (!isOwnTicket) {
             if (ticket.type === 'IT' && !canViewIT) {

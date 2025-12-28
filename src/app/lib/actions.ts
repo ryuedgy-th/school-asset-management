@@ -107,8 +107,8 @@ export async function googleSignIn() {
 export async function updateUser(userId: number, formData: FormData) {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
-    const role = formData.get('role') as string;
-    const department = formData.get('department') as string;
+    const roleIdStr = formData.get('roleId') as string;
+    const departmentIdStr = formData.get('departmentId') as string;
     const phoneNumber = formData.get('phoneNumber') as string;
     // Password update separate/optional
 
@@ -116,19 +116,23 @@ export async function updateUser(userId: number, formData: FormData) {
         return { error: 'Missing required fields' };
     }
 
+    // Parse roleId and departmentId
+    const roleId = roleIdStr ? parseInt(roleIdStr) : null;
+    const departmentId = departmentIdStr ? parseInt(departmentIdStr) : null;
+
     try {
         await prisma.user.update({
             where: { id: userId },
             data: {
                 name,
                 email,
-                role,
-                department,
+                roleId,
+                departmentId,
                 phoneNumber,
             },
         });
 
-        await logAudit('UPDATE_USER', 'User', userId, { name, email, role, department, phoneNumber });
+        await logAudit('UPDATE_USER', 'User', userId, { name, email, roleId, departmentId, phoneNumber });
         revalidatePath('/users');
         return { success: true };
     } catch (error) {

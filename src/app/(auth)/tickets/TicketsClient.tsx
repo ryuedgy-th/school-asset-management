@@ -6,7 +6,6 @@ import {
     Plus,
     Search,
     Filter,
-    Eye,
     Clock,
     CheckCircle2,
     AlertCircle,
@@ -314,7 +313,6 @@ export default function TicketsClient() {
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Status</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">SLA</th>
                                         <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Assigned To</th>
-                                        <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600 uppercase">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
@@ -329,10 +327,17 @@ export default function TicketsClient() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <div className="font-medium text-slate-900">{ticket.title}</div>
-                                                <div className="text-sm text-slate-500 truncate max-w-xs">
-                                                    {ticket.description.substring(0, 60)}...
-                                                </div>
+                                                <Link
+                                                    href={`/tickets/${ticket.id}`}
+                                                    className="block hover:text-primary transition-colors cursor-pointer group"
+                                                >
+                                                    <div className="font-medium text-slate-900 group-hover:text-primary">
+                                                        {ticket.title}
+                                                    </div>
+                                                    <div className="text-sm text-slate-500 truncate max-w-xs">
+                                                        {ticket.description.substring(0, 60)}...
+                                                    </div>
+                                                </Link>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className={`px-2 py-1 text-xs rounded-full ${ticket.type === 'IT' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
@@ -362,15 +367,6 @@ export default function TicketsClient() {
                                                 ) : (
                                                     <span className="text-sm text-slate-400">Unassigned</span>
                                                 )}
-                                            </td>
-                                            <td className="px-4 py-3 text-right">
-                                                <Link
-                                                    href={`/tickets/${ticket.id}`}
-                                                    className="inline-flex items-center gap-1 px-3 py-1 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                                >
-                                                    <Eye size={16} />
-                                                    View
-                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

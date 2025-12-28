@@ -43,6 +43,13 @@ interface Ticket {
         name: string;
         email: string;
     };
+    affectedUser: {
+        id: number;
+        name: string;
+        email: string;
+        department: string | null;
+        phoneNumber: string | null;
+    } | null;
     assignedTo: {
         id: number;
         name: string;
@@ -114,12 +121,17 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
 
     const fetchTicket = async () => {
         try {
+            console.log('Fetching ticket data...');
             const response = await fetch(`/api/tickets/${ticketId}`);
             if (response.ok) {
                 const data = await response.json();
+                console.log('Ticket data fetched:', data);
                 setTicket(data);
             } else if (response.status === 404) {
+                console.error('Ticket not found (404), redirecting to tickets list');
                 router.push('/tickets');
+            } else {
+                console.error('Failed to fetch ticket:', response.status);
             }
         } catch (error) {
             console.error('Error fetching ticket:', error);
@@ -479,19 +491,31 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                 <div>
                                     <p className="text-sm text-slate-500">Reported By</p>
                                     <p className="font-medium">{ticket.reportedBy.name}</p>
+                                    <p className="text-xs text-slate-500">{ticket.reportedBy.email}</p>
                                 </div>
+                                {ticket.affectedUser && (
+                                    <div>
+                                        <p className="text-sm text-slate-500">Reported For</p>
+                                        <p className="font-medium">{ticket.affectedUser.name}</p>
+                                        <p className="text-xs text-slate-500">{ticket.affectedUser.email}</p>
+                                        {ticket.affectedUser.department && (
+                                            <p className="text-xs text-slate-400">{ticket.affectedUser.department}</p>
+                                        )}
+                                        {ticket.affectedUser.phoneNumber && (
+                                            <p className="text-xs text-slate-400">{ticket.affectedUser.phoneNumber}</p>
+                                        )}
+                                    </div>
+                                )}
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <p className="text-sm text-slate-500">Assigned To</p>
-                                        {!ticket.assignedTo && (
-                                            <button
-                                                onClick={() => setShowAssignModal(true)}
-                                                className="text-xs text-primary hover:underline flex items-center gap-1"
-                                            >
-                                                <UserPlus size={12} />
-                                                Assign
-                                            </button>
-                                        )}
+                                        <button
+                                            onClick={() => setShowAssignModal(true)}
+                                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                                        >
+                                            <UserPlus size={12} />
+                                            {ticket.assignedTo ? 'Reassign' : 'Assign'}
+                                        </button>
                                     </div>
                                     <p className="font-medium">{ticket.assignedTo?.name || 'Unassigned'}</p>
                                 </div>

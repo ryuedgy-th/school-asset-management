@@ -69,6 +69,7 @@ model User {
   createdFMAssets       FMAsset[]              @relation("FMAssetCreatedBy")
   assignedPMSchedules   PMSchedule[]
   reportedTickets       Ticket[]               @relation("TicketReporter")
+  affectedTickets       Ticket[]               @relation("AffectedTickets")
   assignedTickets       Ticket[]               @relation("TicketAssignee")
   ticketComments        TicketComment[]
   ticketAttachments     TicketAttachment[]
@@ -743,6 +744,9 @@ model Ticket {
   reportedById Int
   reportedBy   User @relation("TicketReporter", fields: [reportedById], references: [id])
 
+  affectedUserId Int? // User affected by this issue (e.g., teacher reporting via helpdesk)
+  affectedUser   User? @relation("AffectedTickets", fields: [affectedUserId], references: [id])
+
   assignedToId Int?
   assignedTo   User? @relation("TicketAssignee", fields: [assignedToId], references: [id])
 
@@ -776,6 +780,7 @@ model Ticket {
   @@index([status])
   @@index([assignedToId])
   @@index([reportedById])
+  @@index([affectedUserId])
   @@index([slaStatus])
   @@index([slaDeadline])
 }

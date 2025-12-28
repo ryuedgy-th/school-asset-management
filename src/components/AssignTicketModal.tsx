@@ -60,11 +60,12 @@ export default function AssignTicketModal({
             const response = await fetch(`/api/tickets/${ticketId}/assign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ assigneeId: selectedId }),
+                body: JSON.stringify({ assignedToId: selectedId }),
             });
 
             if (response.ok) {
-                onSuccess();
+                console.log('Ticket assigned successfully');
+                await onSuccess(); // Ensure data is refreshed before closing
                 onClose();
             } else {
                 const data = await response.json();
@@ -83,11 +84,12 @@ export default function AssignTicketModal({
             const response = await fetch(`/api/tickets/${ticketId}/assign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ assigneeId: currentUserId }),
+                body: JSON.stringify({ assignedToId: currentUserId }),
             });
 
             if (response.ok) {
-                onSuccess();
+                console.log('Ticket assigned to current user successfully');
+                await onSuccess(); // Ensure data is refreshed before closing
                 onClose();
             } else {
                 const data = await response.json();

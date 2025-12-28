@@ -3,15 +3,22 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, Save, Phone } from 'lucide-react';
 import { updateUser } from '@/app/lib/actions';
-import { User } from '@prisma/client';
+import { User, Role, Department } from '@prisma/client';
+
+type UserWithRelations = User & {
+    userRole: Role | null;
+    userDepartment: Department | null;
+};
 
 interface EditUserModalProps {
     isOpen: boolean;
     onClose: () => void;
-    user: User;
+    user: UserWithRelations;
+    roles: Role[];
+    departments: Department[];
 }
 
-export default function EditUserModal({ isOpen, onClose, user }: EditUserModalProps) {
+export default function EditUserModal({ isOpen, onClose, user, roles, departments }: EditUserModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -19,8 +26,8 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
     const [name, setName] = useState(user.name || '');
     const [email, setEmail] = useState(user.email || '');
     const [phoneNumber, setPhoneNumber] = useState(user.phoneNumber || '');
-    const [role, setRole] = useState(user.role || 'User');
-    const [department, setDepartment] = useState(user.department || '');
+    const [roleId, setRoleId] = useState<string>(user.roleId?.toString() || '');
+    const [departmentId, setDepartmentId] = useState<string>(user.departmentId?.toString() || '');
 
     // Reset form when user changes
     useEffect(() => {
@@ -28,8 +35,8 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
             setName(user.name || '');
             setEmail(user.email || '');
             setPhoneNumber(user.phoneNumber || '');
-            setRole(user.role || 'User');
-            setDepartment(user.department || '');
+            setRoleId(user.roleId?.toString() || '');
+            setDepartmentId(user.departmentId?.toString() || '');
         }
     }, [user]);
 
@@ -116,36 +123,38 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label htmlFor="role" className="text-sm font-semibold text-gray-700">Role</label>
+                            <label htmlFor="roleId" className="text-sm font-semibold text-gray-700">Role</label>
                             <select
-                                name="role"
-                                id="role"
-                                value={role}
-                                onChange={(e) => setRole(e.target.value)}
+                                name="roleId"
+                                id="roleId"
+                                value={roleId}
+                                onChange={(e) => setRoleId(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all bg-white"
                             >
-                                <option value="User">User</option>
-                                <option value="Technician">Technician</option>
-                                <option value="Admin">Admin</option>
+                                <option value="">Select Role</option>
+                                {roles.map((role) => (
+                                    <option key={role.id} value={role.id.toString()}>
+                                        {role.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label htmlFor="department" className="text-sm font-semibold text-gray-700">Department</label>
+                            <label htmlFor="departmentId" className="text-sm font-semibold text-gray-700">Department</label>
                             <select
-                                name="department"
-                                id="department"
-                                value={department}
-                                onChange={(e) => setDepartment(e.target.value)}
+                                name="departmentId"
+                                id="departmentId"
+                                value={departmentId}
+                                onChange={(e) => setDepartmentId(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/80/20 focus:border-primary/80 outline-none transition-all bg-white"
                             >
                                 <option value="">Select Dept.</option>
-                                <option value="IT">IT</option>
-                                <option value="Science">Science</option>
-                                <option value="Math">Math</option>
-                                <option value="English">English</option>
-                                <option value="Arts">Arts</option>
-                                <option value="Administration">Administration</option>
+                                {departments.map((dept) => (
+                                    <option key={dept.id} value={dept.id.toString()}>
+                                        {dept.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>

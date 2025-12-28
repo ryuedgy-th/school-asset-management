@@ -2,20 +2,27 @@
 
 import { useState } from 'react';
 import { Plus, User as UserIcon, Shield, Mail } from 'lucide-react';
-import { User } from '@prisma/client';
+import { User, Role, Department } from '@prisma/client';
 import CreateUserModal from './CreateUserModal';
 import EditUserModal from './EditUserModal';
 import { useConfirm, useAlert } from '@/contexts/DialogProvider';
 
+type UserWithRelations = User & {
+    userRole: Role | null;
+    userDepartment: Department | null;
+};
+
 interface UserManagementProps {
-    initialUsers: User[];
+    initialUsers: UserWithRelations[];
+    roles: Role[];
+    departments: Department[];
 }
 
-export default function UserManagement({ initialUsers }: UserManagementProps) {
+export default function UserManagement({ initialUsers, roles, departments }: UserManagementProps) {
     const { confirm } = useConfirm();
     const { alert } = useAlert();
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [editingUser, setEditingUser] = useState<UserWithRelations | null>(null);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
     async function handleDelete(id: number) {
@@ -99,14 +106,16 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
                                     </div>
                                 </td>
                                 <td className="p-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
-                                        user.role === 'Technician' ? 'bg-primary/20 text-blue-800' : 'bg-green-100 text-green-800'
-                                        }`}>
-                                        {user.role === 'Admin' && <Shield size={12} className="mr-1" />}
-                                        {user.role}
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        user.userRole?.name?.toLowerCase().includes('admin') ? 'bg-purple-100 text-purple-800' :
+                                        user.userRole?.name?.toLowerCase().includes('technician') ? 'bg-primary/20 text-blue-800' :
+                                        'bg-green-100 text-green-800'
+                                    }`}>
+                                        {user.userRole?.name?.toLowerCase().includes('admin') && <Shield size={12} className="mr-1" />}
+                                        {user.userRole?.name || user.role || 'No Role'}
                                     </span>
                                 </td>
-                                <td className="p-4 text-slate-600">{user.department || '-'}</td>
+                                <td className="p-4 text-slate-600">{user.userDepartment?.name || user.department || '-'}</td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
@@ -137,13 +146,20 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
                 </table>
             </div>
 
-            <CreateUserModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+            <CreateUserModal
+                isOpen={isCreateOpen}
+                onClose={() => setIsCreateOpen(false)}
+                roles={roles}
+                departments={departments}
+            />
 
             {editingUser && (
                 <EditUserModal
                     isOpen={!!editingUser}
                     onClose={() => setEditingUser(null)}
                     user={editingUser}
+                    roles={roles}
+                    departments={departments}
                 />
             )}
         </>

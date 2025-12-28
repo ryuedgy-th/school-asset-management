@@ -88,6 +88,13 @@ export async function GET(request: NextRequest) {
                         email: true,
                     },
                 },
+                affectedUser: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
                 assignedTo: {
                     select: {
                         id: true,
@@ -201,12 +208,20 @@ export async function POST(request: NextRequest) {
                 priority: body.priority || 'medium',
                 status: 'open',
                 reportedById: parseInt(session.user.id),
+                affectedUserId: body.affectedUserId ? parseInt(body.affectedUserId) : null,
                 assignedToId: body.assignedToId ? parseInt(body.assignedToId) : null,
                 images: body.images ? JSON.stringify(body.images) : null,
                 documents: body.documents ? JSON.stringify(body.documents) : null,
             },
             include: {
                 reportedBy: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                affectedUser: {
                     select: {
                         id: true,
                         name: true,

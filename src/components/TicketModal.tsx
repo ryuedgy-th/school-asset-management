@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, Search, User as UserIcon } from 'lucide-react';
 import FileUpload from './FileUpload';
 
 interface TicketModalProps {
@@ -18,17 +18,47 @@ interface UploadedFile {
     url: string;
 }
 
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    department: string | null;
+}
+
 export default function TicketModal({ isOpen, onClose, onSuccess }: TicketModalProps) {
     const [type, setType] = useState<'IT' | 'FM'>('IT');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [priority, setPriority] = useState('medium');
     const [category, setCategory] = useState('');
+    const [affectedUserId, setAffectedUserId] = useState<number | null>(null);
+    const [users, setUsers] = useState<User[]>([]);
+    const [userSearchTerm, setUserSearchTerm] = useState('');
+    const [showUserDropdown, setShowUserDropdown] = useState(false);
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
     const MAX_TITLE_LENGTH = 255;
+
+    // Fetch users for affected user selection
+    useEffect(() => {
+        if (isOpen) {
+            fetchUsers();
+        }
+    }, [isOpen]);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await fetch('/api/users?limit=100');
+            if (response.ok) {
+                const data = await response.json();
+                setUsers(data.users || []);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    };
 
     // Reset form when modal opens
     useEffect(() => {
@@ -37,6 +67,9 @@ export default function TicketModal({ isOpen, onClose, onSuccess }: TicketModalP
             setDescription('');
             setPriority('medium');
             setCategory('');
+            setAffectedUserId(null);
+            setUserSearchTerm('');
+            setShowUserDropdown(false);
             setFiles([]);
             setError('');
         }
@@ -72,6 +105,7 @@ export default function TicketModal({ isOpen, onClose, onSuccess }: TicketModalP
                     description: description.trim(),
                     priority,
                     category,
+                    affectedUserId,
                     attachments: files.map(f => ({
                         filename: f.filename,
                         originalName: f.originalName,
@@ -199,6 +233,92 @@ export default function TicketModal({ isOpen, onClose, onSuccess }: TicketModalP
                             <option value="high">High - Important</option>
                             <option value="urgent">Urgent - Critical</option>
                         </select>
+                    </div>
+
+                    {/* Affected User */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Reported For <span className="text-slate-500 text-xs font-normal">(Optional - If reporting for someone else)</span>
+                        </label>
+                        <div className="relative">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <input
+                                    type="text"
+                                    value={userSearchTerm}
+                                    onChange={(e) => {
+                                        setUserSearchTerm(e.target.value);
+                                        setShowUserDropdown(true);
+                                    }}
+                                    onFocus={() => setShowUserDropdown(true)}
+                                    onBlur={() => {
+                                        // Delay to allow clicking on dropdown items
+                                        setTimeout(() => setShowUserDropdown(false), 200);
+                                    }}
+                                    placeholder="Search for user by name or email..."
+                                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                />
+                            </div>
+                            {showUserDropdown && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    {users
+                                        .filter(u =>
+                                            !userSearchTerm ||
+                                            u.name?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                                            u.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
+                                        )
+                                        .slice(0, 10)
+                                        .map(user => (
+                                            <button
+                                                key={user.id}
+                                                type="button"
+                                                onMouseDown={(e) => {
+                                                    // Prevent blur from happening before click
+                                                    e.preventDefault();
+                                                    setAffectedUserId(user.id);
+                                                    setUserSearchTerm(user.name || user.email || '');
+                                                    setShowUserDropdown(false);
+                                                }}
+                                                className={`w-full p-3 text-left hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 ${
+                                                    affectedUserId === user.id ? 'bg-primary/10' : ''
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <UserIcon size={16} className="text-slate-400" />
+                                                    <div>
+                                                        <div className="font-medium text-slate-900">{user.name}</div>
+                                                        <div className="text-xs text-slate-500">{user.email}</div>
+                                                        {user.department && (
+                                                            <div className="text-xs text-slate-400">{user.department}</div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    {users.filter(u =>
+                                        !userSearchTerm ||
+                                        u.name?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+                                        u.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
+                                    ).length === 0 && (
+                                        <div className="p-4 text-center text-slate-500 text-sm">
+                                            No users found
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {affectedUserId && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setAffectedUserId(null);
+                                    setUserSearchTerm('');
+                                }}
+                                className="mt-2 text-xs text-red-600 hover:underline"
+                            >
+                                Clear selection
+                            </button>
+                        )}
                     </div>
 
                     {/* Title with Character Counter */}
