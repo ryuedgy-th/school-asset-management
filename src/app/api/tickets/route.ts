@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
             ticketNumber = `${body.type}-${year}-001`;
         }
 
-        // Create ticket
+        // Create ticket with attachments
         const ticket = await prisma.ticket.create({
             data: {
                 ticketNumber,
@@ -236,6 +236,21 @@ export async function POST(request: NextRequest) {
                 },
             },
         });
+
+        // Create attachments if provided
+        if (body.attachments && body.attachments.length > 0) {
+            await prisma.ticketAttachment.createMany({
+                data: body.attachments.map((att: any) => ({
+                    ticketId: ticket.id,
+                    filename: att.filename,
+                    originalName: att.originalName,
+                    mimeType: att.mimeType,
+                    size: att.size,
+                    url: att.url,
+                    uploadedById: parseInt(session.user.id),
+                })),
+            });
+        }
 
         // Create activity log
         await prisma.ticketActivity.create({

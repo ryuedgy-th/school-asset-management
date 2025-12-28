@@ -454,6 +454,7 @@ export function getDepartmentFilter(user: UserWithRole) {
  */
 export function getAccessibleModules(user: UserWithRole): ModuleName[] {
     const permissions = getUserPermissions(user);
+    if (!permissions?.modules) return [];
     return Object.entries(permissions.modules)
         .filter(([_, config]) => config.enabled)
         .map(([module]) => module as ModuleName);

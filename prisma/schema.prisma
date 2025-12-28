@@ -71,6 +71,7 @@ model User {
   reportedTickets       Ticket[]               @relation("TicketReporter")
   assignedTickets       Ticket[]               @relation("TicketAssignee")
   ticketComments        TicketComment[]
+  ticketAttachments     TicketAttachment[]
   ticketActivities      TicketActivity[]
   inventoryTransactions InventoryTransaction[]
   inspectionRecords     ACInspectionRecord[]
@@ -755,13 +756,18 @@ model Ticket {
   resolution      String?
   resolutionNotes String?
 
+  // SLA Tracking
+  slaDeadline DateTime?
+  slaStatus   String? // within_sla, at_risk, breached
+
   // Attachments
   images    String? // Array of image URLs
   documents String?
 
   // Relations
-  comments   TicketComment[]
-  activities TicketActivity[]
+  comments    TicketComment[]
+  activities  TicketActivity[]
+  attachments TicketAttachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -770,6 +776,8 @@ model Ticket {
   @@index([status])
   @@index([assignedToId])
   @@index([reportedById])
+  @@index([slaStatus])
+  @@index([slaDeadline])
 }
 
 // 22. Ticket Comments
@@ -787,6 +795,27 @@ model TicketComment {
   createdAt DateTime @default(now())
 
   @@index([ticketId])
+}
+
+// 22b. Ticket Attachments
+model TicketAttachment {
+  id       Int    @id @default(autoincrement())
+  ticketId Int
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int      // in bytes
+  url          String
+
+  uploadedById Int
+  uploadedBy   User @relation(fields: [uploadedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([uploadedById])
 }
 
 // 23. Ticket Activity Log
