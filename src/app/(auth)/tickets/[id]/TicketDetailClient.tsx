@@ -131,6 +131,7 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
     const [submitting, setSubmitting] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<number>(0);
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     // Get current user ID
     useEffect(() => {
@@ -486,7 +487,7 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                                         src={url}
                                                         alt={`Damage photo ${index + 1}`}
                                                         className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity border-2 border-purple-200"
-                                                        onClick={() => window.open(url, '_blank')}
+                                                        onClick={() => setLightboxImage(url)}
                                                     />
                                                 ))}
                                             </div>
@@ -643,7 +644,7 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                                                                             src={url}
                                                                             alt={`Comment image ${index + 1}`}
                                                                             className="w-full h-24 object-cover rounded border border-slate-200 cursor-pointer hover:opacity-75 transition-opacity"
-                                                                            onClick={() => window.open(url, '_blank')}
+                                                                            onClick={() => setLightboxImage(url)}
                                                                         />
                                                                     ))}
                                                                 </div>
@@ -856,6 +857,29 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                 currentUserId={currentUserId}
                 onSuccess={fetchTicket}
             />
+
+            {/* Image Lightbox Modal */}
+            {lightboxImage && (
+                <div
+                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                    onClick={() => setLightboxImage(null)}
+                >
+                    <div className="relative max-w-7xl max-h-full">
+                        <button
+                            onClick={() => setLightboxImage(null)}
+                            className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+                        >
+                            <X size={32} />
+                        </button>
+                        <img
+                            src={lightboxImage}
+                            alt="Full size preview"
+                            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
