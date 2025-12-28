@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { ticketStatusChangedEmail, ticketResolvedEmail } from '@/lib/ticket-notifications';
 
 // Allowed status transitions
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -171,6 +170,12 @@ export async function POST(
             },
         });
 
+        // Get inspectionId separately if needed for sync
+        const ticketWithInspection = await prisma.ticket.findUnique({
+            where: { id: ticketId },
+            select: { inspectionId: true },
+        });
+
         // Create activity log
         await prisma.ticketActivity.create({
             data: {
@@ -186,14 +191,61 @@ export async function POST(
             },
         });
 
-        // TODO: Send email notifications
-        // if (body.status === 'resolved' || body.status === 'closed') {
-        //     const emailData = ticketResolvedEmail(ticket as any);
-        //     await sendEmail(emailData);
-        // } else {
-        //     const emailData = ticketStatusChangedEmail(ticket as any, existingTicket.status, body.status);
-        //     await sendEmail(emailData);
-        // }
+        // ✨ NEW: Sync status back to inspection if linked
+        if (ticketWithInspection?.inspectionId) {
+            try {
+                const { syncTicketStatusToInspection } = await import('@/lib/inspection-ticket-actions');
+                await syncTicketStatusToInspection(ticketId);
+                console.log(`✅ Synced ticket status to inspection #${ticketWithInspection.inspectionId}`);
+            } catch (syncError) {
+                console.error('Failed to sync status to inspection:', syncError);
+                // Don't fail the whole operation
+            }
+        }
+
+        // Send email notifications using template system
+        try {
+            const { sendTemplatedEmail } = await import('@/lib/email');
+
+            if (ticket.reportedBy?.email) {
+                if (body.status === 'resolved' || body.status === 'closed') {
+                    // Send resolved email
+                    await sendTemplatedEmail({
+                        category: 'ticket_resolved',
+                        variables: {
+                            ticketNumber: ticket.ticketNumber,
+                            title: ticket.title,
+                            resolution: ticket.resolutionNotes || 'Ticket has been resolved',
+                            resolvedByName: session.user.name || 'Technician',
+                            reportedByName: ticket.reportedBy.name || 'User',
+                            ticketUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/tickets/${ticket.id}`,
+                        },
+                        overrideRecipients: {
+                            to: [ticket.reportedBy.email],
+                        },
+                    });
+                } else {
+                    // Send status changed email
+                    await sendTemplatedEmail({
+                        category: 'ticket_status_changed',
+                        variables: {
+                            ticketNumber: ticket.ticketNumber,
+                            title: ticket.title,
+                            oldStatus: existingTicket.status,
+                            newStatus: body.status,
+                            reportedByName: ticket.reportedBy.name || 'User',
+                            ticketUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/tickets/${ticket.id}`,
+                        },
+                        overrideRecipients: {
+                            to: [ticket.reportedBy.email],
+                        },
+                    });
+                }
+            }
+        } catch (emailError) {
+            console.error('Error sending status change notification email:', emailError);
+            // Don't fail the request if email fails
+        }
 
         return NextResponse.json(ticket);
     } catch (error) {

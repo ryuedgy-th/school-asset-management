@@ -20,6 +20,16 @@ export default async function InspectionDetailPage({ params }: { params: Promise
                     id: true,
                     name: true
                 }
+            },
+            ticket: {
+                include: {
+                    assignedTo: {
+                        select: {
+                            id: true,
+                            name: true,
+                        }
+                    }
+                }
             }
         }
     });

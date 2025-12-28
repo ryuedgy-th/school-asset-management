@@ -362,6 +362,19 @@ export async function createInspection(data: {
         }
     }
 
+
+    // ✨ NEW: Auto-create ticket if damage found
+    if (damageFound) {
+        try {
+            const { createTicketFromInspection } = await import('@/lib/inspection-ticket-actions');
+            await createTicketFromInspection(inspection.id);
+            console.log(`✅ Auto-created ticket for damaged asset from inspection #${inspection.id}`);
+        } catch (ticketError) {
+            console.error(`❌ Failed to auto-create ticket:`, ticketError);
+            // Don't fail the whole operation if ticket creation fails
+        }
+    }
+
     revalidatePath('/dashboard/assets');
     revalidatePath(`/dashboard/assets/${data.assetId}`);
 

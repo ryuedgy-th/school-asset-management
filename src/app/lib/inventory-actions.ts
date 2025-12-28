@@ -239,7 +239,6 @@ export async function recordTransaction(data: {
             type: data.type,
             quantity: data.quantity,
             stockAfter: newStock,
-            unitCost: data.unitCost || null,
             ...(data.notes && { notes: data.notes }),
             performedById: parseInt(session.user.id),
         },

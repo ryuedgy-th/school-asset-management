@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { ticketAssignedEmail } from '@/lib/ticket-notifications';
 import { calculateSLADeadline, checkSLAStatus } from '@/lib/sla';
 
 // POST /api/tickets/[id]/assign - Assign ticket to user
@@ -111,9 +110,47 @@ export async function POST(
             },
         });
 
-        // TODO: Send email notification
-        // const emailData = ticketAssignedEmail(ticket as any);
-        // await sendEmail(emailData);
+        // Send email notification using template system
+        try {
+            const { sendTemplatedEmail } = await import('@/lib/email');
+
+            if (ticket.assignedTo?.email) {
+                // Priority color mapping
+                const priorityColors: Record<string, string> = {
+                    urgent: '#dc2626',
+                    high: '#ea580c',
+                    medium: '#eab308',
+                    low: '#3b82f6'
+                };
+
+                await sendTemplatedEmail({
+                    category: 'ticket_assigned',
+                    variables: {
+                        ticketNumber: ticket.ticketNumber,
+                        title: ticket.title,
+                        priority: ticket.priority,
+                        priorityColor: priorityColors[ticket.priority] || '#3b82f6',
+                        type: ticket.type,
+                        description: ticket.description || 'No description provided',
+                        assignedToName: ticket.assignedTo.name || 'Technician',
+                        reportedByName: ticket.reportedBy?.name || 'User',
+                        slaDeadline: ticket.slaDeadline
+                            ? new Date(ticket.slaDeadline).toLocaleString('en-US', {
+                                year: 'numeric', month: 'short', day: 'numeric',
+                                hour: '2-digit', minute: '2-digit'
+                            })
+                            : 'Not set',
+                        ticketUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/tickets/${ticket.id}`,
+                    },
+                    overrideRecipients: {
+                        to: [ticket.assignedTo.email],
+                    },
+                });
+            }
+        } catch (emailError) {
+            console.error('Error sending assignment notification email:', emailError);
+            // Don't fail the request if email fails
+        }
 
         return NextResponse.json(ticket);
     } catch (error) {

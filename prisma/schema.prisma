@@ -270,6 +270,7 @@ model Inspection {
   // Reverse relations
   checkoutBorrowItems BorrowItem[]        @relation("ItemCheckoutInspection")
   checkinTransactions ReturnTransaction[] @relation("CheckinInspection")
+  ticket              Ticket? // One inspection can create one ticket
 }
 
 model Category {
@@ -734,6 +735,10 @@ model Ticket {
   fmAssetId Int?
   fmAsset   FMAsset? @relation(fields: [fmAssetId], references: [id])
 
+  // Inspection Link (if ticket was created from inspection)
+  inspectionId Int?      @unique // One inspection = one ticket
+  inspection   Inspection? @relation(fields: [inspectionId], references: [id])
+
   // Ticket Details
   title       String
   description String
@@ -764,6 +769,9 @@ model Ticket {
   slaDeadline DateTime?
   slaStatus   String? // within_sla, at_risk, breached
 
+  // Cost Tracking
+  actualCost Decimal? // Actual repair cost
+
   // Attachments
   images    String? // Array of image URLs
   documents String?
@@ -776,10 +784,11 @@ model Ticket {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([type])
-  @@index([status])
-  @@index([assignedToId])
+  @@index([itAssetId])
+  @@index([fmAssetId])
+  @@index([inspectionId])
   @@index([reportedById])
+  @@index([assignedToId])
   @@index([affectedUserId])
   @@index([slaStatus])
   @@index([slaDeadline])
@@ -909,9 +918,10 @@ model InventoryTransaction {
   referenceType String? // "work_order", "purchase", "adjustment"
   referenceId   Int?
 
-  // Cost
-  unitCost  Decimal?
-  totalCost Decimal?
+  // Cost Tracking
+  estimatedCost Decimal?
+  actualCost    Decimal? // Actual repair cost (replaces finalCost)
+  finalCost     Decimal? // Deprecated, use actualCost
 
   // Stock After Transaction
   stockAfter Int

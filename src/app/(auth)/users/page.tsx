@@ -8,7 +8,24 @@ export const metadata: Metadata = {
 
 export default async function UsersPage() {
     const users = await prisma.user.findMany({
-        include: {
+        select: {
+            id: true,
+            name: true,
+            nickname: true,
+            email: true,
+            emailVerified: true,
+            image: true,
+            role: true, // deprecated but still needed
+            roleId: true,
+            department: true, // deprecated but still needed
+            departmentId: true,
+            phoneNumber: true,
+            password: true, // Needed for type compatibility, won't be sent to client
+            failedLoginAttempts: true,
+            lastLoginAttempt: true,
+            lockedUntil: true,
+            createdAt: true,
+            updatedAt: true,
             userRole: true,
             userDepartment: true,
         },

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { checkSLAStatus } from '@/lib/sla';
-import { slaBreachAlertEmail } from '@/lib/ticket-notifications';
 
 /**
  * SLA Check Cron Job
@@ -107,18 +106,82 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // TODO: Send email alerts
-        // for (const alert of alertsToSend) {
-        //     const emailData = slaBreachAlertEmail(alert.ticket as any);
-        //     await sendEmail(emailData);
-        // }
+        // Send email alerts using template system
+        const emailResults: any[] = [];
+        for (const alert of alertsToSend) {
+            try {
+                const { sendTemplatedEmail } = await import('@/lib/email');
+                const ticket = alert.ticket;
+
+                // Priority color mapping
+                const priorityColors: Record<string, string> = {
+                    urgent: '#dc2626',
+                    high: '#ea580c',
+                    medium: '#eab308',
+                    low: '#3b82f6'
+                };
+
+                // Send to both reporter and assignee
+                const recipients: string[] = [];
+                if (ticket.reportedBy?.email) recipients.push(ticket.reportedBy.email);
+                if (ticket.assignedTo?.email && ticket.assignedTo.email !== ticket.reportedBy?.email) {
+                    recipients.push(ticket.assignedTo.email);
+                }
+
+                if (recipients.length > 0) {
+                    await sendTemplatedEmail({
+                        category: 'ticket_sla_breach',
+                        variables: {
+                            ticketNumber: ticket.ticketNumber,
+                            title: ticket.title,
+                            priority: ticket.priority,
+                            priorityColor: priorityColors[ticket.priority] || '#3b82f6',
+                            status: ticket.status,
+                            slaDeadline: ticket.slaDeadline
+                                ? new Date(ticket.slaDeadline).toLocaleString('en-US', {
+                                    year: 'numeric', month: 'short', day: 'numeric',
+                                    hour: '2-digit', minute: '2-digit'
+                                })
+                                : 'Not set',
+                            slaStatus: alert.type === 'breached' ? 'BREACHED' : 'AT RISK',
+                            reportedByName: ticket.reportedBy?.name || 'User',
+                            assignedToName: ticket.assignedTo?.name || 'Unassigned',
+                            ticketUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/tickets/${ticket.id}`,
+                        },
+                        overrideRecipients: {
+                            to: recipients,
+                        },
+                    });
+
+                    emailResults.push({
+                        ticketId: ticket.id,
+                        ticketNumber: ticket.ticketNumber,
+                        alertType: alert.type,
+                        sentTo: recipients,
+                        success: true,
+                    });
+                }
+            } catch (emailError) {
+                console.error(`Failed to send SLA alert for ticket ${alert.ticket.id}:`, emailError);
+                emailResults.push({
+                    ticketId: alert.ticket.id,
+                    ticketNumber: alert.ticket.ticketNumber,
+                    alertType: alert.type,
+                    success: false,
+                    error: emailError instanceof Error ? emailError.message : 'Unknown error',
+                });
+            }
+        }
 
         return NextResponse.json({
             success: true,
             checked: tickets.length,
             updated: updates.length,
             alerts: alertsToSend.length,
+            emailsSent: emailResults.filter(r => r.success).length,
+            emailsFailed: emailResults.filter(r => !r.success).length,
             updates,
+            emailResults,
             timestamp: new Date().toISOString(),
         });
     } catch (error) {

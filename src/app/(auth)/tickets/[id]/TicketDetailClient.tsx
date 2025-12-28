@@ -16,6 +16,7 @@ import {
     Send,
     UserPlus,
     CheckCircle,
+    ClipboardCheck,
 } from 'lucide-react';
 import { formatTimeRemaining } from '@/lib/sla';
 import TicketActions from '@/components/TicketActions';
@@ -68,6 +69,20 @@ interface Ticket {
         name: string;
         category: { name: string };
         location: string;
+    } | null;
+    inspection: {
+        id: number;
+        inspectionNumber: string | null;
+        inspectionDate: string;
+        inspectionType: string;
+        overallCondition: string;
+        damageDescription: string | null;
+        estimatedCost: number | null;
+        photoUrls: string | null;
+        inspector: {
+            id: number;
+            name: string;
+        };
     } | null;
     comments: Comment[];
     activities: Activity[];
@@ -250,6 +265,98 @@ export default function TicketDetailClient({ ticketId }: { ticketId: number }) {
                             <h2 className="text-lg font-semibold text-slate-900 mb-4">Description</h2>
                             <p className="text-slate-700 whitespace-pre-wrap">{ticket.description}</p>
                         </div>
+
+                        {/* Inspection Info */}
+                        {ticket.inspection && (
+                            <div className="bg-purple-50 border border-purple-200 rounded-xl shadow-sm p-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <ClipboardCheck className="text-purple-600" size={24} />
+                                    <h2 className="text-lg font-semibold text-purple-900">Created from Inspection</h2>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium">Inspection #</p>
+                                            <Link
+                                                href={`/inspections/${ticket.inspection.id}`}
+                                                className="text-purple-900 font-semibold hover:underline"
+                                            >
+                                                {ticket.inspection.inspectionNumber || `#${ticket.inspection.id}`}
+                                            </Link>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium">Date</p>
+                                            <p className="text-purple-900">
+                                                {new Date(ticket.inspection.inspectionDate).toLocaleDateString('th-TH')}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium">Type</p>
+                                            <p className="text-purple-900 capitalize">{ticket.inspection.inspectionType}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium">Inspector</p>
+                                            <p className="text-purple-900">{ticket.inspection.inspector?.name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium">Condition</p>
+                                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${ticket.inspection.overallCondition === 'excellent' ? 'bg-green-100 text-green-800' :
+                                                    ticket.inspection.overallCondition === 'good' ? 'bg-blue-100 text-blue-800' :
+                                                        ticket.inspection.overallCondition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                                            ticket.inspection.overallCondition === 'poor' ? 'bg-orange-100 text-orange-800' :
+                                                                'bg-red-100 text-red-800'
+                                                }`}>
+                                                {ticket.inspection.overallCondition}
+                                            </span>
+                                        </div>
+                                        {ticket.inspection.estimatedCost && (
+                                            <div>
+                                                <p className="text-sm text-purple-600 font-medium">Estimated Cost</p>
+                                                <p className="text-purple-900 font-semibold">
+                                                    ฿{ticket.inspection.estimatedCost.toLocaleString()}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {ticket.inspection.damageDescription && (
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium mb-1">Damage Description</p>
+                                            <p className="text-purple-900 bg-purple-100/50 p-3 rounded">
+                                                {ticket.inspection.damageDescription}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Inspection Photos */}
+                                    {ticket.inspection.photoUrls && (
+                                        <div>
+                                            <p className="text-sm text-purple-600 font-medium mb-2">Inspection Photos</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {JSON.parse(ticket.inspection.photoUrls).map((url: string, index: number) => (
+                                                    <img
+                                                        key={index}
+                                                        src={url}
+                                                        alt={`Damage photo ${index + 1}`}
+                                                        className="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75 transition-opacity"
+                                                        onClick={() => window.open(url, '_blank')}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="pt-4 border-t border-purple-200">
+                                        <Link
+                                            href={`/inspections/${ticket.inspection.id}`}
+                                            className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
+                                        >
+                                            View Full Inspection Report →
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Tabs */}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

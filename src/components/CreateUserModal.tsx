@@ -4,13 +4,16 @@ import { useState } from 'react';
 import Modal from './Modal';
 import { createUser } from '@/app/lib/actions';
 import { User, Mail, Lock, Shield, Building, Phone } from 'lucide-react';
+import type { Role, Department } from '@prisma/client';
 
 interface CreateUserModalProps {
     isOpen: boolean;
     onClose: () => void;
+    roles: Role[];
+    departments: Department[];
 }
 
-export default function CreateUserModal({ isOpen, onClose }: CreateUserModalProps) {
+export default function CreateUserModal({ isOpen, onClose, roles, departments }: CreateUserModalProps) {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -70,10 +73,13 @@ export default function CreateUserModal({ isOpen, onClose }: CreateUserModalProp
                         <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                         <div className="relative">
                             <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <select name="role" className="pl-10 w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary/80 outline-none bg-white">
-                                <option value="User">User</option>
-                                <option value="Technician">Technician</option>
-                                <option value="Admin">Admin</option>
+                            <select name="roleId" className="pl-10 w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary/80 outline-none bg-white">
+                                <option value="">Select Role</option>
+                                {roles.map((role) => (
+                                    <option key={role.id} value={role.id.toString()}>
+                                        {role.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -81,7 +87,14 @@ export default function CreateUserModal({ isOpen, onClose }: CreateUserModalProp
                         <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                         <div className="relative">
                             <Building className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            <input name="department" type="text" placeholder="IT" className="pl-10 w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary/80 outline-none" />
+                            <select name="departmentId" className="pl-10 w-full border rounded-lg p-2 focus:ring-2 focus:ring-primary/80 outline-none bg-white">
+                                <option value="">Select Dept.</option>
+                                {departments.map((dept) => (
+                                    <option key={dept.id} value={dept.id.toString()}>
+                                        {dept.name}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, User, AlertTriangle, X } from 'lucide-react';
+import { ArrowLeft, Calendar, User, AlertTriangle, X, Ticket, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { approveDamage, waiveDamage } from '@/app/lib/inspection-actions';
@@ -16,6 +16,7 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
     const router = useRouter();
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [creatingTicket, setCreatingTicket] = useState(false);
 
     const handleApprove = async () => {
         if (isProcessing) return;
@@ -53,6 +54,34 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
             alert('❌ Failed to waive: ' + error.message);
         } finally {
             setIsProcessing(false);
+        }
+    };
+
+    const handleCreateTicket = async () => {
+        if (creatingTicket) return;
+
+        if (!confirm('Create a repair ticket from this inspection?')) {
+            return;
+        }
+
+        setCreatingTicket(true);
+        try {
+            const response = await fetch(`/api/inspections/${inspection.id}/create-ticket`, {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create ticket');
+            }
+
+            const data = await response.json();
+            alert(`✅ Ticket created successfully!\n\nTicket #: ${data.ticket.ticketNumber}`);
+            router.refresh();
+        } catch (error: any) {
+            alert('❌ Failed to create ticket: ' + error.message);
+        } finally {
+            setCreatingTicket(false);
         }
     };
 
@@ -229,6 +258,88 @@ export default function InspectionDetailClient({ inspection }: InspectionDetailC
                             <div>
                                 <h3 className="text-lg font-semibold text-slate-900 mb-3">Notes</h3>
                                 <p className="text-slate-700 bg-slate-50 p-4 rounded-lg">{inspection.notes}</p>
+                            </div>
+                        )}
+
+                        {/* Linked Ticket Info */}
+                        {inspection.ticket && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-lg font-semibold text-blue-900 flex items-center gap-2">
+                                        <Ticket size={20} />
+                                        Linked Repair Ticket
+                                    </h3>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm text-blue-700 font-medium">Ticket #:</span>
+                                        <Link
+                                            href={`/tickets/${inspection.ticket.id}`}
+                                            className="text-blue-600 hover:text-blue-800 font-semibold hover:underline"
+                                        >
+                                            {inspection.ticket.ticketNumber}
+                                        </Link>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm text-blue-700 font-medium">Status:</span>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${inspection.ticket.status === 'closed' ? 'bg-gray-100 text-gray-800' :
+                                                inspection.ticket.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                                                    inspection.ticket.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-blue-100 text-blue-800'
+                                            }`}>
+                                            {inspection.ticket.status}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm text-blue-700 font-medium">Priority:</span>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${inspection.ticket.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                                                inspection.ticket.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                                                    inspection.ticket.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                        'bg-gray-100 text-gray-800'
+                                            }`}>
+                                            {inspection.ticket.priority}
+                                        </span>
+                                    </div>
+                                    {inspection.ticket.assignedTo && (
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-sm text-blue-700 font-medium">Assigned to:</span>
+                                            <span className="text-blue-900">{inspection.ticket.assignedTo.name}</span>
+                                        </div>
+                                    )}
+                                    <div className="mt-4 pt-3 border-t border-blue-200">
+                                        <Link
+                                            href={`/tickets/${inspection.ticket.id}`}
+                                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                                        >
+                                            View Full Ticket Details →
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Create Ticket Button */}
+                        {inspection.damageFound && !inspection.ticket && (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-green-900 flex items-center gap-2">
+                                            <Ticket size={20} />
+                                            Create Repair Ticket
+                                        </h3>
+                                        <p className="text-sm text-green-700 mt-1">
+                                            Damage found - create a ticket to track the repair process
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={handleCreateTicket}
+                                        disabled={creatingTicket}
+                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50"
+                                    >
+                                        <Plus size={18} />
+                                        {creatingTicket ? 'Creating...' : 'Create Ticket'}
+                                    </button>
+                                </div>
                             </div>
                         )}
 

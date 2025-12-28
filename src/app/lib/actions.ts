@@ -8,25 +8,20 @@ import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 
 export async function createUser(formData: FormData) {
-    const rawData = {
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
-        password: formData.get('password') as string,
-        role: formData.get('role') as string,
-        department: formData.get('department') as string,
-        phoneNumber: formData.get('phoneNumber') as string,
-    };
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const roleIdStr = formData.get('roleId') as string;
+    const departmentIdStr = formData.get('departmentId') as string;
+    const phoneNumber = formData.get('phoneNumber') as string;
 
-    // Validate input with Zod
-    const { createUserSchema } = await import('@/lib/validation');
-    const validation = createUserSchema.safeParse(rawData);
-
-    if (!validation.success) {
-        const errors = validation.error.issues.map(e => e.message).join(', ');
-        return { error: errors };
+    if (!email || !name || !password) {
+        return { error: 'Missing required fields' };
     }
 
-    const { name, email, password, role, department, phoneNumber } = validation.data;
+    // Parse roleId and departmentId
+    const roleId = roleIdStr ? parseInt(roleIdStr) : null;
+    const departmentId = departmentIdStr ? parseInt(departmentIdStr) : null;
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -35,13 +30,13 @@ export async function createUser(formData: FormData) {
                 name,
                 email,
                 password: hashedPassword,
-                role: role || 'User',
-                department,
+                roleId,
+                departmentId,
                 phoneNumber,
             },
         });
 
-        await logAudit('CREATE_USER', 'User', user.id, { name, email, role, department });
+        await logAudit('CREATE_USER', 'User', user.id, { name, email, roleId, departmentId, phoneNumber });
         revalidatePath('/users');
         return { success: true };
     } catch (error) {

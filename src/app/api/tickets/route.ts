@@ -252,19 +252,21 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Create attachments if provided
+        // Create attachments if provided (using loop because SQLite doesn't support createMany)
         if (body.attachments && body.attachments.length > 0) {
-            await prisma.ticketAttachment.createMany({
-                data: body.attachments.map((att: any) => ({
-                    ticketId: ticket.id,
-                    filename: att.filename,
-                    originalName: att.originalName,
-                    mimeType: att.mimeType,
-                    size: att.size,
-                    url: att.url,
-                    uploadedById: parseInt(session.user.id),
-                })),
-            });
+            for (const att of body.attachments) {
+                await prisma.ticketAttachment.create({
+                    data: {
+                        ticketId: ticket.id,
+                        filename: att.filename,
+                        originalName: att.originalName,
+                        mimeType: att.mimeType,
+                        size: att.size,
+                        url: att.url,
+                        uploadedById: parseInt(session.user.id),
+                    },
+                });
+            }
         }
 
         // Create activity log
@@ -295,7 +297,81 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // TODO: Send notification to assigned user
+        // Send email notifications using template system
+        try {
+            const { sendTemplatedEmail } = await import('@/lib/email');
+
+            // Fetch full ticket data for email
+            const fullTicket = await prisma.ticket.findUnique({
+                where: { id: ticket.id },
+                include: {
+                    reportedBy: { select: { name: true, email: true } },
+                    affectedUser: { select: { name: true, email: true } },
+                    assignedTo: { select: { name: true, email: true } },
+                    itAsset: { select: { assetCode: true, name: true } },
+                    fmAsset: { select: { assetCode: true, name: true } },
+                },
+            });
+
+            if (fullTicket && fullTicket.reportedBy?.email) {
+                // Priority color mapping
+                const priorityColors: Record<string, string> = {
+                    urgent: '#dc2626',
+                    high: '#ea580c',
+                    medium: '#eab308',
+                    low: '#3b82f6'
+                };
+
+                // Send ticket created email
+                await sendTemplatedEmail({
+                    category: 'ticket_created',
+                    variables: {
+                        ticketNumber: fullTicket.ticketNumber,
+                        title: fullTicket.title,
+                        priority: fullTicket.priority,
+                        priorityColor: priorityColors[fullTicket.priority] || '#3b82f6',
+                        type: fullTicket.type,
+                        category: fullTicket.category,
+                        description: fullTicket.description || 'No description provided',
+                        reportedByName: fullTicket.reportedBy.name || 'User',
+                        ticketUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/tickets/${fullTicket.id}`,
+                    },
+                    overrideRecipients: {
+                        to: [fullTicket.reportedBy.email],
+                    },
+                });
+
+                // If assigned, send assignment email
+                if (fullTicket.assignedTo?.email) {
+                    await sendTemplatedEmail({
+                        category: 'ticket_assigned',
+                        variables: {
+                            ticketNumber: fullTicket.ticketNumber,
+                            title: fullTicket.title,
+                            priority: fullTicket.priority,
+                            priorityColor: priorityColors[fullTicket.priority] || '#3b82f6',
+                            type: fullTicket.type,
+                            description: fullTicket.description || 'No description provided',
+                            assignedToName: fullTicket.assignedTo.name || 'Technician',
+                            reportedByName: fullTicket.reportedBy.name || 'User',
+                            slaDeadline: fullTicket.slaDeadline
+                                ? new Date(fullTicket.slaDeadline).toLocaleString('en-US', {
+                                    year: 'numeric', month: 'short', day: 'numeric',
+                                    hour: '2-digit', minute: '2-digit'
+                                })
+                                : 'Not set',
+                            ticketUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/tickets/${fullTicket.id}`,
+                        },
+                        overrideRecipients: {
+                            to: [fullTicket.assignedTo.email],
+                        },
+                    });
+                }
+            }
+        } catch (emailError) {
+            console.error('Error sending ticket notification emails:', emailError);
+            // Don't fail the request if email fails
+        }
 
         return NextResponse.json(ticket, { status: 201 });
     } catch (error) {

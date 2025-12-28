@@ -93,6 +93,16 @@ export async function GET(
                         createdAt: 'desc',
                     },
                 },
+                inspection: {
+                    include: {
+                        inspector: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 

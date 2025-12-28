@@ -12,7 +12,11 @@ import {
     XCircle,
     Tag,
     User,
-    Calendar
+    Calendar,
+    LayoutList,
+    LayoutGrid,
+    BarChart3,
+    Download
 } from 'lucide-react';
 import TicketModal from '@/components/TicketModal';
 
@@ -52,6 +56,7 @@ export default function TicketsClient() {
     const [filterStatus, setFilterStatus] = useState<string>('');
     const [filterPriority, setFilterPriority] = useState<string>('');
     const [showModal, setShowModal] = useState(false);
+    const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
 
     // Stats
     const [stats, setStats] = useState({
@@ -164,13 +169,24 @@ export default function TicketsClient() {
                             </h1>
                             <p className="text-slate-500 mt-1">Manage support requests and issues</p>
                         </div>
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
-                        >
-                            <Plus size={20} />
-                            Create Ticket
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => {
+                                    window.open('/api/tickets/export', '_blank');
+                                }}
+                                className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
+                            >
+                                <Download size={20} />
+                                Export CSV
+                            </button>
+                            <button
+                                onClick={() => setShowModal(true)}
+                                className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+                            >
+                                <Plus size={20} />
+                                Create Ticket
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -225,8 +241,43 @@ export default function TicketsClient() {
                     </div>
                 </div>
 
-                {/* Filters */}
+                {/* View Toggle & Filters */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    {/* View Mode Toggle */}
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setViewMode('table')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                    viewMode === 'table'
+                                        ? 'bg-primary text-white'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                            >
+                                <LayoutList size={18} />
+                                Table View
+                            </button>
+                            <button
+                                onClick={() => setViewMode('kanban')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                    viewMode === 'kanban'
+                                        ? 'bg-primary text-white'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                            >
+                                <LayoutGrid size={18} />
+                                Kanban Board
+                            </button>
+                        </div>
+                        <Link
+                            href="/tickets/metrics"
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm"
+                        >
+                            <BarChart3 size={18} />
+                            View Metrics
+                        </Link>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         {/* Search */}
                         <div className="md:col-span-1">
@@ -288,20 +339,233 @@ export default function TicketsClient() {
                     </div>
                 </div>
 
-                {/* Tickets Table */}
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    {loading ? (
-                        <div className="p-12 text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                            <p className="text-slate-500 mt-4">Loading tickets...</p>
+                {/* Tickets View */}
+                {loading ? (
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                        <p className="text-slate-500 mt-4">Loading tickets...</p>
+                    </div>
+                ) : filteredTickets.length === 0 ? (
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+                        <XCircle className="mx-auto text-slate-300" size={48} />
+                        <p className="text-slate-500 font-medium mt-4">No tickets found</p>
+                        <p className="text-slate-400 text-sm mt-2">Try adjusting your filters</p>
+                    </div>
+                ) : viewMode === 'kanban' ? (
+                    /* Kanban Board */
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                        {/* Open Column */}
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+                            <div className="p-4 border-b border-slate-200 bg-blue-50">
+                                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                                    Open
+                                    <span className="ml-auto text-sm text-slate-600">
+                                        {filteredTickets.filter(t => t.status === 'open' || t.status === 'assigned').length}
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="p-3 space-y-3 max-h-[600px] overflow-y-auto">
+                                {filteredTickets
+                                    .filter(t => t.status === 'open' || t.status === 'assigned')
+                                    .map((ticket) => (
+                                        <Link
+                                            key={ticket.id}
+                                            href={`/tickets/${ticket.id}`}
+                                            className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                                        >
+                                            <div className="flex items-start justify-between mb-2">
+                                                <span className="font-mono text-xs text-primary font-medium">
+                                                    {ticket.ticketNumber}
+                                                </span>
+                                                <span className={`px-2 py-0.5 text-xs rounded-full ${getPriorityBadge(ticket.priority)}`}>
+                                                    {ticket.priority.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <h4 className="font-medium text-slate-900 mb-2 line-clamp-2">
+                                                {ticket.title}
+                                            </h4>
+                                            <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                                                {ticket.description}
+                                            </p>
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className={`px-2 py-1 rounded-full ${ticket.type === 'IT' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {ticket.type}
+                                                </span>
+                                                {ticket.assignedTo ? (
+                                                    <div className="flex items-center gap-1 text-slate-600">
+                                                        <User size={12} />
+                                                        <span className="truncate max-w-[100px]">{ticket.assignedTo.name}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-400">Unassigned</span>
+                                                )}
+                                            </div>
+                                            {ticket.slaStatus === 'at_risk' || ticket.slaStatus === 'breached' ? (
+                                                <div className="mt-2 pt-2 border-t border-slate-100">
+                                                    {getSLABadge(ticket.slaStatus)}
+                                                </div>
+                                            ) : null}
+                                        </Link>
+                                    ))}
+                            </div>
                         </div>
-                    ) : filteredTickets.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <XCircle className="mx-auto text-slate-300" size={48} />
-                            <p className="text-slate-500 font-medium mt-4">No tickets found</p>
-                            <p className="text-slate-400 text-sm mt-2">Try adjusting your filters</p>
+
+                        {/* In Progress Column */}
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+                            <div className="p-4 border-b border-slate-200 bg-yellow-50">
+                                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    In Progress
+                                    <span className="ml-auto text-sm text-slate-600">
+                                        {filteredTickets.filter(t => t.status === 'in_progress').length}
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="p-3 space-y-3 max-h-[600px] overflow-y-auto">
+                                {filteredTickets
+                                    .filter(t => t.status === 'in_progress')
+                                    .map((ticket) => (
+                                        <Link
+                                            key={ticket.id}
+                                            href={`/tickets/${ticket.id}`}
+                                            className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                                        >
+                                            <div className="flex items-start justify-between mb-2">
+                                                <span className="font-mono text-xs text-primary font-medium">
+                                                    {ticket.ticketNumber}
+                                                </span>
+                                                <span className={`px-2 py-0.5 text-xs rounded-full ${getPriorityBadge(ticket.priority)}`}>
+                                                    {ticket.priority.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <h4 className="font-medium text-slate-900 mb-2 line-clamp-2">
+                                                {ticket.title}
+                                            </h4>
+                                            <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                                                {ticket.description}
+                                            </p>
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className={`px-2 py-1 rounded-full ${ticket.type === 'IT' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {ticket.type}
+                                                </span>
+                                                {ticket.assignedTo && (
+                                                    <div className="flex items-center gap-1 text-slate-600">
+                                                        <User size={12} />
+                                                        <span className="truncate max-w-[100px]">{ticket.assignedTo.name}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {ticket.slaStatus === 'at_risk' || ticket.slaStatus === 'breached' ? (
+                                                <div className="mt-2 pt-2 border-t border-slate-100">
+                                                    {getSLABadge(ticket.slaStatus)}
+                                                </div>
+                                            ) : null}
+                                        </Link>
+                                    ))}
+                            </div>
                         </div>
-                    ) : (
+
+                        {/* Resolved Column */}
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+                            <div className="p-4 border-b border-slate-200 bg-green-50">
+                                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                                    Resolved
+                                    <span className="ml-auto text-sm text-slate-600">
+                                        {filteredTickets.filter(t => t.status === 'resolved').length}
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="p-3 space-y-3 max-h-[600px] overflow-y-auto">
+                                {filteredTickets
+                                    .filter(t => t.status === 'resolved')
+                                    .map((ticket) => (
+                                        <Link
+                                            key={ticket.id}
+                                            href={`/tickets/${ticket.id}`}
+                                            className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                                        >
+                                            <div className="flex items-start justify-between mb-2">
+                                                <span className="font-mono text-xs text-primary font-medium">
+                                                    {ticket.ticketNumber}
+                                                </span>
+                                                <span className={`px-2 py-0.5 text-xs rounded-full ${getPriorityBadge(ticket.priority)}`}>
+                                                    {ticket.priority.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <h4 className="font-medium text-slate-900 mb-2 line-clamp-2">
+                                                {ticket.title}
+                                            </h4>
+                                            <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                                                {ticket.description}
+                                            </p>
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className={`px-2 py-1 rounded-full ${ticket.type === 'IT' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {ticket.type}
+                                                </span>
+                                                {ticket.assignedTo && (
+                                                    <div className="flex items-center gap-1 text-slate-600">
+                                                        <User size={12} />
+                                                        <span className="truncate max-w-[100px]">{ticket.assignedTo.name}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    ))}
+                            </div>
+                        </div>
+
+                        {/* Closed Column */}
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200">
+                            <div className="p-4 border-b border-slate-200 bg-slate-50">
+                                <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+                                    Closed
+                                    <span className="ml-auto text-sm text-slate-600">
+                                        {filteredTickets.filter(t => t.status === 'closed' || t.status === 'cancelled').length}
+                                    </span>
+                                </h3>
+                            </div>
+                            <div className="p-3 space-y-3 max-h-[600px] overflow-y-auto">
+                                {filteredTickets
+                                    .filter(t => t.status === 'closed' || t.status === 'cancelled')
+                                    .map((ticket) => (
+                                        <Link
+                                            key={ticket.id}
+                                            href={`/tickets/${ticket.id}`}
+                                            className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer opacity-75 hover:opacity-100"
+                                        >
+                                            <div className="flex items-start justify-between mb-2">
+                                                <span className="font-mono text-xs text-primary font-medium">
+                                                    {ticket.ticketNumber}
+                                                </span>
+                                                <span className={`px-2 py-0.5 text-xs rounded-full ${getPriorityBadge(ticket.priority)}`}>
+                                                    {ticket.priority.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <h4 className="font-medium text-slate-900 mb-2 line-clamp-2">
+                                                {ticket.title}
+                                            </h4>
+                                            <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+                                                {ticket.description}
+                                            </p>
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className={`px-2 py-1 rounded-full ${ticket.type === 'IT' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {ticket.type}
+                                                </span>
+                                                <span className={`px-2 py-1 rounded-full ${getStatusBadge(ticket.status)}`}>
+                                                    {ticket.status.toUpperCase()}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    /* Table View */
+                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-slate-50 border-b border-slate-200">
@@ -373,8 +637,8 @@ export default function TicketsClient() {
                                 </tbody>
                             </table>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Footer */}
                 <div className="text-center text-sm text-slate-500">
