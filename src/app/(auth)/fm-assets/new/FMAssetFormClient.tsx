@@ -12,8 +12,12 @@ import {
     Calendar,
     Settings as SettingsIcon,
     Image as ImageIcon,
+    Plus,
+    X,
+    Loader2,
 } from 'lucide-react';
 import { createFMAsset } from '@/app/lib/fm-asset-actions';
+import { createFMCategory } from '@/app/lib/fm-category-actions';
 
 interface Category {
     id: number;
@@ -62,6 +66,11 @@ export default function FMAssetFormClient({
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [newCategoryDesc, setNewCategoryDesc] = useState('');
+    const [creatingCategory, setCreatingCategory] = useState(false);
+    const [localCategories, setLocalCategories] = useState(categories);
 
     const [formData, setFormData] = useState({
         // Step 1: Basic Info
@@ -212,6 +221,40 @@ export default function FMAssetFormClient({
         }
     };
 
+    const handleCreateCategory = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreatingCategory(true);
+
+        try {
+            await createFMCategory({
+                name: newCategoryName,
+                description: newCategoryDesc,
+            });
+
+            // Add to local list (will refresh to get actual ID)
+            const tempCategory = {
+                id: Date.now(),
+                name: newCategoryName,
+                description: newCategoryDesc,
+                icon: null,
+                color: null,
+            };
+            setLocalCategories([...localCategories, tempCategory]);
+            setFormData({ ...formData, categoryId: tempCategory.id });
+
+            // Reset modal
+            setNewCategoryName('');
+            setNewCategoryDesc('');
+            setShowCategoryModal(false);
+
+            router.refresh();
+        } catch (err: any) {
+            setError(err.message || 'Failed to create category');
+        } finally {
+            setCreatingCategory(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4">
@@ -237,13 +280,12 @@ export default function FMAssetFormClient({
                                 <div key={step.id} className="flex items-center flex-1">
                                     <div className="flex flex-col items-center flex-1">
                                         <div
-                                            className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                                                isCompleted
-                                                    ? 'bg-green-600 border-green-600 text-white'
-                                                    : isActive
+                                            className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
+                                                ? 'bg-green-600 border-green-600 text-white'
+                                                : isActive
                                                     ? 'bg-blue-600 border-blue-600 text-white'
                                                     : 'bg-white border-gray-300 text-gray-400'
-                                            }`}
+                                                }`}
                                         >
                                             {isCompleted ? (
                                                 <Check size={20} />
@@ -253,13 +295,12 @@ export default function FMAssetFormClient({
                                         </div>
                                         <div className="mt-2 text-center">
                                             <p
-                                                className={`text-sm font-medium ${
-                                                    isActive
-                                                        ? 'text-blue-600'
-                                                        : isCompleted
+                                                className={`text-sm font-medium ${isActive
+                                                    ? 'text-blue-600'
+                                                    : isCompleted
                                                         ? 'text-green-600'
                                                         : 'text-gray-500'
-                                                }`}
+                                                    }`}
                                             >
                                                 {step.name}
                                             </p>
@@ -267,9 +308,8 @@ export default function FMAssetFormClient({
                                     </div>
                                     {index < STEPS.length - 1 && (
                                         <div
-                                            className={`h-0.5 flex-1 mx-2 ${
-                                                isCompleted ? 'bg-green-600' : 'bg-gray-300'
-                                            }`}
+                                            className={`h-0.5 flex-1 mx-2 ${isCompleted ? 'bg-green-600' : 'bg-gray-300'
+                                                }`}
                                         />
                                     )}
                                 </div>
@@ -332,23 +372,34 @@ export default function FMAssetFormClient({
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Category *
                                 </label>
-                                <select
-                                    value={formData.categoryId}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            categoryId: parseInt(e.target.value),
-                                        })
-                                    }
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    required
-                                >
-                                    {categories.map((category) => (
-                                        <option key={category.id} value={category.id}>
-                                            {category.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                <div className="flex gap-2">
+                                    <select
+                                        value={formData.categoryId}
+                                        onChange={(e) =>
+                                            setFormData({
+                                                ...formData,
+                                                categoryId: parseInt(e.target.value),
+                                            })
+                                        }
+                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        required
+                                    >
+                                        {localCategories.map((category) => (
+                                            <option key={category.id} value={category.id}>
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowCategoryModal(true)}
+                                        className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1 whitespace-nowrap"
+                                        title="Create new category"
+                                    >
+                                        <Plus size={16} />
+                                        New
+                                    </button>
+                                </div>
                             </div>
 
                             <div>
@@ -793,6 +844,79 @@ export default function FMAssetFormClient({
                         )}
                     </div>
                 </div>
+
+                {/* Quick Add Category Modal */}
+                {showCategoryModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+                            <div className="flex items-center justify-between px-6 py-4 border-b">
+                                <h3 className="text-lg font-bold text-gray-800">Quick Add Category</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowCategoryModal(false);
+                                        setNewCategoryName('');
+                                        setNewCategoryDesc('');
+                                    }}
+                                    className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleCreateCategory} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Category Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newCategoryName}
+                                        onChange={(e) => setNewCategoryName(e.target.value)}
+                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                        placeholder="e.g., HVAC System"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        value={newCategoryDesc}
+                                        onChange={(e) => setNewCategoryDesc(e.target.value)}
+                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 resize-none h-20"
+                                        placeholder="Optional..."
+                                    />
+                                </div>
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowCategoryModal(false);
+                                            setNewCategoryName('');
+                                            setNewCategoryDesc('');
+                                        }}
+                                        className="flex-1 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={creatingCategory || !newCategoryName.trim()}
+                                        className="flex-1 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
+                                    >
+                                        {creatingCategory ? (
+                                            <><Loader2 className="animate-spin" size={16} /> Creating...</>
+                                        ) : (
+                                            <><Plus size={16} /> Create</>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

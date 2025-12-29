@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Search, Filter, Plus, Eye, Edit, Trash2, QrCode, Warehouse, AlertCircle } from 'lucide-react';
+import { Search, Filter, Plus, Edit, Trash2, QrCode, Warehouse, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Swal from 'sweetalert2';
 import QRPrintModal from '@/components/QRPrintModal';
@@ -278,12 +278,12 @@ export default function FMAssetsClient({ fmAssets, categories, user }: FMAssetsC
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <div>
-                                                    <div className="font-medium text-slate-900">{asset.name}</div>
+                                                <Link href={`/fm-assets/${asset.id}`}>
+                                                    <div className="font-medium text-slate-900 hover:text-primary cursor-pointer transition-colors">{asset.name}</div>
                                                     {asset.brand && asset.model && (
                                                         <div className="text-sm text-slate-500">{asset.brand} {asset.model}</div>
                                                     )}
-                                                </div>
+                                                </Link>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className="text-sm text-slate-700">{asset.category.name}</span>
@@ -314,13 +314,6 @@ export default function FMAssetsClient({ fmAssets, categories, user }: FMAssetsC
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <Link
-                                                        href={`/fm-assets/${asset.id}`}
-                                                        className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                                                        title="View Details"
-                                                    >
-                                                        <Eye size={18} />
-                                                    </Link>
                                                     <Link
                                                         href={`/fm-assets/${asset.id}/edit`}
                                                         className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"

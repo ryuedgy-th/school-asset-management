@@ -5,11 +5,12 @@ import Link from 'next/link';
 import {
     ArrowLeft, Edit, Trash2, QrCode, Warehouse, MapPin, Calendar, DollarSign,
     Settings, Wrench, ClipboardList, Ticket, FileText, Network, Package,
-    Image as ImageIcon, Download, AlertCircle, CheckCircle, Clock, User
+    Image as ImageIcon, Download, AlertCircle, CheckCircle, Clock, User, Plus
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
 import QRPrintModal from '@/components/QRPrintModal';
+import PMScheduleModal from '@/components/PMScheduleModal';
 
 interface FMAssetDetailClientProps {
     fmAsset: any;
@@ -22,6 +23,7 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
     const [showQRModal, setShowQRModal] = useState(false);
+    const [showPMModal, setShowPMModal] = useState(false);
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: Warehouse },
@@ -377,7 +379,17 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
                         {/* PM Schedules Tab */}
                         {activeTab === 'pm-schedules' && (
                             <div>
-                                <h3 className="text-lg font-semibold text-slate-900 mb-4">Preventive Maintenance Schedules</h3>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-slate-900">Preventive Maintenance Schedules</h3>
+                                    <button
+                                        onClick={() => setShowPMModal(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 shadow-lg shadow-primary/20"
+                                    >
+                                        <Plus size={18} />
+                                        New PM Schedule
+                                    </button>
+                                </div>
+
                                 {fmAsset.pmSchedules && fmAsset.pmSchedules.length > 0 ? (
                                     <div className="space-y-3">
                                         {fmAsset.pmSchedules.map((schedule: any) => (
@@ -405,6 +417,7 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
                                     <div className="text-center py-12 text-slate-500">
                                         <ClipboardList className="mx-auto mb-4 text-slate-300" size={48} />
                                         <p>No PM schedules configured</p>
+                                        <p className="text-sm mt-2">Click '+ New PM Schedule' to create your first maintenance schedule</p>
                                     </div>
                                 )}
                             </div>
@@ -520,6 +533,41 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
                 assetId={fmAsset.id}
                 isOpen={showQRModal}
                 onClose={() => setShowQRModal(false)}
+            />
+
+            {/* PM Schedule Modal */}
+            <PMScheduleModal
+                isOpen={showPMModal}
+                onClose={() => setShowPMModal(false)}
+                onSubmit={async (data) => {
+                    try {
+                        const res = await fetch('/api/pm-schedules', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data),
+                        });
+                        if (!res.ok) throw new Error('Failed to create PM schedule');
+                        await Swal.fire({
+                            title: 'Success!',
+                            text: 'PM Schedule created successfully',
+                            icon: 'success',
+                            confirmButtonColor: '#574193',
+                        });
+                        setShowPMModal(false);
+                        router.refresh();
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to create PM schedule',
+                            icon: 'error',
+                        });
+                        throw error;
+                    }
+                }}
+                schedule={null}
+                assets={[{ id: fmAsset.id, name: fmAsset.name, assetCode: fmAsset.assetCode }]}
+                users={users}
+                preselectedAssetId={fmAsset.id}
             />
         </div>
     );

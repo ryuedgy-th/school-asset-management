@@ -10,6 +10,7 @@ interface PMScheduleModalProps {
     schedule?: any; // Existing schedule for editing (null for creating)
     assets: Array<{ id: number; name: string; assetCode: string }>;
     users: Array<{ id: number; name: string }>;
+    preselectedAssetId?: number; // Lock asset selection to this ID
 }
 
 export default function PMScheduleModal({
@@ -19,6 +20,7 @@ export default function PMScheduleModal({
     schedule,
     assets,
     users,
+    preselectedAssetId,
 }: PMScheduleModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
@@ -57,7 +59,7 @@ export default function PMScheduleModal({
         } else {
             // Reset form for new schedule
             setFormData({
-                assetId: '',
+                assetId: preselectedAssetId?.toString() || '',
                 name: '',
                 description: '',
                 scheduleType: 'time',
@@ -70,7 +72,7 @@ export default function PMScheduleModal({
                 checklistItems: [],
             });
         }
-    }, [schedule]);
+    }, [schedule, preselectedAssetId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -141,19 +143,26 @@ export default function PMScheduleModal({
                         <label className="block text-sm font-medium text-slate-700 mb-1">
                             Asset <span className="text-red-500">*</span>
                         </label>
-                        <select
-                            required
-                            value={formData.assetId}
-                            onChange={(e) => setFormData({ ...formData, assetId: e.target.value })}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                        >
-                            <option value="">Select an asset...</option>
-                            {assets.map((asset) => (
-                                <option key={asset.id} value={asset.id}>
-                                    {asset.assetCode} - {asset.name}
-                                </option>
-                            ))}
-                        </select>
+                        {preselectedAssetId ? (
+                            <div className="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-lg text-slate-900">
+                                {assets.find((a) => a.id === preselectedAssetId)?.assetCode} -{' '}
+                                {assets.find((a) => a.id === preselectedAssetId)?.name}
+                            </div>
+                        ) : (
+                            <select
+                                required
+                                value={formData.assetId}
+                                onChange={(e) => setFormData({ ...formData, assetId: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            >
+                                <option value="">Select an asset...</option>
+                                {assets.map((asset) => (
+                                    <option key={asset.id} value={asset.id}>
+                                        {asset.assetCode} - {asset.name}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                     </div>
 
                     {/* Schedule Name */}

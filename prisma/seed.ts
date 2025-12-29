@@ -977,6 +977,187 @@ This is an automated message from the School Asset Management System.`,
     console.log('   5. Test different damage severity levels');
     console.log('   6. Test SLA tracking based on priority');
 
+    // ============================================================
+    // FM ASSETS - CATEGORIES & DEMO DATA
+    // ============================================================
+    console.log('\n🏢 Creating FM Asset Categories...');
+
+    const hvacCategory = await prisma.fMAssetCategory.upsert({
+        where: { name: 'HVAC System' },
+        update: {},
+        create: {
+            name: 'HVAC System',
+            description: 'Heating, Ventilation, and Air Conditioning systems',
+        },
+    });
+
+    const safetyCategory = await prisma.fMAssetCategory.upsert({
+        where: { name: 'Safety Equipment' },
+        update: {},
+        create: {
+            name: 'Safety Equipment',
+            description: 'Fire safety and emergency equipment',
+        },
+    });
+
+    const electricalCategory = await prisma.fMAssetCategory.upsert({
+        where: { name: 'Electrical System' },
+        update: {},
+        create: {
+            name: 'Electrical System',
+            description: 'Electrical infrastructure and power systems',
+        },
+    });
+
+    const plumbingCategory = await prisma.fMAssetCategory.upsert({
+        where: { name: 'Plumbing System' },
+        update: {},
+        create: {
+            name: 'Plumbing System',
+            description: 'Water supply and drainage systems',
+        },
+    });
+
+    console.log('✅ FM Asset Categories created');
+
+    console.log('\n🏗️ Creating Demo FM Assets...');
+
+    await prisma.fMAsset.upsert({
+        where: { assetCode: 'FM-0001' },
+        update: {},
+        create: {
+            assetCode: 'FM-0001',
+            name: 'Central Air Conditioning Unit - Building A',
+            categoryId: hvacCategory.id,
+            type: 'Central HVAC',
+            brand: 'Daikin',
+            model: 'VRV-X Series',
+            serialNumber: 'DKN-2024-A1-001',
+            description: 'Main air conditioning system for Building A',
+            specifications: '{"capacity":"50 tons","coverage":"10,000 sq.ft","refrigerant":"R-410A"}',
+            building: 'Main Building',
+            floor: 'Rooftop',
+            room: 'Mechanical Room',
+            location: 'Main Building, Rooftop, Mechanical Room',
+            purchaseDate: new Date('2023-01-15'),
+            installDate: new Date('2023-02-01'),
+            warrantyExpiry: new Date('2028-02-01'),
+            purchaseCost: 850000,
+            currentValue: 700000,
+            condition: 'good',
+            status: 'active',
+        },
+    });
+
+    await prisma.fMAsset.upsert({
+        where: { assetCode: 'FM-0002' },
+        update: {},
+        create: {
+            assetCode: 'FM-0002',
+            name: 'Fire Extinguisher - Floor 1',
+            categoryId: safetyCategory.id,
+            type: 'CO2 Fire Extinguisher',
+            brand: 'Safe-T',
+            model: 'CO2-10',
+            serialNumber: 'SAFE-2024-001',
+            description: '10kg CO2 fire extinguisher for electrical fires',
+            specifications: '{"weight":"10 kg","type":"CO2","class":"B, C (Electrical)"}',
+            building: 'Main Building',
+            floor: '1st Floor',
+            room: 'Hallway',
+            location: 'Main Building, 1st Floor, Hallway',
+            purchaseDate: new Date('2024-01-10'),
+            warrantyExpiry: new Date('2025-01-10'),
+            purchaseCost: 3500,
+            currentValue: 3200,
+            condition: 'excellent',
+            status: 'active',
+        },
+    });
+
+    await prisma.fMAsset.upsert({
+        where: { assetCode: 'FM-0003' },
+        update: {},
+        create: {
+            assetCode: 'FM-0003',
+            name: 'Emergency Backup Generator',
+            categoryId: electricalCategory.id,
+            type: 'Diesel Generator',
+            brand: 'Cummins',
+            model: 'C200D5',
+            serialNumber: 'CUM-2022-GEN-001',
+            description: 'Main backup power generator for entire campus',
+            specifications: '{"power":"200 kVA","fuel":"Diesel","runtime":"12 hours"}',
+            building: 'Generator House',
+            floor: 'Ground',
+            location: 'Generator House, Ground',
+            purchaseDate: new Date('2022-06-01'),
+            installDate: new Date('2022-07-15'),
+            warrantyExpiry: new Date('2025-07-15'),
+            purchaseCost: 1500000,
+            currentValue: 1200000,
+            condition: 'good',
+            status: 'active',
+            requiresMaintenance: true,
+        },
+    });
+
+    await prisma.fMAsset.upsert({
+        where: { assetCode: 'FM-0004' },
+        update: {},
+        create: {
+            assetCode: 'FM-0004',
+            name: 'Main Distribution Board - Building A',
+            categoryId: electricalCategory.id,
+            type: 'Distribution Panel',
+            brand: 'Schneider Electric',
+            model: 'Prisma Plus P',
+            serialNumber: 'SCH-2023-MDB-A1',
+            description: 'Main electrical distribution panel for Building A',
+            specifications: '{"rating":"1000A","voltage":"380V","circuits":"48"}',
+            building: 'Main Building',
+            floor: 'Ground',
+            room: 'Electrical Room',
+            location: 'Main Building, Ground, Electrical Room',
+            purchaseDate: new Date('2023-03-01'),
+            installDate: new Date('2023-03-20'),
+            warrantyExpiry: new Date('2028-03-20'),
+            purchaseCost: 250000,
+            currentValue: 220000,
+            condition: 'excellent',
+            status: 'active',
+        },
+    });
+
+    await prisma.fMAsset.upsert({
+        where: { assetCode: 'FM-0005' },
+        update: {},
+        create: {
+            assetCode: 'FM-0005',
+            name: 'Water Circulation Pump',
+            categoryId: plumbingCategory.id,
+            type: 'Centrifugal Pump',
+            brand: 'Grundfos',
+            model: 'CR 32-4',
+            serialNumber: 'GRF-2023-PUMP-001',
+            description: 'Main water circulation pump for building water supply',
+            specifications: '{"flowRate":"32 m³/hr","power":"11 kW","material":"Stainless Steel"}',
+            building: 'Main Building',
+            floor: 'Basement',
+            room: 'Pump Room',
+            location: 'Main Building, Basement, Pump Room',
+            purchaseDate: new Date('2023-05-10'),
+            installDate: new Date('2023-05-25'),
+            warrantyExpiry: new Date('2026-05-25'),
+            purchaseCost: 180000,
+            currentValue: 160000,
+            condition: 'good',
+            status: 'active',
+        },
+    });
+
+    console.log('✅ Created 5 demo FM Assets');
+
     console.log('\n✨ Ready for testing!');
     console.log('');
 }
