@@ -734,8 +734,10 @@ This is an automated message from the School Asset Management System.`,
         },
     });
 
-    const laptop3 = await prisma.asset.create({
-        data: {
+    const laptop3 = await prisma.asset.upsert({
+        where: { assetCode: 'LAP-003' },
+        update: {},
+        create: {
             name: 'HP ProBook 450 G9',
             category: 'Laptop',
             assetCode: 'LAP-003',
@@ -750,8 +752,10 @@ This is an automated message from the School Asset Management System.`,
         },
     });
 
-    const tablet1 = await prisma.asset.create({
-        data: {
+    const tablet1 = await prisma.asset.upsert({
+        where: { assetCode: 'TAB-001' },
+        update: {},
+        create: {
             name: 'iPad Air (5th Gen)',
             category: 'Tablet',
             assetCode: 'TAB-001',
@@ -766,8 +770,10 @@ This is an automated message from the School Asset Management System.`,
         },
     });
 
-    const camera1 = await prisma.asset.create({
-        data: {
+    const camera1 = await prisma.asset.upsert({
+        where: { assetCode: 'CAM-001' },
+        update: {},
+        create: {
             name: 'Canon EOS R6',
             category: 'Camera',
             assetCode: 'CAM-001',
@@ -790,8 +796,10 @@ This is an automated message from the School Asset Management System.`,
     console.log('\n🔍 Creating Inspections...');
 
     // Inspection 1: Damage found (will create ticket)
-    const inspection1 = await prisma.inspection.create({
-        data: {
+    const inspection1 = await prisma.inspection.upsert({
+        where: { inspectionNumber: 'INS-2024-001' },
+        update: {},
+        create: {
             inspectionNumber: 'INS-2024-001',
             assetId: laptop2.id,
             inspectorId: inspector1.id,
@@ -818,8 +826,10 @@ This is an automated message from the School Asset Management System.`,
     });
 
     // Inspection 2: No damage (clean inspection)
-    const inspection2 = await prisma.inspection.create({
-        data: {
+    const inspection2 = await prisma.inspection.upsert({
+        where: { inspectionNumber: 'INS-2024-002' },
+        update: {},
+        create: {
             inspectionNumber: 'INS-2024-002',
             assetId: laptop1.id,
             inspectorId: inspector2.id,
@@ -838,8 +848,10 @@ This is an automated message from the School Asset Management System.`,
     });
 
     // Inspection 3: Severe damage (will create urgent ticket)
-    const inspection3 = await prisma.inspection.create({
-        data: {
+    const inspection3 = await prisma.inspection.upsert({
+        where: { inspectionNumber: 'INS-2024-003' },
+        update: {},
+        create: {
             inspectionNumber: 'INS-2024-003',
             assetId: laptop3.id,
             inspectorId: inspector1.id,
@@ -865,8 +877,10 @@ This is an automated message from the School Asset Management System.`,
     });
 
     // Inspection 4: Minor damage (will create low priority ticket)
-    const inspection4 = await prisma.inspection.create({
-        data: {
+    const inspection4 = await prisma.inspection.upsert({
+        where: { inspectionNumber: 'INS-2024-004' },
+        update: {},
+        create: {
             inspectionNumber: 'INS-2024-004',
             assetId: tablet1.id,
             inspectorId: inspector2.id,
@@ -890,8 +904,10 @@ This is an automated message from the School Asset Management System.`,
     });
 
     // Inspection 5: Scheduled for future (will NOT create ticket yet)
-    const inspection5 = await prisma.inspection.create({
-        data: {
+    const inspection5 = await prisma.inspection.upsert({
+        where: { inspectionNumber: 'INS-2024-005' },
+        update: {},
+        create: {
             inspectionNumber: 'INS-2024-005',
             assetId: camera1.id,
             inspectorId: inspector2.id,
@@ -902,6 +918,7 @@ This is an automated message from the School Asset Management System.`,
             notes: 'Scheduled preventive inspection',
         },
     });
+
 
     console.log('✅ Inspections created');
 

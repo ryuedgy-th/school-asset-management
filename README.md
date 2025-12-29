@@ -81,7 +81,9 @@ EMAIL_FROM="your-email@magicyears.ac.th"
 ```
 
 **Important Notes:**
-- `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
+- `NEXTAUTH_SECRET`: Generate with:
+  - **Windows (PowerShell/CMD)**: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+  - **Mac/Linux**: `openssl rand -base64 32`
 - Google OAuth: Get credentials from [Google Cloud Console](https://console.cloud.google.com)
 - Gmail API: Configure OAuth consent screen and enable Gmail API
 
@@ -345,7 +347,17 @@ npm run seed:permissions
 # Regenerate Prisma Client
 npx prisma generate
 
-# If still failing, clear and regenerate
+# If still failing, clear and regenerate:
+
+# Windows (PowerShell):
+Remove-Item -Recurse -Force node_modules\.prisma
+npx prisma generate
+
+# Windows (Command Prompt):
+rmdir /s /q node_modules\.prisma
+npx prisma generate
+
+# Mac/Linux:
 rm -rf node_modules/.prisma
 npx prisma generate
 ```
@@ -353,10 +365,19 @@ npx prisma generate
 ### Port Already in Use
 ```bash
 # Kill process on port 3000
-lsof -ti:3000 | xargs kill -9   # Mac/Linux
-npx kill-port 3000              # Windows/Mac/Linux
 
-# Or use different port
+# Windows (PowerShell):
+Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process
+# or simply:
+npx kill-port 3000
+
+# Mac/Linux:
+lsof -ti:3000 | xargs kill -9
+
+# Or use different port (all platforms):
+# Windows (PowerShell):
+$env:PORT=3001; npm run dev
+# Mac/Linux:
 PORT=3001 npm run dev
 ```
 

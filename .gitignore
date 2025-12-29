@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# ============================================================
+# DEPENDENCIES
+# ============================================================
 /node_modules
 /.pnp
 .pnp.*
@@ -10,93 +12,181 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# ============================================================
+# TESTING
+# ============================================================
 /coverage
+/.nyc_output
 *.test.js
 *.spec.js
 
-# next.js
+# ============================================================
+# NEXT.JS
+# ============================================================
 /.next/
 /out/
+.turbo
 
-# production
+# ============================================================
+# PRODUCTION BUILD
+# ============================================================
 /build
 /dist
 
-# misc
-.DS_Store
-*.pem
-.AppleDouble
-.LSOverride
+# ============================================================
+# TYPESCRIPT
+# ============================================================
+*.tsbuildinfo
+next-env.d.ts
 
-# debug
+# ============================================================
+# ENVIRONMENT & SECRETS
+# ============================================================
+.env
+.env.*
+!.env.example
+
+# ============================================================
+# DATABASE FILES (CRITICAL - DO NOT COMMIT)
+# ============================================================
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Prisma databases
+prisma/*.db
+prisma/*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# Database migrations (draft only)
+prisma/migrations/*_draft
+
+# ============================================================
+# UPLOADS & USER GENERATED CONTENT
+# ============================================================
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# ============================================================
+# LOGS & DEBUG FILES
+# ============================================================
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 lerna-debug.log*
+combined.log
+error.log
 
-# env files (can opt-in for committing if needed)
-.env*
-!.env.example
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# prisma
-/src/generated/prisma
-prisma/*.db
-prisma/*.db-journal
-prisma/migrations/*_draft
-
-# IDE
+# ============================================================
+# IDE & EDITOR FILES
+# ============================================================
+# VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# JetBrains (WebStorm, IntelliJ, etc.)
 .idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
 *.swp
 *.swo
 *~
+
+# Eclipse
 .project
 .classpath
 .settings/
 .factorypath
 
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.old
-*.log
-.cache/
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
 
+# ============================================================
+# OPERATING SYSTEM FILES
+# ============================================================
 # macOS
 .DS_Store
 .AppleDouble
 .LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
-# Database
-*.sqlite
-*.sqlite3
-*.db
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
 
-# Uploads (if storing locally)
-/public/uploads/*
-!/public/uploads/.gitkeep
+# Linux
+.directory
+.Trash-*
 
-# Scripts (temporary test scripts)
-/scripts/test-*.ts
-/scripts/temp-*.ts
+# ============================================================
+# TEMPORARY & BACKUP FILES
+# ============================================================
+*.tmp
+*.temp
+*.bak
+*.old
+*.backup
+*.cache
+.cache/
 
-# Coverage
-/coverage
-/.nyc_output
+# ============================================================
+# DOCUMENTATION (Development/Internal Only)
+# ============================================================
+# Keep only essential docs, exclude development notes
+ideaBorrow.md
+TRANSACTION_SIGNATURE_UI_PATCH.md
+DEVELOPMENT_NOTES.md
+TODO.md
+CHANGELOG.draft.md
 
-# Other
-.turbo
+# ============================================================
+# SQL FILES (Temporary/Development)
+# ============================================================
+seed-ticket-email-templates.sql
+*.sql.bak
+
+# ============================================================
+# VERCEL & DEPLOYMENT
+# ============================================================
 .vercel
 .contentlayer
+
+# ============================================================
+# OTHER PROJECT-SPECIFIC
+# ============================================================
+# Temporary test scripts
+/scripts/test-*.ts
+/scripts/temp-*.ts
+/scripts/*.log
+
+# Generated files
+/src/generated/
+/prisma/generated/
