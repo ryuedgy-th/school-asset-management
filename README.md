@@ -1,26 +1,45 @@
 # School Asset Management System
 
-A comprehensive web-based system for managing school IT assets, including borrowing, returning, and tracking equipment with digital signature capabilities.
+A comprehensive web-based system for managing school IT assets with RBAC permissions, email notifications, ticketing system, and Google SSO authentication.
 
 ## 🚀 Features
 
-- **Asset Management**: Track computers, tablets, projectors, and other IT equipment
-- **Borrowing System**: Teachers can borrow equipment with digital signatures
-- **Assignment Tracking**: Manage academic year-based equipment assignments
-- **Digital Signatures**: Secure signature collection for assignments and transactions
+### Asset Management
+- **IT Assets**: Track computers, tablets, projectors, and other IT equipment
+- **FM Assets**: Manage facilities and building assets
+- **Borrowing System**: Equipment assignments with digital signatures
 - **QR Code Integration**: Generate QR codes for asset tracking
-- **Return Management**: Process returns with condition checking and damage reporting
-- **User Roles**: Admin, Technician, Teacher, and Staff roles with different permissions
-- **Audit Logging**: Track all system activities
-- **Email Notifications**: Automated signature request emails
+- **Inspections**: Periodic equipment condition checking with photo documentation
+
+### Ticketing & Maintenance
+- **Support Tickets**: Issue tracking with SLA management
+- **Maintenance Logs**: Track repairs and maintenance work
+- **PM Schedules**: Preventive maintenance scheduling
+- **Auto-ticket Creation**: Automatically create tickets from inspection damage reports
+
+### RBAC & Security
+- **Role-Based Access Control**: 14 modules with 58 granular permissions
+- **4 Default Roles**: Admin, Technician, Inspector, User
+- **Department Scoping**: Department-level access control
+- **Google SSO**: Secure login with @magicyears.ac.th accounts
+
+### Email & Notifications
+- **10 Email Templates**: Covering all workflows
+- **Gmail API Integration**: OAuth-based email sending
+- **Signature Requests**: Automated email notifications
+- **Status Updates**: Real-time notifications for tickets and inspections
+
+---
 
 ## 📋 Prerequisites
 
 Before installation, ensure you have:
 
-- **Node.js** 18.x or higher ([Download](https://nodejs.org/))
+- **Node.js** 20.x or higher ([Download](https://nodejs.org/))
 - **npm** 9.x or higher (comes with Node.js)
 - **Git** (for cloning the repository)
+
+---
 
 ## 🔧 Installation
 
@@ -46,19 +65,25 @@ Create a `.env` file in the root directory:
 DATABASE_URL="file:./dev.db"
 
 # NextAuth
-NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_SECRET="your-secret-key-here-minimum-32-characters"
 NEXTAUTH_URL="http://localhost:3000"
+AUTH_TRUST_HOST="true"
+
+# Google OAuth (for SSO)
+AUTH_GOOGLE_ID="your-google-client-id"
+AUTH_GOOGLE_SECRET="your-google-client-secret"
 
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# Email (Optional - for signature requests)
-EMAIL_SERVER_HOST="smtp.gmail.com"
-EMAIL_SERVER_PORT=587
-EMAIL_SERVER_USER="your-email@gmail.com"
-EMAIL_SERVER_PASSWORD="your-app-password"
-EMAIL_FROM="your-email@gmail.com"
+# Email (Gmail API - Optional)
+EMAIL_FROM="your-email@magicyears.ac.th"
 ```
+
+**Important Notes:**
+- `NEXTAUTH_SECRET`: Generate with `openssl rand -base64 32`
+- Google OAuth: Get credentials from [Google Cloud Console](https://console.cloud.google.com)
+- Gmail API: Configure OAuth consent screen and enable Gmail API
 
 ### 4. Database Setup
 
@@ -66,12 +91,20 @@ EMAIL_FROM="your-email@gmail.com"
 # Generate Prisma Client
 npx prisma generate
 
-# Run migrations
-npx prisma migrate dev
+# Push schema to database (creates tables)
+npx prisma db push
 
-# (Optional) Seed initial data
-npx prisma db seed
+# Seed initial data (RBAC, templates, sample data)
+npm run db:seed
 ```
+
+**What gets seeded:**
+- 3 Departments (IT, FM, Maintenance)
+- 14 RBAC Modules with 58 Permissions
+- 5 Roles (Admin, Technician, Inspector, User, Department Head)
+- 10 Email Templates (Borrowing, Inspections, Tickets, Maintenance)
+- 5 Test Users
+- Sample assets and inspections
 
 ### 5. Start Development Server
 
@@ -81,33 +114,46 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📦 Key Dependencies
+---
 
-### Core Framework
-- **Next.js 16.1.1** - React framework with App Router
-- **React 19** - UI library
-- **TypeScript** - Type safety
+## 🔐 Default Credentials
 
-### Database & ORM
-- **Prisma 5.10.2** - Database ORM
-- **SQLite** - Development database (can be switched to PostgreSQL/MySQL)
+After seeding the database:
 
-### Authentication
-- **NextAuth.js 5.0.0-beta.25** - Authentication solution
-- **bcryptjs** - Password hashing
+- **Admin**: admin@school.com / admin123
+- **Technician**: tech1@school.com / admin123
+- **Inspector**: inspector1@school.com / admin123
 
-### UI Components
-- **Tailwind CSS** - Utility-first CSS framework
-- **Lucide React** - Icon library
-- **React Signature Canvas** - Digital signature pad
-- **QRCode.react** - QR code generation
+**OR** login via Google SSO with @magicyears.ac.th email (gets "User" role automatically)
 
-### File Handling
-- **Sharp** - Image processing
-- **jsPDF** - PDF generation
+---
 
-### Email
-- **Nodemailer** - Email sending
+## 📦 NPM Scripts
+
+### Development
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+```
+
+### Database Management
+```bash
+npm run db:reset     # Reset database + run seed
+npm run db:seed      # Run seed only
+npx prisma studio    # Open database GUI
+npx prisma generate  # Regenerate Prisma Client
+```
+
+### Individual Seeds (Optional)
+```bash
+npm run seed:rbac         # Seed RBAC modules/permissions only
+npm run seed:templates    # Seed email templates only
+npm run seed:permissions  # Seed role permissions only
+```
+
+---
 
 ## 🗂️ Project Structure
 
@@ -115,137 +161,256 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 school-asset-management/
 ├── prisma/
 │   ├── schema.prisma          # Database schema
+│   ├── seed.ts                # Comprehensive seed (RBAC + Templates)
+│   ├── seed-rbac.ts           # RBAC modules/permissions seed
+│   ├── seed-templates.ts      # Email templates seed
 │   └── migrations/            # Database migrations
 ├── public/
-│   └── uploads/              # Uploaded files (signatures, images)
+│   └── uploads/              # Uploaded files (signatures, photos)
 ├── src/
 │   ├── app/
 │   │   ├── api/              # API routes
-│   │   ├── dashboard/        # Dashboard pages
+│   │   ├── (auth)/           # Protected pages (assets, tickets, etc.)
 │   │   ├── sign/             # Public signature pages
 │   │   └── lib/              # Server actions & utilities
 │   ├── components/           # React components
-│   ├── lib/                  # Client utilities
-│   └── auth.ts              # Authentication config
-├── .env                      # Environment variables
-└── package.json             # Dependencies
+│   ├── lib/                  # Client utilities & permissions
+│   ├── auth.ts              # NextAuth configuration
+│   └── auth.config.ts       # Auth middleware config
+├── scripts/                  # Utility scripts
+│   ├── check-rbac.ts         # Verify RBAC setup
+│   ├── check-stock.ts        # Check asset stock integrity
+│   └── fix-stuck-assets.ts  # Fix asset status issues
+├── .env                      # Environment variables (DO NOT COMMIT)
+├── .gitignore               # Git ignore rules
+└── package.json             # Dependencies & scripts
 ```
 
-## 🔐 Default Credentials
+---
 
-After seeding the database:
+## 🎯 Key Workflows
 
-- **Admin**: admin@school.com / admin123
-- **Technician**: tech@school.com / tech123
-- **Teacher**: teacher@school.com / teacher123
+### 1. Asset Assignment with Signature
 
-## 🎯 Usage
+1. **Create Assignment**: Teacher → Asset Assignments → New
+2. **Add Items**: Select equipment to assign
+3. **Request Signature**: Generate secure signature link
+4. **Teacher Signs**: Receive link via email, review & sign
+5. **Track**: Monitor assignment status and return dates
 
-### For Admins/Technicians:
+### 2. Inspection & Ticket Creation
 
-1. **Add Assets**: Navigate to Assets → Add New Asset
-2. **Create Assignment**: Go to Borrowing → Create Assignment
-3. **Add Items to Assignment**: Click "Add Items" on assignment detail
-4. **Request Signature**: Click "Request Signature" to generate link
-5. **Send Link**: Copy link and send to teacher via email
+1. **Inspect Equipment**: Inspector creates inspection with photos
+2. **Report Damage**: Mark damage and estimate repair cost
+3. **Auto-ticket**: System creates ticket automatically
+4. **Assign Technician**: Admin assigns ticket to technician
+5. **Complete Repair**: Technician updates ticket status
+6. **Close**: Inspector verifies and closes ticket
 
-### For Teachers:
+### 3. Ticket Management
 
-1. **Receive Signature Link**: Get link via email
-2. **Review Items**: Check borrowed equipment list
-3. **Sign**: Draw signature and accept terms
-4. **Submit**: Complete acknowledgment
+1. **Create Ticket**: Report issue manually
+2. **Assign**: Assign to department/technician
+3. **Track SLA**: Monitor response and resolution times
+4. **Update Status**: In Progress → Testing → Resolved
+5. **Email Notifications**: Automatic updates to reporter
 
-### For Returns:
+### 4. User Management & RBAC
 
-1. **Process Return**: Click "Process Return" on assignment
-2. **Check Condition**: Mark each item's condition
-3. **Add Notes**: Document any damage
-4. **IT Signature**: IT staff signs to confirm return
+1. **SSO Login**: New users login via Google SSO
+2. **Auto-assign Role**: Get "User" role automatically
+3. **Admin Updates**: Admin changes role via Users page
+4. **Permissions**: Role determines accessible modules
+5. **Department Scope**: Access limited by department
 
-## 🔄 Transaction Signature Flow
+---
 
-The system supports two types of signatures:
+## 🔐 RBAC System
 
-1. **Assignment Signature** (One-time)
-   - Signed when assignment is first created
-   - Cannot be re-signed
+### Modules (14 total)
 
-2. **Transaction Signature** (Per Addition)
-   - Required when adding new items to existing assignment
-   - Each transaction gets its own signature
-   - Maintains complete audit trail
+| Category | Modules |
+|----------|---------|
+| **IT** | IT Assets, Inspections, Assignments |
+| **FM** | FM Assets, Maintenance, PM Schedules, Spare Parts |
+| **Stationary** | Office Supplies |
+| **Common** | Tickets, Reports |
+| **System** | Users, Roles, Departments, Settings |
 
-## 🛠️ Development
+### Permissions per Module
 
-### Run Tests
-```bash
-npm test
+- **View** - Read access
+- **Create** - Create new records
+- **Edit** - Modify existing records
+- **Delete** - Remove records
+- **Approve** - Approve requests (where applicable)
+- **Execute** - Execute tasks (PM schedules)
+
+### Default Roles
+
+| Role | Scope | Permissions | Use Case |
+|------|-------|-------------|----------|
+| **Admin** | Global | 58 (all) | Full system access |
+| **Technician** | Department | 9 | Tickets, Maintenance |
+| **Inspector** | Department | 7 | Inspections, Tickets |
+| **User** | Department | 1 | Basic view access |
+
+---
+
+## 📧 Email System
+
+### Configuration
+
+**Option 1: Gmail API (Recommended)**
+1. Create OAuth credentials in Google Cloud Console
+2. Enable Gmail API
+3. Configure OAuth consent screen
+4. Add email account in Settings → Email & Integration
+
+**Option 2: SMTP (Legacy)**
+```env
+EMAIL_SERVER_HOST=smtp.gmail.com
+EMAIL_SERVER_PORT=587
+EMAIL_SERVER_USER=your-email@gmail.com
+EMAIL_SERVER_PASSWORD=app-password
 ```
 
-### Build for Production
+### Email Templates (10 total)
+
+| Category | Templates |
+|----------|-----------|
+| **Borrowing** | Signature Request |
+| **Inspections** | Inspection Report, Damage Approval, Damage Waiver |
+| **Tickets** | Ticket Created, Status Updated, Resolved |
+| **Maintenance** | Maintenance Request, PM Reminder, PM Completed |
+
+Edit templates in: **Settings → Email & Integration → Email Templates**
+
+---
+
+## 🔄 Database Reset & Migration
+
+### Full Reset (Development)
 ```bash
-npm run build
-npm start
+npm run db:reset
 ```
+**What it does:**
+1. Deletes all data
+2. Runs migrations  
+3. Seeds complete database (RBAC + Templates + Sample data)
 
-### Database Management
+### Production Migration
 ```bash
-# Open Prisma Studio
-npx prisma studio
-
-# Reset database
-npx prisma migrate reset
-
-# Create new migration
+# 1. Create migration
 npx prisma migrate dev --name migration_name
+
+# 2. Apply to production
+npx prisma migrate deploy
+
+# 3. Seed if needed (first time only)
+npm run db:seed
 ```
 
-## 📝 Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | Database connection string | Yes |
-| `NEXTAUTH_SECRET` | Secret for NextAuth.js | Yes |
-| `NEXTAUTH_URL` | Application URL | Yes |
-| `NEXT_PUBLIC_APP_URL` | Public app URL | Yes |
-| `EMAIL_SERVER_HOST` | SMTP server host | No |
-| `EMAIL_SERVER_PORT` | SMTP server port | No |
-| `EMAIL_SERVER_USER` | SMTP username | No |
-| `EMAIL_SERVER_PASSWORD` | SMTP password | No |
-| `EMAIL_FROM` | Sender email address | No |
+---
 
 ## 🐛 Troubleshooting
+
+### SSO Login Error
+```bash
+# Ensure Google OAuth is configured
+# Check .env has AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET
+# Verify callback URL in Google Console: http://localhost:3000/api/auth/callback/google
+```
+
+### Email Templates Missing
+```bash
+# Re-run seed to create templates
+npm run seed:templates
+# or full seed
+npm run db:seed
+```
+
+### RBAC Not Working
+```bash
+# Verify RBAC is seeded
+npx tsx scripts/check-rbac.ts
+
+# Re-seed RBAC
+npm run seed:rbac
+npm run seed:permissions
+```
 
 ### Prisma Client Issues
 ```bash
 # Regenerate Prisma Client
 npx prisma generate
-```
 
-### Database Lock Errors
-```bash
-# Stop all Node processes
-taskkill /F /IM node.exe  # Windows
-killall node              # Mac/Linux
-
-# Regenerate and restart
+# If still failing, clear and regenerate
+rm -rf node_modules/.prisma
 npx prisma generate
-npm run dev
 ```
 
 ### Port Already in Use
 ```bash
-# Change port in package.json or use:
+# Kill process on port 3000
+lsof -ti:3000 | xargs kill -9   # Mac/Linux
+npx kill-port 3000              # Windows/Mac/Linux
+
+# Or use different port
 PORT=3001 npm run dev
 ```
 
+---
+
+## 📝 Environment Variables
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `DATABASE_URL` | Database connection | Yes | `file:./dev.db` |
+| `NEXTAUTH_SECRET` | Auth secret (32+ chars) | Yes | Generate with `openssl` |
+| `NEXTAUTH_URL` | App URL | Yes | `http://localhost:3000` |
+| `AUTH_GOOGLE_ID` | Google OAuth Client ID | Yes (SSO) | From Google Console |
+| `AUTH_GOOGLE_SECRET` | Google OAuth Secret | Yes (SSO) | From Google Console |
+| `NEXT_PUBLIC_APP_URL` | Public app URL | Yes | `http://localhost:3000` |
+| `EMAIL_FROM` | Sender email | No | `admin@magicyears.ac.th` |
+
+---
+
+## 🚀 Deployment
+
+### Preparing for Production
+
+1. **Update environment variables** for production URLs
+2. **Use PostgreSQL/MySQL** instead of SQLite
+3. **Configure OAuth** with production callback URLs
+4. **Set up email** (Gmail API recommended)
+5. **Run migrations**: `npx prisma migrate deploy`
+6. **Seed initial data**: `npm run db:seed` (first time only)
+
+### Example Production .env
+
+```env
+DATABASE_URL="postgresql://user:password@host:5432/dbname"
+NEXTAUTH_SECRET="generated-production-secret-min-32-chars"
+NEXTAUTH_URL="https://assets.magicyears.ac.th"
+AUTH_GOOGLE_ID="production-google-client-id"
+AUTH_GOOGLE_SECRET="production-google-secret"
+NEXT_PUBLIC_APP_URL="https://assets.magicyears.ac.th"
+```
+
+---
+
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is proprietary software for Magic Years International School.
 
 ## 👥 Support
 
-For issues or questions, please contact the IT Department.
+For issues or questions:
+- **IT Department**: it@magicyears.ac.th
+- **System Admin**: Check logs with `npm run dev` for detailed error messages
 
 ---
+
+**Last Updated:** 2025-12-29
+**Version:** 1.0.0
