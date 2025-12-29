@@ -223,7 +223,24 @@ async function main() {
         },
     });
 
-    console.log('✅ Roles created');
+    const userRole = await prisma.role.upsert({
+        where: {
+            name_departmentId: {
+                name: 'User',
+                departmentId: itDept.id
+            }
+        },
+        update: {},
+        create: {
+            name: 'User',
+            departmentId: itDept.id,
+            scope: 'self', // Can only view/manage their own data
+            isActive: true,
+            isSystem: true,
+        },
+    });
+
+    console.log('✅ Roles created (Admin, Technician, Inspector, User)');
 
     // ============================================================
     // 3. USERS

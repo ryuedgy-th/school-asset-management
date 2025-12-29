@@ -248,22 +248,20 @@ export default function TicketsClient() {
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setViewMode('table')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                                    viewMode === 'table'
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${viewMode === 'table'
                                         ? 'bg-primary text-white'
                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
+                                    }`}
                             >
                                 <LayoutList size={18} />
                                 Table View
                             </button>
                             <button
                                 onClick={() => setViewMode('kanban')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                                    viewMode === 'kanban'
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${viewMode === 'kanban'
                                         ? 'bg-primary text-white'
                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                }`}
+                                    }`}
                             >
                                 <LayoutGrid size={18} />
                                 Kanban Board
@@ -271,7 +269,7 @@ export default function TicketsClient() {
                         </div>
                         <Link
                             href="/tickets/metrics"
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all shadow-sm"
                         >
                             <BarChart3 size={18} />
                             View Metrics

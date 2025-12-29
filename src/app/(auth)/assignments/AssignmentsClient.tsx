@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Search, Plus, Package, Clock, Archive, CheckCircle2, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import NewAssignmentModal from '@/components/BorrowFlow/NewAssignmentModal';
 
 interface Assignment {
     id: number;
@@ -43,6 +44,7 @@ interface AssignmentsClientProps {
 export default function AssignmentsClient({ assignments, isAdmin, currentUserId }: AssignmentsClientProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Closed'>('Active');
+    const [showNewAssignmentModal, setShowNewAssignmentModal] = useState(false);
 
     const activeAssignments = assignments.filter(a => a.status === 'Active');
     const pastAssignments = assignments.filter(a => a.status === 'Closed');
@@ -87,14 +89,19 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                         <h1 className="text-2xl font-bold text-slate-900">Assignment Management</h1>
                         <p className="text-slate-500">Monitor and manage all equipment assignments.</p>
                     </div>
-                    <Link
-                        href="/assignments/new"
+                    <button
+                        onClick={() => setShowNewAssignmentModal(true)}
                         className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all flex items-center gap-2"
                     >
                         <Plus size={18} />
                         New Assignment
-                    </Link>
+                    </button>
                 </div>
+
+                {/* New Assignment Modal */}
+                {showNewAssignmentModal && (
+                    <NewAssignmentModal onClose={() => setShowNewAssignmentModal(false)} />
+                )}
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
