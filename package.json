@@ -9,7 +9,12 @@
     "dev": "NODE_OPTIONS='--max-http-header-size=65536' next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:reset": "npx prisma migrate reset --skip-seed && npx tsx prisma/seed.ts",
+    "db:seed": "npx tsx prisma/seed.ts",
+    "seed:rbac": "npx tsx prisma/seed-rbac.ts",
+    "seed:templates": "npx tsx prisma/seed-templates.ts",
+    "seed:permissions": "npx tsx prisma/seed-role-permissions.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

@@ -43,7 +43,133 @@ async function main() {
     console.log('✅ Departments created');
 
     // ============================================================
-    // 2. ROLES
+    // 2. RBAC SYSTEM: MODULES & PERMISSIONS
+    // ============================================================
+    console.log('\n📦 Creating RBAC Modules...');
+
+    const modules = [
+        // IT Department Modules
+        { code: 'assets', name: 'IT Assets', description: 'Manage IT assets (computers, tablets, peripherals)', category: 'IT', icon: 'Laptop', routePath: '/assets', sortOrder: 1 },
+        { code: 'inspections', name: 'Asset Inspections', description: 'Inspect and verify asset conditions', category: 'IT', icon: 'ClipboardCheck', routePath: '/inspections', sortOrder: 2 },
+        { code: 'assignments', name: 'Asset Assignments', description: 'Assign and track asset usage', category: 'IT', icon: 'UserCheck', routePath: '/assignments', sortOrder: 3 },
+
+        // FM Department Modules
+        { code: 'fm_assets', name: 'FM Assets', description: 'Manage facilities and building assets', category: 'FM', icon: 'Building2', routePath: '/fm-assets', sortOrder: 10 },
+        { code: 'maintenance', name: 'Maintenance Logs', description: 'Track maintenance and repairs', category: 'FM', icon: 'Wrench', routePath: '/maintenance-logs', sortOrder: 11 },
+        { code: 'pm_schedules', name: 'PM Schedules', description: 'Preventive maintenance scheduling', category: 'FM', icon: 'Calendar', routePath: '/pm-schedules', sortOrder: 12 },
+        { code: 'spare_parts', name: 'Spare Parts Inventory', description: 'Manage spare parts stock', category: 'FM', icon: 'Package', routePath: '/spare-parts', sortOrder: 13 },
+
+        // Stationary Department Modules
+        { code: 'stationary', name: 'Stationary', description: 'Manage office supplies and stationary', category: 'STATIONARY', icon: 'PenTool', routePath: '/stationary', sortOrder: 20 },
+
+        // Common Modules
+        { code: 'tickets', name: 'Tickets', description: 'Issue tracking and ticketing system', category: 'Common', icon: 'TicketIcon', routePath: '/tickets', sortOrder: 30 },
+        { code: 'reports', name: 'Reports', description: 'Generate and view reports', category: 'Common', icon: 'FileText', routePath: '/reports', sortOrder: 40 },
+
+        // System Administration Modules
+        { code: 'users', name: 'User Management', description: 'Manage system users', category: 'System', icon: 'Users', routePath: '/settings/users', sortOrder: 100 },
+        { code: 'roles', name: 'Role Management', description: 'Manage user roles and permissions', category: 'System', icon: 'Shield', routePath: '/settings/organization', sortOrder: 101 },
+        { code: 'departments', name: 'Department Management', description: 'Manage departments and organizational structure', category: 'System', icon: 'Building', routePath: '/settings/organization', sortOrder: 102 },
+        { code: 'settings', name: 'System Settings', description: 'Configure system-wide settings', category: 'System', icon: 'Settings', routePath: '/settings', sortOrder: 103 },
+    ];
+
+    for (const moduleData of modules) {
+        await prisma.module.upsert({
+            where: { code: moduleData.code },
+            update: moduleData,
+            create: moduleData,
+        });
+    }
+    console.log(`✅ Created ${modules.length} modules`);
+
+    // Create permissions for each module
+    console.log('\n🔑 Creating Module Permissions...');
+
+    const standardPermissions = [
+        { action: 'view', name: 'View' },
+        { action: 'create', name: 'Create' },
+        { action: 'edit', name: 'Edit' },
+        { action: 'delete', name: 'Delete' },
+    ];
+
+    const permissionsByModule = {
+        // IT & FM Assets - add approve
+        assets: [...standardPermissions, { action: 'approve', name: 'Approve', description: 'Approve asset requests and changes' }],
+        fm_assets: [...standardPermissions, { action: 'approve', name: 'Approve', description: 'Approve asset requests and changes' }],
+
+        // Inspections - add approve
+        inspections: [...standardPermissions, { action: 'approve', name: 'Approve Inspections', description: 'Approve inspection results' }],
+
+        // PM Schedules - add approve and execute
+        pm_schedules: [
+            ...standardPermissions,
+            { action: 'approve', name: 'Approve Schedules', description: 'Approve PM schedules' },
+            { action: 'execute', name: 'Execute PM', description: 'Execute preventive maintenance tasks' },
+        ],
+
+        // Tickets, Spare Parts - standard
+        tickets: standardPermissions,
+        spare_parts: standardPermissions,
+
+        // Assignments - no delete
+        assignments: standardPermissions.filter(p => p.action !== 'delete'),
+
+        // Maintenance - add approve
+        maintenance: [...standardPermissions, { action: 'approve', name: 'Approve Maintenance', description: 'Approve maintenance work' }],
+
+        // Stationary - add approve
+        stationary: [...standardPermissions, { action: 'approve', name: 'Approve Requests', description: 'Approve stationary requests' }],
+
+        // Reports - view and export only
+        reports: [
+            { action: 'view', name: 'View Reports' },
+            { action: 'export', name: 'Export Reports', description: 'Export reports to Excel/PDF' },
+        ],
+
+        // System modules
+        users: standardPermissions,
+        roles: standardPermissions,
+        departments: standardPermissions,
+
+        // Settings - view and edit only
+        settings: [
+            { action: 'view', name: 'View Settings' },
+            { action: 'edit', name: 'Edit Settings' },
+        ],
+    };
+
+    const allModules = await prisma.module.findMany();
+    let totalPermissions = 0;
+
+    for (const module of allModules) {
+        const permissions = permissionsByModule[module.code] || standardPermissions;
+
+        for (const perm of permissions) {
+            await prisma.modulePermission.upsert({
+                where: {
+                    moduleId_action: {
+                        moduleId: module.id,
+                        action: perm.action,
+                    },
+                },
+                update: {
+                    name: perm.name,
+                    description: perm.description,
+                },
+                create: {
+                    moduleId: module.id,
+                    action: perm.action,
+                    name: perm.name,
+                    description: perm.description,
+                },
+            });
+            totalPermissions++;
+        }
+    }
+    console.log(`✅ Created ${totalPermissions} permissions across all modules`);
+
+    // ============================================================
+    // 3. ROLES
     // ============================================================
     console.log('\n👥 Creating Roles...');
     const adminRole = await prisma.role.upsert({
@@ -170,11 +296,412 @@ async function main() {
     console.log('✅ Users created');
 
     // ============================================================
-    // 4. ASSETS (using legacy Asset model)
+    // 4. EMAIL TEMPLATES
+    // ============================================================
+    console.log('\n📧 Creating Email Templates...');
+
+    // Create default email account if needed
+    let defaultAccount = await prisma.emailAccount.findFirst({
+        where: { isDefault: true }
+    });
+
+    if (!defaultAccount) {
+        defaultAccount = await prisma.emailAccount.create({
+            data: {
+                name: 'Default Account',
+                email: process.env.EMAIL_FROM || 'it@school.edu',
+                type: 'SMTP',
+                isDefault: true,
+                isActive: false,
+                smtpHost: 'smtp.gmail.com',
+                smtpPort: 587,
+                smtpSecure: false,
+            }
+        });
+    }
+
+    // Template 1: Signature Request
+    await prisma.emailTemplate.upsert({
+        where: { id: 1 },
+        update: {},
+        create: {
+            name: 'Asset Assignment Signature Request',
+            subject: 'Action Required: Sign Asset Assignment',
+            category: 'borrowing',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{teacherName}', '{signatureUrl}', '{date}']),
+            body: `Dear {teacherName},
+
+You have been assigned new equipment or assets. As part of our school's asset policy, we require your digital signature to acknowledge the receipt and condition of these items.
+
+Please click the link below to review and sign your assignment:
+
+{signatureUrl}
+
+This link is secure and valid for 7 days.
+
+---
+This is an automated message from the School Asset Management System.
+If you did not request this or believe it is an error, please contact the IT Department immediately.`,
+        }
+    });
+
+    // Template 2: Inspection Report
+    await prisma.emailTemplate.upsert({
+        where: { id: 2 },
+        update: {},
+        create: {
+            name: 'Equipment Inspection Report',
+            subject: 'Equipment Inspection Report - {assetName} ({assetCode})',
+            category: 'inspection',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{userName}', '{assetName}', '{assetCode}', '{overallCondition}', '{inspectorName}', '{inspectionDate}']),
+            body: `Dear {userName},
+
+This is the periodic inspection report for your assigned equipment.
+
+EQUIPMENT INFORMATION:
+- Asset Name: {assetName}
+- Asset Code: {assetCode}
+
+INSPECTION RESULTS:
+- Overall Condition: {overallCondition}
+
+Inspected by: {inspectorName}
+Inspection Date: {inspectionDate}
+
+---
+This is an automated inspection report from the School Asset Management System.`,
+        }
+    });
+
+    // Template 3: Damage Approval
+    await prisma.emailTemplate.upsert({
+        where: { id: 3 },
+        update: {},
+        create: {
+            name: 'Damage Claim Approved',
+            subject: 'Damage Claim Approved - {assetName} ({assetCode})',
+            category: 'inspection',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{userName}', '{assetName}', '{assetCode}', '{damageDescription}', '{estimatedCost}', '{approverName}']),
+            body: `Dear {userName},
+
+Your equipment damage claim has been APPROVED by {approverName}.
+
+EQUIPMENT INFORMATION:
+- Equipment: {assetName}
+- Asset Code: {assetCode}
+- Damage: {damageDescription}
+- Repair Cost: ฿{estimatedCost}
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    // Template 4: Damage Waiver
+    await prisma.emailTemplate.upsert({
+        where: { id: 4 },
+        update: {},
+        create: {
+            name: 'Damage Charges Waived',
+            subject: 'Damage Charges Waived - {assetName} ({assetCode})',
+            category: 'inspection',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{userName}', '{assetName}', '{assetCode}', '{damageDescription}', '{estimatedCost}', '{approverName}', '{waiverReason}']),
+            body: `Dear {userName},
+
+Good news! The damage charges for your equipment have been WAIVED by {approverName}.
+
+EQUIPMENT INFORMATION:
+- Equipment: {assetName}
+- Asset Code: {assetCode}
+- Damage: {damageDescription}
+- Original Cost: ฿{estimatedCost} (WAIVED)
+
+REASON FOR WAIVER:
+{waiverReason}
+
+✅ No further action is required from you.
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    // Template 5: Ticket Created/Assigned
+    await prisma.emailTemplate.upsert({
+        where: { id: 5 },
+        update: {},
+        create: {
+            name: 'Ticket Created & Assigned',
+            subject: 'New Ticket Assigned: #{ticketNumber} - {title}',
+            category: 'tickets',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{assigneeName}', '{ticketNumber}', '{title}', '{description}', '{priority}', '{category}', '{createdBy}', '{dueDate}', '{ticketUrl}']),
+            body: `Hello {assigneeName},
+
+A new support ticket has been assigned to you.
+
+TICKET DETAILS:
+- Ticket #: {ticketNumber}
+- Title: {title}
+- Priority: {priority}
+- Category: {category}
+- Reported By: {createdBy}
+- Due Date: {dueDate}
+
+DESCRIPTION:
+{description}
+
+View and update ticket: {ticketUrl}
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    // Template 6: Ticket Status Update
+    await prisma.emailTemplate.upsert({
+        where: { id: 6 },
+        update: {},
+        create: {
+            name: 'Ticket Status Updated',
+            subject: 'Ticket #{ticketNumber} Status Changed to {newStatus}',
+            category: 'tickets',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{reporterName}', '{ticketNumber}', '{title}', '{oldStatus}', '{newStatus}', '{updatedBy}', '{comments}', '{ticketUrl}']),
+            body: `Hello {reporterName},
+
+Your support ticket status has been updated.
+
+TICKET: #{ticketNumber} - {title}
+Status Changed: {oldStatus} → {newStatus}
+Updated By: {updatedBy}
+
+{comments}
+
+View ticket: {ticketUrl}
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    // Template 7: Ticket Completed
+    await prisma.emailTemplate.upsert({
+        where: { id: 7 },
+        update: {},
+        create: {
+            name: 'Ticket Resolved',
+            subject: 'Ticket #{ticketNumber} has been Resolved',
+            category: 'tickets',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{reporterName}', '{ticketNumber}', '{title}', '{resolvedBy}', '{resolution}', '{ticketUrl}']),
+            body: `Hello {reporterName},
+
+Good news! Your support ticket has been resolved.
+
+TICKET: #{ticketNumber} - {title}
+Resolved By: {resolvedBy}
+
+RESOLUTION:
+{resolution}
+
+If you have any questions or the issue persists, please reply to this email or reopen the ticket.
+
+View ticket: {ticketUrl}
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    // Template 8: Maintenance Request
+    await prisma.emailTemplate.upsert({
+        where: { id: 8 },
+        update: {},
+        create: {
+            name: 'Maintenance Request Created',
+            subject: 'Maintenance Request: {assetName} - {issueType}',
+            category: 'maintenance',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{technicianName}', '{assetName}', '{assetCode}', '{issueType}', '{description}', '{priority}', '{requestedBy}', '{location}']),
+            body: `Hello {technicianName},
+
+A new maintenance request has been submitted for your attention.
+
+ASSET INFORMATION:
+- Asset: {assetName}
+- Code: {assetCode}
+- Location: {location}
+
+ISSUE:
+- Type: {issueType}
+- Priority: {priority}
+- Requested By: {requestedBy}
+
+DESCRIPTION:
+{description}
+
+Please schedule and complete the maintenance as soon as possible.
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    // Template 9: PM Schedule Reminder
+    await prisma.emailTemplate.upsert({
+        where: { id: 9 },
+        update: {},
+        create: {
+            name: 'Preventive Maintenance Reminder',
+            subject: 'PM Due: {assetName} - Scheduled for {scheduledDate}',
+            category: 'maintenance',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{technicianName}', '{assetName}', '{assetCode}', '{scheduledDate}', '{taskType}', '{instructions}']),
+            body: `Hello {technicianName},
+
+This is a reminder that preventive maintenance is due for the following asset:
+
+ASSET: {assetName} ({assetCode})
+SCHEDULED DATE: {scheduledDate}
+TASK TYPE: {taskType}
+
+INSTRUCTIONS:
+{instructions}
+
+Please complete this maintenance task by the scheduled date.
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    // Template 10: PM Completed
+    await prisma.emailTemplate.upsert({
+        where: { id: 10 },
+        update: {},
+        create: {
+            name: 'PM Task Completed',
+            subject: 'PM Completed: {assetName}',
+            category: 'maintenance',
+            emailAccountId: defaultAccount.id,
+            variables: JSON.stringify(['{managerName}', '{assetName}', '{assetCode}', '{completedBy}', '{completedDate}', '{findings}', '{nextScheduledDate}']),
+            body: `Hello {managerName},
+
+Preventive maintenance has been completed for:
+
+ASSET: {assetName} ({assetCode})
+Completed By: {completedBy}
+Completed Date: {completedDate}
+
+FINDINGS:
+{findings}
+
+Next PM Scheduled: {nextScheduledDate}
+
+---
+This is an automated message from the School Asset Management System.`,
+        }
+    });
+
+    console.log('✅ Created 10 email templates (Borrowing, Inspections, Tickets, Maintenance, PM)');
+
+
+    // ============================================================
+    // 5. ROLE-PERMISSION ASSIGNMENTS
+    // ============================================================
+    console.log('\n🔐 Assigning Permissions to Roles...');
+
+    const permissionSets = {
+        Admin: {
+            modules: [
+                { code: 'assets', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
+                { code: 'inspections', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
+                { code: 'assignments', actions: ['view', 'create', 'edit'] },
+                { code: 'fm_assets', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
+                { code: 'maintenance', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
+                { code: 'pm_schedules', actions: ['view', 'create', 'edit', 'delete', 'approve', 'execute'] },
+                { code: 'spare_parts', actions: ['view', 'create', 'edit', 'delete'] },
+                { code: 'stationary', actions: ['view', 'create', 'edit', 'delete', 'approve'] },
+                { code: 'tickets', actions: ['view', 'create', 'edit', 'delete'] },
+                { code: 'reports', actions: ['view', 'export'] },
+                { code: 'users', actions: ['view', 'create', 'edit', 'delete'] },
+                { code: 'roles', actions: ['view', 'create', 'edit', 'delete'] },
+                { code: 'departments', actions: ['view', 'create', 'edit', 'delete'] },
+                { code: 'settings', actions: ['view', 'edit'] },
+            ],
+        },
+        Technician: {
+            modules: [
+                { code: 'assets', actions: ['view'] },
+                { code: 'tickets', actions: ['view', 'create', 'edit'] },
+                { code: 'maintenance', actions: ['view', 'create', 'edit'] },
+                { code: 'spare_parts', actions: ['view'] },
+                { code: 'reports', actions: ['view'] },
+            ],
+        },
+        Inspector: {
+            modules: [
+                { code: 'assets', actions: ['view'] },
+                { code: 'inspections', actions: ['view', 'create', 'edit'] },
+                { code: 'tickets', actions: ['view', 'create'] },
+                { code: 'reports', actions: ['view'] },
+            ],
+        },
+    };
+
+    for (const [roleName, permSet] of Object.entries(permissionSets)) {
+        const role = await prisma.role.findFirst({ where: { name: roleName } });
+        if (!role) continue;
+
+        let permCount = 0;
+        for (const moduleConfig of permSet.modules) {
+            const module = await prisma.module.findUnique({ where: { code: moduleConfig.code } });
+            if (!module) continue;
+
+            for (const action of moduleConfig.actions) {
+                const permission = await prisma.modulePermission.findUnique({
+                    where: {
+                        moduleId_action: {
+                            moduleId: module.id,
+                            action: action
+                        }
+                    }
+                });
+
+                if (permission) {
+                    await prisma.rolePermission.upsert({
+                        where: {
+                            roleId_permissionId: {
+                                roleId: role.id,
+                                permissionId: permission.id
+                            }
+                        },
+                        update: {},
+                        create: {
+                            roleId: role.id,
+                            permissionId: permission.id,
+                        }
+                    });
+                    permCount++;
+                }
+            }
+        }
+        console.log(`  ✅ ${roleName}: ${permCount} permissions`);
+    }
+
+    // ============================================================
+    // 6. ASSETS (using legacy Asset model)
     // ============================================================
     console.log('\n💻 Creating Assets...');
-    const laptop1 = await prisma.asset.create({
-        data: {
+    const laptop1 = await prisma.asset.upsert({
+        where: { assetCode: 'LAP-001' },
+        update: {},
+        create: {
             name: 'MacBook Pro 14" (2023)',
             category: 'Laptop',
             assetCode: 'LAP-001',
@@ -189,8 +716,10 @@ async function main() {
         },
     });
 
-    const laptop2 = await prisma.asset.create({
-        data: {
+    const laptop2 = await prisma.asset.upsert({
+        where: { assetCode: 'LAP-002' },
+        update: {},
+        create: {
             name: 'Dell Latitude 5420',
             category: 'Laptop',
             assetCode: 'LAP-002',
