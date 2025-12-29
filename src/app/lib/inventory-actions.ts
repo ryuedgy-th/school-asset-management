@@ -263,7 +263,7 @@ export async function recordTransaction(data: {
 
     // Check if reorder point is reached
     if (newStock <= sparePart.reorderPoint) {
-        console.log(`Low stock alert: ${sparePart.name} - Current: ${newStock}, Reorder point: ${sparePart.reorderPoint}`);
+
         // TODO: Send low stock notification
     }
 

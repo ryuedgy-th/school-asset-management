@@ -355,7 +355,7 @@ export async function createInspection(data: {
                 }
             });
 
-            console.log(`✅ Inspection report email sent for inspection #${inspection.id}`);
+
         } catch (emailError) {
             console.error(`❌ Failed to send inspection email:`, emailError);
             // Don't fail the whole operation if email fails
@@ -368,7 +368,7 @@ export async function createInspection(data: {
         try {
             const { createTicketFromInspection } = await import('@/lib/inspection-ticket-actions');
             await createTicketFromInspection(inspection.id);
-            console.log(`✅ Auto-created ticket for damaged asset from inspection #${inspection.id}`);
+
         } catch (ticketError) {
             console.error(`❌ Failed to auto-create ticket:`, ticketError);
             // Don't fail the whole operation if ticket creation fails
@@ -484,7 +484,7 @@ export async function updateInspectionCost(
                 notes: inspection.notes
             });
 
-            console.log(`✅ Updated inspection report email sent for inspection #${inspection.id}`);
+
         } catch (emailError) {
             console.error(`❌ Failed to send updated inspection email:`, emailError);
         }
@@ -567,7 +567,7 @@ export async function approveDamage(
                 },
                 approvalNotes: inspection.approvalNotes
             });
-            console.log(`✅ Damage approval email sent for inspection #${inspectionId}`);
+
         } catch (emailError) {
             console.error(`❌ Failed to send approval email:`, emailError);
         }
@@ -643,7 +643,7 @@ export async function waiveDamage(
                 },
                 waiverReason: reason
             });
-            console.log(`✅ Damage waiver email sent for inspection #${inspectionId}`);
+
         } catch (emailError) {
             console.error(`❌ Failed to send waiver email:`, emailError);
         }
@@ -758,8 +758,7 @@ export async function generateAndSendDamageForm(inspectionId: number) {
     });
 
     // TODO: Send email with PDF attachment
-    console.log(`✅ Damage form generated and sent for inspection #${inspectionId}`);
-    console.log(`📄 PDF path: ${pdfPath}`);
+
 
     revalidatePath('/dashboard/inspections');
     revalidatePath(`/inspections/${inspectionId}`);

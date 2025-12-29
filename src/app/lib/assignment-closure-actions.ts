@@ -94,11 +94,12 @@ export async function closeAssignment(data: {
             success: true,
             message: 'Assignment closed successfully'
         };
-    } catch (error: any) {
-        console.error('[closeAssignment] Error:', error);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        console.error('[closeAssignment] Error:', error); // Keep original console.error
         return {
             success: false,
-            error: error.message || 'Failed to close assignment'
+            error: message || 'Failed to close assignment'
         };
     }
 }
@@ -149,11 +150,12 @@ export async function reopenAssignment(assignmentId: number) {
         revalidatePath('/assignments');
 
         return { success: true, message: 'Assignment reopened successfully' };
-    } catch (error: any) {
-        console.error('[reopenAssignment] Error:', error);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        console.error('[reopenAssignment] Error:', error); // Keep original console.error
         return {
             success: false,
-            error: error.message || 'Failed to reopen assignment'
+            error: message || 'Failed to reopen assignment'
         };
     }
 }

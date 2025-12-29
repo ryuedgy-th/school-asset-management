@@ -4,6 +4,33 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+// TypeScript interface for FM Asset update
+interface FMAssetUpdateData {
+    assetCode?: string;
+    name?: string;
+    description?: string;
+    categoryId?: number;
+    type?: string;
+    brand?: string;
+    model?: string;
+    serialNumber?: string;
+    location?: string;
+    building?: string;
+    floor?: string;
+    room?: string;
+    purchaseDate?: Date | string;
+    installDate?: Date | string;
+    warrantyExpiry?: Date | string;
+    specifications?: string | Record<string, any>;
+    condition?: string;
+    status?: string;
+    requiresMaintenance?: boolean;
+    parentAssetId?: number;
+    purchaseCost?: number;
+    currentValue?: number;
+}
+
+
 export async function createFMAsset(data: {
     assetCode: string;
     name: string;
@@ -92,7 +119,7 @@ export async function createFMAsset(data: {
     return asset;
 }
 
-export async function updateFMAsset(id: number, data: any) {
+export async function updateFMAsset(id: number, data: FMAssetUpdateData) {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
 

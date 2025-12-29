@@ -184,7 +184,7 @@ export async function signBorrowTransaction(data: {
     signatureData: string;
 }) {
     try {
-        console.log('[Server] Verifying transaction token:', data.token);
+
 
         const transaction = await prisma.borrowTransaction.findUnique({
             where: { signatureToken: data.token },
@@ -199,7 +199,7 @@ export async function signBorrowTransaction(data: {
             return { success: false, error: 'Invalid signature link' };
         }
 
-        console.log('[Server] Transaction found:', transaction.transactionNumber);
+
 
         if (transaction.signatureTokenExpiry && new Date() > transaction.signatureTokenExpiry) {
             console.error('[Server] Token expired');
@@ -212,15 +212,15 @@ export async function signBorrowTransaction(data: {
         }
 
         // Save signature
-        console.log('[Server] Saving signature file...');
+
         const signaturePath = await saveFile(
             data.signatureData,
             `signatures/transaction-${transaction.id}-${Date.now()}.png`
         );
-        console.log('[Server] Signature saved:', signaturePath);
+
 
         // Update transaction
-        console.log('[Server] Updating transaction...');
+
         await prisma.borrowTransaction.update({
             where: { id: transaction.id },
             data: {
@@ -231,7 +231,7 @@ export async function signBorrowTransaction(data: {
                 signatureTokenExpiry: null
             }
         });
-        console.log('[Server] Transaction updated successfully');
+
 
         return {
             success: true,
@@ -239,12 +239,12 @@ export async function signBorrowTransaction(data: {
             assignmentNumber: transaction.assignment.assignmentNumber,
             signedAt: new Date()
         };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('[Server] Error in signBorrowTransaction:', error);
         return {
             success: false,
-            error: error.message || 'Failed to process signature'
+            error: message || 'Failed to process signature'
         };
     }
 }
-

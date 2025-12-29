@@ -64,7 +64,7 @@ export default function AssignTicketModal({
             });
 
             if (response.ok) {
-                console.log('Ticket assigned successfully');
+
                 await onSuccess(); // Ensure data is refreshed before closing
                 onClose();
             } else {
@@ -88,7 +88,7 @@ export default function AssignTicketModal({
             });
 
             if (response.ok) {
-                console.log('Ticket assigned to current user successfully');
+
                 await onSuccess(); // Ensure data is refreshed before closing
                 onClose();
             } else {

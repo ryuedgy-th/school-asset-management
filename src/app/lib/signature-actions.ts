@@ -81,11 +81,12 @@ export async function confirmBorrowSignature(data: {
             success: true,
             message: 'Transaction signed successfully'
         };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('[confirmBorrowSignature] Error:', error);
         return {
             success: false,
-            error: error.message || 'Failed to confirm signature'
+            error: message || 'Failed to confirm signature'
         };
     }
 }

@@ -157,8 +157,9 @@ export async function testEmailSettings(config?: {
         });
 
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('SMTP Error:', error);
-        return { success: false, error: error.message };
+        return { success: false, error: message };
     }
 }

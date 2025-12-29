@@ -102,7 +102,6 @@ export async function sendEmail(options: {
                 );
             }
 
-            console.log(`✅ Email sent via Gmail API to ${allRecipients.join(', ')}`);
             return { success: true };
         } else {
             // Send via SMTP
@@ -125,7 +124,6 @@ export async function sendEmail(options: {
 
             const recipients = Array.isArray(options.to) ? options.to.join(', ') : options.to;
             const ccList = options.cc ? (Array.isArray(options.cc) ? options.cc.join(', ') : options.cc) : '';
-            console.log(`✅ Email sent via SMTP to ${recipients}${ccList ? ` (CC: ${ccList})` : ''}`);
             return { success: true };
         }
     } catch (error: any) {

@@ -20,12 +20,14 @@ async function getUser(email: string): Promise<User | null> {
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
-    adapter: PrismaAdapter(prisma),
+    adapter: PrismaAdapter(prisma) as Adapter,
     events: {
         async createUser({ user }) {
-            console.log('🆕 New user created via SSO:', user.email);
+
 
             // Assign default role if user doesn't have one
+            if (!user.id) return;
+
             const dbUser = await prisma.user.findUnique({
                 where: { id: parseInt(user.id) },
                 select: { roleId: true }
@@ -39,12 +41,11 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                     }
                 });
 
-                if (defaultRole) {
+                if (defaultRole && user.id) {
                     await prisma.user.update({
                         where: { id: parseInt(user.id) },
                         data: { roleId: defaultRole.id }
                     });
-                    console.log('✅ Assigned default role:', defaultRole.name);
                 } else {
                     console.error('❌ No default "User" role found!');
                 }

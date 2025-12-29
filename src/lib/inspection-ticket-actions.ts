@@ -51,7 +51,7 @@ export async function createTicketFromInspection(inspectionId: number) {
 
     // Only create ticket if damage was found
     if (!inspection.damageFound) {
-        console.log(`⚠️ No damage found in inspection #${inspectionId}, skipping ticket creation`);
+        // No damage found, skip ticket creation
         return null;
     }
 
@@ -61,7 +61,7 @@ export async function createTicketFromInspection(inspectionId: number) {
     });
 
     if (existingTicket) {
-        console.log(`✅ Ticket already exists for inspection #${inspectionId}`);
+        // Ticket already exists
         return existingTicket;
     }
 
@@ -155,8 +155,6 @@ export async function createTicketFromInspection(inspectionId: number) {
             }),
         },
     });
-
-    console.log(`✅ Ticket #${ticket.ticketNumber} auto-created from Inspection #${inspection.inspectionNumber || inspection.id}`);
 
     revalidatePath('/tickets');
     revalidatePath('/inspections');
@@ -253,6 +251,5 @@ export async function syncTicketStatusToInspection(ticketId: number) {
         });
 
         revalidatePath(`/inspections/${ticket.inspectionId}`);
-        console.log(`✅ Synced ticket #${ticket.ticketNumber} status back to inspection`);
     }
 }

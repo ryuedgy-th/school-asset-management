@@ -131,7 +131,7 @@ export async function sendDamageApprovalEmail(data: {
             subject: `Damage Claim Approved - ${data.inspection.asset.name} (${data.inspection.asset.assetCode})`,
             html,
         });
-        console.log(`✅ Damage approval email sent to: ${recipients.join(', ')}`);
+
         return { success: true };
     } catch (error: any) {
         console.error("❌ Failed to send damage approval email:", error.message);
@@ -257,7 +257,6 @@ export async function sendDamageWaiverEmail(data: {
             subject: `Damage Charges Waived - ${data.inspection.asset.name} (${data.inspection.asset.assetCode})`,
             html,
         });
-        console.log(`✅ Damage waiver email sent to: ${recipients.join(', ')}`);
         return { success: true };
     } catch (error: any) {
         console.error("❌ Failed to send damage waiver email:", error.message);

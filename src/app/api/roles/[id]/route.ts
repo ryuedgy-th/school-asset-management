@@ -97,24 +97,22 @@ export async function PUT(
         const body = await request.json();
         const { name, scope, isActive, departmentId, permissionIds } = body;
 
-        console.log('📝 Updating role:', roleId);
-        console.log('   Permission IDs:', permissionIds?.length || 0);
+
 
         // Update role permissions if provided
         if (permissionIds !== undefined && Array.isArray(permissionIds)) {
             try {
-                console.log('🗑️ Deleting existing permissions...');
+
                 // Delete existing permissions
                 await prisma.rolePermission.deleteMany({
                     where: { roleId },
                 });
 
-                console.log(`✅ Deleted. Now creating ${permissionIds.length} new permissions...`);
+
 
                 // Create new permissions individually (createMany not supported due to composite unique)
                 for (const permissionId of permissionIds) {
                     if (typeof permissionId !== 'number') {
-                        console.error('❌ Invalid permission ID:', permissionId);
                         continue;
                     }
 
@@ -126,10 +124,9 @@ export async function PUT(
                     });
                 }
 
-                console.log('✅ All permissions created successfully');
+
             } catch (permError: any) {
-                console.error('❌ Error updating permissions:', permError);
-                console.error('   Permission IDs that failed:', permissionIds);
+
                 throw new Error(`Failed to update permissions: ${permError.message}`);
             }
         }
@@ -173,10 +170,7 @@ export async function PUT(
 
         return NextResponse.json(role);
     } catch (error: any) {
-        console.error('❌ Error updating role:', error);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        console.error('Error code:', error.code);
+
         return NextResponse.json(
             {
                 error: 'Failed to update role',

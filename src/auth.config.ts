@@ -18,8 +18,6 @@ export const authConfig = {
 
                     // If user exists but has no role, assign default role
                     if (existingUser && !existingUser.roleId) {
-                        console.log('🔧 Assigning default role to existing user without role:', user.email);
-
                         // Find default "User" role
                         const defaultRole = await prisma.role.findFirst({
                             where: {
@@ -33,11 +31,9 @@ export const authConfig = {
                                 where: { id: existingUser.id },
                                 data: { roleId: defaultRole.id }
                             });
-                            console.log('✅ Assigned role:', defaultRole.name);
                         }
                     }
                 } catch (error) {
-                    console.error('❌ Error in signIn callback:', error);
                     // Don't block login even if role assignment fails
                 }
             }

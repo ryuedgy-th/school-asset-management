@@ -4,6 +4,50 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 
+// TypeScript interfaces for PM actions
+interface ChecklistItem {
+    id: string;
+    label: string;
+    checked?: boolean;
+    notes?: string;
+}
+
+interface ReadingsData {
+    [key: string]: string | number | boolean;
+}
+
+interface PMScheduleUpdateData {
+    name?: string;
+    description?: string;
+    scheduleType?: string;
+    frequency?: string;
+    intervalValue?: number;
+    intervalUnit?: string;
+    usageMetric?: string;
+    usageInterval?: number;
+    nextDueDate?: Date | string;
+    nextDueUsage?: number;
+    checklistItems?: ChecklistItem[];
+    autoCreateWO?: boolean;
+    leadTimeDays?: number;
+    priority?: string;
+    assignedToId?: number;
+    isActive?: boolean;
+}
+
+interface MaintenanceLogUpdateData {
+    date?: Date | string;
+    type?: string;
+    performedBy?: string;
+    description?: string;
+    readings?: ReadingsData;
+    cost?: number;
+    partsChanged?: string;
+    nextServiceDue?: Date | string;
+    images?: string[];
+}
+
+
 export async function createPMSchedule(data: {
     assetId: number;
     name: string;
@@ -16,7 +60,7 @@ export async function createPMSchedule(data: {
     usageInterval?: number;
     nextDueDate?: Date | string;
     nextDueUsage?: number;
-    checklistItems?: any[];
+    checklistItems?: ChecklistItem[];
     autoCreateWO?: boolean;
     leadTimeDays?: number;
     priority?: string;
@@ -73,7 +117,7 @@ export async function createPMSchedule(data: {
     return schedule;
 }
 
-export async function updatePMSchedule(id: number, data: any) {
+export async function updatePMSchedule(id: number, data: PMScheduleUpdateData) {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
 
@@ -165,7 +209,7 @@ export async function deletePMSchedule(id: number) {
 export async function executePM(
     scheduleId: number,
     data: {
-        checklistResults?: any;
+        checklistResults?: ReadingsData;
         partsUsed?: string;
         cost?: number;
         notes?: string;
@@ -296,7 +340,7 @@ export async function createMaintenanceLog(data: {
     type: string;
     performedBy?: string;
     description: string;
-    readings?: any;
+    readings?: ReadingsData;
     cost?: number;
     partsChanged?: string;
     nextServiceDue?: Date | string;
@@ -349,7 +393,7 @@ export async function createMaintenanceLog(data: {
     return log;
 }
 
-export async function updateMaintenanceLog(id: number, data: any) {
+export async function updateMaintenanceLog(id: number, data: MaintenanceLogUpdateData) {
     const session = await auth();
     if (!session?.user?.id) throw new Error('Unauthorized');
 

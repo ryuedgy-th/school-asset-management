@@ -85,7 +85,7 @@ export async function GET(
                         return `${baseUrl}${url}`;
                     });
                 } catch (e) {
-                    console.error('Failed to parse photoUrls for item:', item.id, e);
+                    // Silent error - continue without photos
                 }
             }
 
@@ -115,13 +115,7 @@ export async function GET(
             items: serializedItems
         };
 
-        console.log('\n=== PDF Generation Debug ===');
-        console.log('Transaction ID:', transaction.id);
-        console.log('Items count:', transaction.items.length);
-        console.log('Items with inspection:', transaction.items.filter(i => i.checkoutInspection).length);
-        console.log('Signature (absolute):', signaturePath);
-        console.log('isSigned:', transaction.isSigned);
-        console.log('===========================\n');
+
 
         // Generate PDF using stream
         const pdfDoc = React.createElement(BorrowReceiptPDF, {
@@ -145,7 +139,6 @@ export async function GET(
             }
         });
     } catch (error) {
-        console.error('PDF generation error:', error);
         return NextResponse.json(
             { error: 'Failed to generate PDF', details: error instanceof Error ? error.message : 'Unknown error' },
             { status: 500 }

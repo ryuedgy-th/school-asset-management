@@ -188,7 +188,7 @@ export async function POST(
             try {
                 const { syncTicketStatusToInspection } = await import('@/lib/inspection-ticket-actions');
                 await syncTicketStatusToInspection(ticketId);
-                console.log(`✅ Synced ticket status to inspection #${ticketWithInspection.inspectionId}`);
+
             } catch (syncError) {
                 console.error('Failed to sync status to inspection:', syncError);
                 // Don't fail the whole operation
