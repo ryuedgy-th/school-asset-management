@@ -301,7 +301,7 @@ export default function Sidebar({ permissions, role, user, accessibleModules = [
     const pathname = usePathname();
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-    console.log('🔍 Sidebar accessible modules:', accessibleModules);
+
 
     // Close mobile menu when route changes
     useEffect(() => {
