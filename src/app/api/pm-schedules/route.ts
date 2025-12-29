@@ -68,6 +68,13 @@ export async function GET(request: NextRequest) {
                         status: true,
                     },
                 },
+                component: {
+                    select: {
+                        id: true,
+                        name: true,
+                        componentType: true,
+                    },
+                },
                 assignedTo: {
                     select: {
                         id: true,
@@ -120,6 +127,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const {
             assetId,
+            componentId,
             name,
             description,
             scheduleType,
@@ -157,6 +165,7 @@ export async function POST(request: NextRequest) {
         const schedule = await prisma.pMSchedule.create({
             data: {
                 assetId,
+                ...(componentId && { componentId }),
                 name,
                 ...(description && { description }),
                 scheduleType,
@@ -179,6 +188,13 @@ export async function POST(request: NextRequest) {
                         id: true,
                         assetCode: true,
                         name: true,
+                    },
+                },
+                component: {
+                    select: {
+                        id: true,
+                        name: true,
+                        componentType: true,
                     },
                 },
                 assignedTo: {

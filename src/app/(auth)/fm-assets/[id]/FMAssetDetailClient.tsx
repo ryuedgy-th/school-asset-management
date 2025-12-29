@@ -11,6 +11,7 @@ import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
 import QRPrintModal from '@/components/QRPrintModal';
 import PMScheduleModal from '@/components/PMScheduleModal';
+import ComponentModal from '@/components/ComponentModal';
 
 interface FMAssetDetailClientProps {
     fmAsset: any;
@@ -24,6 +25,8 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
     const [activeTab, setActiveTab] = useState('overview');
     const [showQRModal, setShowQRModal] = useState(false);
     const [showPMModal, setShowPMModal] = useState(false);
+    const [showComponentModal, setShowComponentModal] = useState(false);
+    const [selectedComponent, setSelectedComponent] = useState<any>(null);
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: Warehouse },
@@ -280,7 +283,13 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
                             <div>
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-lg font-semibold text-slate-900">Components</h3>
-                                    <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 shadow-lg shadow-primary/20">
+                                    <button
+                                        onClick={() => {
+                                            setSelectedComponent(null);
+                                            setShowComponentModal(true);
+                                        }}
+                                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 shadow-lg shadow-primary/20"
+                                    >
                                         <Settings size={18} />
                                         Add Component
                                     </button>
@@ -312,10 +321,57 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <button className="p-2 text-primary hover:bg-primary/10 rounded-lg">
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedComponent(component);
+                                                                setShowComponentModal(true);
+                                                            }}
+                                                            className="p-2 text-primary hover:bg-primary/10 rounded-lg"
+                                                            title="Edit Component"
+                                                        >
                                                             <Edit size={16} />
                                                         </button>
-                                                        <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                                                        <button
+                                                            onClick={async () => {
+                                                                const result = await Swal.fire({
+                                                                    title: 'Delete Component?',
+                                                                    html: `Are you sure you want to delete <strong>"${component.name}"</strong>?`,
+                                                                    icon: 'warning',
+                                                                    showCancelButton: true,
+                                                                    confirmButtonColor: '#ef4444',
+                                                                    cancelButtonColor: '#6b7280',
+                                                                    confirmButtonText: 'Yes, delete it',
+                                                                    cancelButtonText: 'Cancel',
+                                                                });
+                                                                if (result.isConfirmed) {
+                                                                    try {
+                                                                        const response = await fetch(`/api/components/${component.id}`, {
+                                                                            method: 'DELETE',
+                                                                        });
+                                                                        if (response.ok) {
+                                                                            await Swal.fire({
+                                                                                title: 'Deleted!',
+                                                                                text: 'Component has been deleted successfully.',
+                                                                                icon: 'success',
+                                                                                confirmButtonColor: '#3b82f6',
+                                                                            });
+                                                                            router.refresh();
+                                                                        } else {
+                                                                            throw new Error('Failed to delete component');
+                                                                        }
+                                                                    } catch (error) {
+                                                                        Swal.fire({
+                                                                            title: 'Error',
+                                                                            text: 'Failed to delete component',
+                                                                            icon: 'error',
+                                                                            confirmButtonColor: '#3b82f6',
+                                                                        });
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                                            title="Delete Component"
+                                                        >
                                                             <Trash2 size={16} />
                                                         </button>
                                                     </div>
@@ -568,6 +624,29 @@ export default function FMAssetDetailClient({ fmAsset, users, categories, user }
                 assets={[{ id: fmAsset.id, name: fmAsset.name, assetCode: fmAsset.assetCode }]}
                 users={users}
                 preselectedAssetId={fmAsset.id}
+                components={fmAsset.components || []}
+            />
+
+            {/* Component Modal */}
+            <ComponentModal
+                isOpen={showComponentModal}
+                onClose={() => {
+                    setShowComponentModal(false);
+                    setSelectedComponent(null);
+                }}
+                onSuccess={() => {
+                    setShowComponentModal(false);
+                    setSelectedComponent(null);
+                    Swal.fire({
+                        title: 'Success!',
+                        text: selectedComponent ? 'Component updated successfully' : 'Component added successfully',
+                        icon: 'success',
+                        confirmButtonColor: '#574193',
+                    });
+                    router.refresh();
+                }}
+                assetId={fmAsset.id}
+                component={selectedComponent}
             />
         </div>
     );

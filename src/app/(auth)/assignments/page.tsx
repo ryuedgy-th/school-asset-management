@@ -64,9 +64,30 @@ export default async function AssignmentsPage() {
         orderBy: { createdAt: 'desc' }
     });
 
+    // Convert Decimal fields to numbers for client components
+    const serializedAssignments = assignments.map((assignment) => ({
+        ...assignment,
+        borrowTransactions: assignment.borrowTransactions.map((bt) => ({
+            ...bt,
+            items: bt.items.map((item) => ({
+                ...item,
+                asset: item.asset ? {
+                    ...item.asset,
+                    cost: item.asset.cost ? Number(item.asset.cost) : null,
+                } : null,
+            })),
+        })),
+        returnTransactions: assignment.returnTransactions.map((rt) => ({
+            ...rt,
+            items: rt.items.map((item) => ({
+                ...item,
+            })),
+        })),
+    }));
+
     return (
         <AssignmentsClient
-            assignments={assignments as any}
+            assignments={serializedAssignments as any}
             isAdmin={isAdmin}
             currentUserId={user.id}
         />

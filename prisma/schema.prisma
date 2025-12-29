@@ -705,6 +705,7 @@ model AssetComponent {
   // Relations
   serviceHistory ComponentService[]
   spareParts     ComponentSparePart[]
+  pmSchedules    PMSchedule[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -739,6 +740,10 @@ model PMSchedule {
   id      Int     @id @default(autoincrement())
   assetId Int
   asset   FMAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  // Optional: PM Schedule for specific component
+  componentId Int?
+  component   AssetComponent? @relation(fields: [componentId], references: [id], onDelete: Cascade)
 
   name        String
   description String?
@@ -778,6 +783,7 @@ model PMSchedule {
   updatedAt DateTime @updatedAt
 
   @@index([assetId])
+  @@index([componentId])
   @@index([nextDueDate])
 }
 

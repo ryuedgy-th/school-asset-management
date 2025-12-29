@@ -11,6 +11,7 @@ interface PMScheduleModalProps {
     assets: Array<{ id: number; name: string; assetCode: string }>;
     users: Array<{ id: number; name: string }>;
     preselectedAssetId?: number; // Lock asset selection to this ID
+    components?: Array<{ id: number; name: string; componentType: string }>; // Available components
 }
 
 export default function PMScheduleModal({
@@ -21,10 +22,12 @@ export default function PMScheduleModal({
     assets,
     users,
     preselectedAssetId,
+    components = [],
 }: PMScheduleModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         assetId: '',
+        componentId: '',
         name: '',
         description: '',
         scheduleType: 'time',
@@ -43,6 +46,7 @@ export default function PMScheduleModal({
             // Populate form with existing schedule data
             setFormData({
                 assetId: schedule.assetId?.toString() || '',
+                componentId: schedule.componentId?.toString() || '',
                 name: schedule.name || '',
                 description: schedule.description || '',
                 scheduleType: schedule.scheduleType || 'time',
@@ -60,6 +64,7 @@ export default function PMScheduleModal({
             // Reset form for new schedule
             setFormData({
                 assetId: preselectedAssetId?.toString() || '',
+                componentId: '',
                 name: '',
                 description: '',
                 scheduleType: 'time',
@@ -81,6 +86,7 @@ export default function PMScheduleModal({
         try {
             await onSubmit({
                 assetId: parseInt(formData.assetId),
+                componentId: formData.componentId ? parseInt(formData.componentId) : null,
                 name: formData.name,
                 description: formData.description || null,
                 scheduleType: formData.scheduleType,
@@ -164,6 +170,30 @@ export default function PMScheduleModal({
                             </select>
                         )}
                     </div>
+
+                    {/* Component Selection (Optional) */}
+                    {components.length > 0 && (
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">
+                                Component (Optional)
+                            </label>
+                            <select
+                                value={formData.componentId}
+                                onChange={(e) => setFormData({ ...formData, componentId: e.target.value })}
+                                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                            >
+                                <option value="">Whole Asset (No specific component)</option>
+                                {components.map((component) => (
+                                    <option key={component.id} value={component.id}>
+                                        {component.name} ({component.componentType})
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-xs text-slate-500">
+                                Leave blank for asset-level maintenance, or select a specific component
+                            </p>
+                        </div>
+                    )}
 
                     {/* Schedule Name */}
                     <div>

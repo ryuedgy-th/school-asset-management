@@ -6,16 +6,21 @@ import { X } from 'lucide-react';
 interface Component {
     id: number;
     name: string;
-    type: string | null;
+    componentType: string;
+    description: string | null;
+    serialNumber: string | null;
+    partNumber: string | null;
     manufacturer: string | null;
     model: string | null;
-    serialNumber: string | null;
-    specifications: string | null;
     installDate: Date | null;
-    warrantyExpiry: Date | null;
+    installedBy: string | null;
     lastServiceDate: Date | null;
     nextServiceDue: Date | null;
+    serviceInterval: number | null;
+    expectedLifespan: number | null;
+    replacementCost: number | null;
     condition: string;
+    status: string;
     notes: string | null;
 }
 
@@ -27,7 +32,9 @@ interface ComponentModalProps {
     component?: Component | null;
 }
 
-const CONDITION_OPTIONS = ['excellent', 'good', 'fair', 'poor', 'needs_replacement'];
+const CONDITION_OPTIONS = ['excellent', 'good', 'fair', 'poor'];
+const STATUS_OPTIONS = ['active', 'inactive', 'maintenance', 'replaced'];
+const COMPONENT_TYPES = ['Mechanical', 'Electrical', 'Electronic', 'Hydraulic', 'Pneumatic', 'Structural', 'Other'];
 
 export default function ComponentModal({
     isOpen,
@@ -38,16 +45,21 @@ export default function ComponentModal({
 }: ComponentModalProps) {
     const [formData, setFormData] = useState({
         name: '',
-        type: '',
+        componentType: 'Mechanical',
+        description: '',
+        serialNumber: '',
+        partNumber: '',
         manufacturer: '',
         model: '',
-        serialNumber: '',
-        specifications: '',
         installDate: '',
-        warrantyExpiry: '',
+        installedBy: '',
         lastServiceDate: '',
         nextServiceDue: '',
+        serviceInterval: '',
+        expectedLifespan: '',
+        replacementCost: '',
         condition: 'good',
+        status: 'active',
         notes: '',
     });
     const [loading, setLoading] = useState(false);
@@ -57,39 +69,47 @@ export default function ComponentModal({
         if (component) {
             setFormData({
                 name: component.name,
-                type: component.type || '',
+                componentType: component.componentType || 'Mechanical',
+                description: component.description || '',
+                serialNumber: component.serialNumber || '',
+                partNumber: component.partNumber || '',
                 manufacturer: component.manufacturer || '',
                 model: component.model || '',
-                serialNumber: component.serialNumber || '',
-                specifications: component.specifications || '',
                 installDate: component.installDate
                     ? new Date(component.installDate).toISOString().split('T')[0]
                     : '',
-                warrantyExpiry: component.warrantyExpiry
-                    ? new Date(component.warrantyExpiry).toISOString().split('T')[0]
-                    : '',
+                installedBy: component.installedBy || '',
                 lastServiceDate: component.lastServiceDate
                     ? new Date(component.lastServiceDate).toISOString().split('T')[0]
                     : '',
                 nextServiceDue: component.nextServiceDue
                     ? new Date(component.nextServiceDue).toISOString().split('T')[0]
                     : '',
+                serviceInterval: component.serviceInterval?.toString() || '',
+                expectedLifespan: component.expectedLifespan?.toString() || '',
+                replacementCost: component.replacementCost?.toString() || '',
                 condition: component.condition || 'good',
+                status: component.status || 'active',
                 notes: component.notes || '',
             });
         } else {
             setFormData({
                 name: '',
-                type: '',
+                componentType: 'Mechanical',
+                description: '',
+                serialNumber: '',
+                partNumber: '',
                 manufacturer: '',
                 model: '',
-                serialNumber: '',
-                specifications: '',
                 installDate: '',
-                warrantyExpiry: '',
+                installedBy: '',
                 lastServiceDate: '',
                 nextServiceDue: '',
+                serviceInterval: '',
+                expectedLifespan: '',
+                replacementCost: '',
                 condition: 'good',
+                status: 'active',
                 notes: '',
             });
         }
@@ -113,12 +133,24 @@ export default function ComponentModal({
                 : `/api/fm-assets/${assetId}/components`;
 
             const payload = {
-                ...formData,
                 assetId,
+                name: formData.name,
+                componentType: formData.componentType,
+                description: formData.description || null,
+                serialNumber: formData.serialNumber || null,
+                partNumber: formData.partNumber || null,
+                manufacturer: formData.manufacturer || null,
+                model: formData.model || null,
                 installDate: formData.installDate || null,
-                warrantyExpiry: formData.warrantyExpiry || null,
+                installedBy: formData.installedBy || null,
                 lastServiceDate: formData.lastServiceDate || null,
                 nextServiceDue: formData.nextServiceDue || null,
+                serviceInterval: formData.serviceInterval ? parseInt(formData.serviceInterval) : null,
+                expectedLifespan: formData.expectedLifespan ? parseInt(formData.expectedLifespan) : null,
+                replacementCost: formData.replacementCost ? parseFloat(formData.replacementCost) : null,
+                condition: formData.condition,
+                status: formData.status,
+                notes: formData.notes || null,
             };
 
             const response = await fetch(url, {
@@ -186,19 +218,60 @@ export default function ComponentModal({
                             />
                         </div>
 
-                        {/* Type */}
+                        {/* Component Type */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Type
+                                Component Type *
                             </label>
-                            <input
-                                type="text"
-                                value={formData.type}
+                            <select
+                                value={formData.componentType}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, type: e.target.value })
+                                    setFormData({ ...formData, componentType: e.target.value })
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="e.g., Compressor"
+                                required
+                            >
+                                {COMPONENT_TYPES.map((type) => (
+                                    <option key={type} value={type}>
+                                        {type}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Status
+                            </label>
+                            <select
+                                value={formData.status}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, status: e.target.value })
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                {STATUS_OPTIONS.map((status) => (
+                                    <option key={status} value={status}>
+                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Description */}
+                        <div className="col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Description
+                            </label>
+                            <textarea
+                                value={formData.description}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, description: e.target.value })
+                                }
+                                rows={2}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Brief description..."
                             />
                         </div>
 
@@ -250,8 +323,24 @@ export default function ComponentModal({
                             />
                         </div>
 
+                        {/* Part Number */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Part Number
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.partNumber}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, partNumber: e.target.value })
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g., PN-ABC-123"
+                            />
+                        </div>
+
                         {/* Condition */}
-                        <div className="col-span-2">
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Condition
                             </label>
@@ -264,7 +353,7 @@ export default function ComponentModal({
                             >
                                 {CONDITION_OPTIONS.map((condition) => (
                                     <option key={condition} value={condition}>
-                                        {condition.replace('_', ' ').toUpperCase()}
+                                        {condition.charAt(0).toUpperCase() + condition.slice(1)}
                                     </option>
                                 ))}
                             </select>
@@ -285,21 +374,19 @@ export default function ComponentModal({
                             />
                         </div>
 
-                        {/* Warranty Expiry */}
-                        <div>
+                        {/* Installed By */}
+                        <div className="col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Warranty Expiry
+                                Installed By
                             </label>
                             <input
-                                type="date"
-                                value={formData.warrantyExpiry}
+                                type="text"
+                                value={formData.installedBy}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        warrantyExpiry: e.target.value,
-                                    })
+                                    setFormData({ ...formData, installedBy: e.target.value })
                                 }
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Technician name or company"
                             />
                         </div>
 
@@ -339,22 +426,55 @@ export default function ComponentModal({
                             />
                         </div>
 
-                        {/* Specifications */}
-                        <div className="col-span-2">
+                        {/* Service Interval */}
+                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Specifications
+                                Service Interval (Days)
                             </label>
-                            <textarea
-                                value={formData.specifications}
+                            <input
+                                type="number"
+                                min="1"
+                                value={formData.serviceInterval}
                                 onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        specifications: e.target.value,
-                                    })
+                                    setFormData({ ...formData, serviceInterval: e.target.value })
                                 }
-                                rows={3}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Technical specifications..."
+                                placeholder="e.g., 90"
+                            />
+                        </div>
+
+                        {/* Expected Lifespan */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Expected Lifespan (Months)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                value={formData.expectedLifespan}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, expectedLifespan: e.target.value })
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g., 60"
+                            />
+                        </div>
+
+                        {/* Replacement Cost */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Replacement Cost ($)
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={formData.replacementCost}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, replacementCost: e.target.value })
+                                }
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="e.g., 5000.00"
                             />
                         </div>
 
