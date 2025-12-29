@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { hasPermission } from '@/lib/permissions';
 import { calculateSLADeadline, checkSLAStatus } from '@/lib/sla';
 
 // POST /api/tickets/[id]/assign - Assign ticket to user
@@ -34,16 +35,9 @@ export async function POST(
         }
 
         // Check permissions
-        const user = await prisma.user.findUnique({
-            where: { id: parseInt(session.user.id) },
-            include: { userRole: true },
-        });
-
-        const permissions = user?.userRole?.permissions
-            ? JSON.parse(user.userRole.permissions as string)
-            : {};
-
-        const canAssign = permissions.tickets?.assign || permissions.tickets?.update;
+        // Check permissions
+        const userId = parseInt(session.user.id);
+        const canAssign = await hasPermission({ id: userId }, 'tickets', 'edit');
 
         if (!canAssign) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

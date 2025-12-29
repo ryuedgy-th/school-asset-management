@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+*.test.js
+*.spec.js
 
 # next.js
 /.next/
@@ -19,19 +21,24 @@
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
 *.pem
+.AppleDouble
+.LSOverride
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -40,5 +47,56 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# prisma
 /src/generated/prisma
-/Users/ryu/Downloads/free-nextjs-admin-dashboard-main
+prisma/*.db
+prisma/*.db-journal
+prisma/migrations/*_draft
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+.factorypath
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+*.log
+.cache/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# Uploads (if storing locally)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Scripts (temporary test scripts)
+/scripts/test-*.ts
+/scripts/temp-*.ts
+
+# Coverage
+/coverage
+/.nyc_output
+
+# Other
+.turbo
+.vercel
+.contentlayer

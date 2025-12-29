@@ -13,8 +13,10 @@ export async function GET(request: NextRequest) {
         // Get all users with technician or admin roles
         const users = await prisma.user.findMany({
             where: {
-                role: {
-                    in: ['Admin', 'Technician'],
+                userRole: {
+                    name: {
+                        in: ['Admin', 'Technician'],
+                    },
                 },
             },
             select: {

@@ -42,7 +42,12 @@ export default async function AssetDetailPage({ params }: { params: Promise<{ id
                                     id: true,
                                     name: true,
                                     email: true,
-                                    department: true
+                                    userDepartment: {
+                                        select: {
+                                            name: true,
+                                            code: true
+                                        }
+                                    }
                                 }
                             }
                         }

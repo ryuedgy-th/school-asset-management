@@ -10,7 +10,12 @@ import CloseAssignmentModal from '@/components/BorrowFlow/CloseAssignmentModal';
 
 // Complex types need careful definition or use of Prisma generated types if avail
 interface FullAssignment extends Assignment {
-    user: User;
+    user: User & {
+        userDepartment?: {
+            name: string;
+            code: string;
+        } | null;
+    };
     borrowTransactions: (BorrowTransaction & {
         items: (BorrowItem & { asset: Asset })[];
         createdBy: { name: string | null };
@@ -77,7 +82,7 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                         </span>
                     </div>
                     <div className="text-slate-500">
-                        Borrowed by <span className="font-semibold text-slate-900">{assignment.user.name}</span> • {assignment.user.department}
+                        Borrowed by <span className="font-semibold text-slate-900">{assignment.user.name}</span> • {assignment.user.userDepartment?.name || 'N/A'}
                     </div>
                     <div className="text-sm text-slate-400 mt-1">
                         AY {assignment.academicYear} / Term {assignment.term}

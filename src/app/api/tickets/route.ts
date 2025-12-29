@@ -12,22 +12,9 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Get user permissions
-        const user = await prisma.user.findUnique({
-            where: { id: parseInt(session.user.id) },
-            include: {
-                userRole: true,
-                userDepartment: true,
-            },
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
-
-        const permissions = user.userRole?.permissions ? JSON.parse(user.userRole.permissions as string) : {};
-        const canViewIT = permissions.tickets?.view_it || permissions.tickets?.view_all;
-        const canViewFM = permissions.tickets?.view_fm || permissions.tickets?.view_all;
+        const userId = parseInt(session.user.id);
+        const canViewIT = await hasPermission({ id: userId }, 'tickets', 'view_it') || await hasPermission({ id: userId }, 'tickets', 'view_all');
+        const canViewFM = await hasPermission({ id: userId }, 'tickets', 'view_fm') || await hasPermission({ id: userId }, 'tickets', 'view_all');
 
         // Get query parameters
         const searchParams = request.nextUrl.searchParams;
@@ -45,7 +32,7 @@ export async function GET(request: NextRequest) {
         // Role-based type filtering
         if (!canViewIT && !canViewFM) {
             // User can only see their own tickets
-            where.reportedById = user.id;
+            where.reportedById = userId;
         } else if (canViewIT && !canViewFM) {
             where.type = 'IT';
         } else if (!canViewIT && canViewFM) {

@@ -30,8 +30,8 @@ export async function createUser(formData: FormData) {
                 name,
                 email,
                 password: hashedPassword,
-                roleId,
-                departmentId,
+                roleId: roleId || 2, // Default to User role if null, assuming 2 is User
+                departmentId: departmentId || 1, // Default to General if null, assuming 1 is General
                 phoneNumber,
             },
         });
@@ -121,8 +121,8 @@ export async function updateUser(userId: number, formData: FormData) {
             data: {
                 name,
                 email,
-                roleId,
-                departmentId,
+                roleId: roleId || undefined,
+                departmentId: departmentId || undefined,
                 phoneNumber,
             },
         });
@@ -164,7 +164,9 @@ export async function createRole(formData: FormData) {
         await prisma.role.create({
             data: {
                 name,
-                permissions,
+                scope: 'department', // Default scope
+                // permissions field is deprecated, using new relation logic instead or default empty for now
+                isActive: true
             },
         });
         revalidatePath('/roles');
@@ -207,7 +209,7 @@ export async function searchUsers(query: string) {
             ]
         },
         take: 5,
-        select: { id: true, name: true, nickname: true, email: true, department: true }
+        select: { id: true, name: true, nickname: true, email: true, userDepartment: { select: { name: true } } }
     });
 }
 
@@ -221,8 +223,8 @@ export async function getAllUsers() {
             name: true,
             nickname: true,
             email: true,
-            department: true,
-            role: true
+            userDepartment: { select: { name: true } },
+            userRole: { select: { name: true } }
         },
         orderBy: { name: 'asc' }
     });

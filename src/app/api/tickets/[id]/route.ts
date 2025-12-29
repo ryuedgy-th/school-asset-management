@@ -31,7 +31,7 @@ export async function GET(
                         id: true,
                         name: true,
                         email: true,
-                        department: true,
+                        userDepartment: { select: { name: true, code: true } },
                         phoneNumber: true,
                     },
                 },
@@ -127,17 +127,9 @@ export async function GET(
         }
 
         // Check permissions
-        const user = await prisma.user.findUnique({
-            where: { id: parseInt(session.user.id) },
-            include: { userRole: true },
-        });
-
-        const permissions = user?.userRole?.permissions
-            ? JSON.parse(user.userRole.permissions as string)
-            : {};
-
-        const canViewIT = permissions.tickets?.view_it || permissions.tickets?.view_all;
-        const canViewFM = permissions.tickets?.view_fm || permissions.tickets?.view_all;
+        const userId = parseInt(session.user.id);
+        const canViewIT = await hasPermission({ id: userId }, 'tickets', 'view_it') || await hasPermission({ id: userId }, 'tickets', 'view_all');
+        const canViewFM = await hasPermission({ id: userId }, 'tickets', 'view_fm') || await hasPermission({ id: userId }, 'tickets', 'view_all');
 
         // Check if user can view this ticket
         const isOwnTicket = ticket.reportedById === parseInt(session.user.id) ||
@@ -187,18 +179,9 @@ export async function PUT(
         }
 
         // Check permissions
-        const user = await prisma.user.findUnique({
-            where: { id: parseInt(session.user.id) },
-            include: { userRole: true },
-        });
-
-        const permissions = user?.userRole?.permissions
-            ? JSON.parse(user.userRole.permissions as string)
-            : {};
-
-        const canUpdate =
-            permissions.tickets?.update ||
-            existingTicket.reportedById === parseInt(session.user.id);
+        const userId = parseInt(session.user.id);
+        const canUpdate = await hasPermission({ id: userId }, 'tickets', 'update') ||
+            existingTicket.reportedById === userId;
 
         if (!canUpdate) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -277,18 +260,9 @@ export async function DELETE(
         }
 
         // Check permissions
-        const user = await prisma.user.findUnique({
-            where: { id: parseInt(session.user.id) },
-            include: { userRole: true },
-        });
-
-        const permissions = user?.userRole?.permissions
-            ? JSON.parse(user.userRole.permissions as string)
-            : {};
-
-        const canDelete =
-            permissions.tickets?.delete ||
-            existingTicket.reportedById === parseInt(session.user.id);
+        const userId = parseInt(session.user.id);
+        const canDelete = await hasPermission({ id: userId }, 'tickets', 'delete') ||
+            existingTicket.reportedById === userId;
 
         if (!canDelete) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

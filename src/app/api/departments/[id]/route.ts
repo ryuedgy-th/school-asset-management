@@ -90,7 +90,7 @@ export async function PUT(
             },
         });
 
-        if (!user || !isAdmin(user)) {
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
@@ -163,7 +163,7 @@ export async function DELETE(
             },
         });
 
-        if (!user || !isAdmin(user)) {
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
+import { hasPermission } from '@/lib/permissions';
 
 // Allowed status transitions
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
@@ -93,18 +94,9 @@ export async function POST(
         }
 
         // Check permissions
-        const user = await prisma.user.findUnique({
-            where: { id: parseInt(session.user.id) },
-            include: { userRole: true },
-        });
-
-        const permissions = user?.userRole?.permissions
-            ? JSON.parse(user.userRole.permissions as string)
-            : {};
-
-        const canUpdate =
-            permissions.tickets?.update ||
-            existingTicket.assignedToId === parseInt(session.user.id);
+        const userId = parseInt(session.user.id);
+        const canUpdate = await hasPermission({ id: userId }, 'tickets', 'update') ||
+            existingTicket.assignedToId === userId;
 
         if (!canUpdate) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

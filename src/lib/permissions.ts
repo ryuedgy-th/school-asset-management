@@ -111,12 +111,15 @@ export async function getDepartmentFilterForUser(userId: number) {
 export {
     getUserPermissions,
     getAccessibleModules,
+    type ModuleName,
+    type PermissionAction,
     getAllModules,
     getUserModules,
     getModulePermissions,
     isAdmin,
     getUserRole,
     canAccessCrossDepartment,
+    getDepartmentFilter,  // Added for backward compatibility
 } from './permissions-v2';
 
 // ========================================

@@ -106,16 +106,15 @@ export default function UserManagement({ initialUsers, roles, departments }: Use
                                     </div>
                                 </td>
                                 <td className="p-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                        user.userRole?.name?.toLowerCase().includes('admin') ? 'bg-purple-100 text-purple-800' :
-                                        user.userRole?.name?.toLowerCase().includes('technician') ? 'bg-primary/20 text-blue-800' :
-                                        'bg-green-100 text-green-800'
-                                    }`}>
+                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.userRole?.name?.toLowerCase().includes('admin') ? 'bg-purple-100 text-purple-800' :
+                                            user.userRole?.name?.toLowerCase().includes('technician') ? 'bg-primary/20 text-blue-800' :
+                                                'bg-green-100 text-green-800'
+                                        }`}>
                                         {user.userRole?.name?.toLowerCase().includes('admin') && <Shield size={12} className="mr-1" />}
-                                        {user.userRole?.name || user.role || 'No Role'}
+                                        {user.userRole?.name || 'No Role'}
                                     </span>
                                 </td>
-                                <td className="p-4 text-slate-600">{user.userDepartment?.name || user.department || '-'}</td>
+                                <td className="p-4 text-slate-600">{user.userDepartment?.name || '-'}</td>
                                 <td className="p-4 text-right">
                                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button

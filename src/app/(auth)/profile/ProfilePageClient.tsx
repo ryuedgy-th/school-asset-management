@@ -9,7 +9,6 @@ interface ProfilePageClientProps {
         name: string | null;
         nickname: string | null;
         email: string;
-        role: string;
         image: string | null;
     };
     isOAuthUser: boolean; // true if logged in via Google OAuth
@@ -262,7 +261,6 @@ export default function ProfilePageClient({ user, isOAuthUser }: ProfilePageClie
 
                         <div>
                             <h2 className="text-xl font-bold text-slate-900">{user.name || user.email}</h2>
-                            <p className="text-slate-600">{user.role}</p>
                             {isOAuthUser && (
                                 <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
                                     <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
@@ -369,10 +367,6 @@ export default function ProfilePageClient({ user, isOAuthUser }: ProfilePageClie
                         <div>
                             <p className="text-xs text-slate-500 mb-1">Email Address</p>
                             <p className="text-sm font-medium text-slate-900">{user.email}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-slate-500 mb-1">Role</p>
-                            <p className="text-sm font-medium text-slate-900">{user.role}</p>
                         </div>
                     </div>
                 )}

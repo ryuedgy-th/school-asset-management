@@ -87,7 +87,7 @@ export async function PUT(
             },
         });
 
-        if (!user || !isAdmin(user)) {
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
@@ -95,17 +95,42 @@ export async function PUT(
         const resolvedParams = await params;
         const roleId = parseInt(resolvedParams.id);
         const body = await request.json();
-        const { name, permissions, scope, isActive, departmentId } = body;
+        const { name, scope, isActive, departmentId, permissionIds } = body;
 
-        // Validate permissions JSON if provided
-        if (permissions) {
+        console.log('📝 Updating role:', roleId);
+        console.log('   Permission IDs:', permissionIds?.length || 0);
+
+        // Update role permissions if provided
+        if (permissionIds !== undefined && Array.isArray(permissionIds)) {
             try {
-                JSON.parse(permissions);
-            } catch (e) {
-                return NextResponse.json(
-                    { error: 'Invalid permissions JSON' },
-                    { status: 400 }
-                );
+                console.log('🗑️ Deleting existing permissions...');
+                // Delete existing permissions
+                await prisma.rolePermission.deleteMany({
+                    where: { roleId },
+                });
+
+                console.log(`✅ Deleted. Now creating ${permissionIds.length} new permissions...`);
+
+                // Create new permissions individually (createMany not supported due to composite unique)
+                for (const permissionId of permissionIds) {
+                    if (typeof permissionId !== 'number') {
+                        console.error('❌ Invalid permission ID:', permissionId);
+                        continue;
+                    }
+
+                    await prisma.rolePermission.create({
+                        data: {
+                            roleId,
+                            permissionId,
+                        },
+                    });
+                }
+
+                console.log('✅ All permissions created successfully');
+            } catch (permError: any) {
+                console.error('❌ Error updating permissions:', permError);
+                console.error('   Permission IDs that failed:', permissionIds);
+                throw new Error(`Failed to update permissions: ${permError.message}`);
             }
         }
 
@@ -114,7 +139,6 @@ export async function PUT(
             where: { id: roleId },
             data: {
                 name,
-                permissions,
                 scope,
                 isActive,
                 departmentId: departmentId || null,
@@ -130,6 +154,7 @@ export async function PUT(
                 _count: {
                     select: {
                         users: true,
+                        rolePermissions: true,
                     },
                 },
             },
@@ -141,7 +166,7 @@ export async function PUT(
                 action: 'UPDATE',
                 entity: 'Role',
                 entityId: role.id.toString(),
-                details: JSON.stringify({ name, scope, isActive }),
+                details: JSON.stringify({ name, scope, isActive, permissionCount: permissionIds?.length }),
                 userId: user.id,
             },
         });
@@ -186,7 +211,7 @@ export async function DELETE(
             },
         });
 
-        if (!user || !isAdmin(user)) {
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 

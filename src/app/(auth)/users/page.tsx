@@ -15,9 +15,7 @@ export default async function UsersPage() {
             email: true,
             emailVerified: true,
             image: true,
-            role: true, // deprecated but still needed
             roleId: true,
-            department: true, // deprecated but still needed
             departmentId: true,
             phoneNumber: true,
             password: true, // Needed for type compatibility, won't be sent to client

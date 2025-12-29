@@ -175,7 +175,7 @@ async function findActiveAssignmentForAsset(assetId: number) {
                     id: true,
                     name: true,
                     email: true,
-                    department: true
+                    userDepartment: { select: { name: true } }
                 }
             },
             borrowTransactions: {
@@ -306,7 +306,7 @@ export async function createInspection(data: {
                             id: true,
                             name: true,
                             email: true,
-                            department: true
+                            userDepartment: { select: { name: true } }
                         }
                     },
                     borrowTransactions: {
@@ -444,7 +444,7 @@ export async function updateInspectionCost(
                             id: true,
                             name: true,
                             email: true,
-                            department: true
+                            userDepartment: { select: { name: true } }
                         }
                     },
                     borrowTransactions: {
@@ -679,7 +679,7 @@ export async function generateAndSendDamageForm(inspectionId: number) {
                 select: {
                     name: true,
                     email: true,
-                    department: true
+                    userDepartment: { select: { name: true } }
                 }
             },
             assignment: {
@@ -688,7 +688,7 @@ export async function generateAndSendDamageForm(inspectionId: number) {
                         select: {
                             name: true,
                             email: true,
-                            department: true
+                            userDepartment: { select: { name: true } }
                         }
                     },
                     borrowTransactions: {
@@ -715,7 +715,7 @@ export async function generateAndSendDamageForm(inspectionId: number) {
     const userData = inspection.assignment?.user || {
         name: 'Not Assigned',
         email: null,
-        department: null
+        userDepartment: null
     };
 
     // Generate PDF
@@ -737,7 +737,7 @@ export async function generateAndSendDamageForm(inspectionId: number) {
         user: {
             name: userData.name || 'Not Assigned',
             email: userData.email || null,
-            department: userData.department || null
+            department: userData.userDepartment?.name || null
         },
         damageDescription: inspection.damageDescription,
         estimatedCost: Number(inspection.estimatedCost),

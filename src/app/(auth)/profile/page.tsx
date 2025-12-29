@@ -17,7 +17,6 @@ export default async function ProfilePage() {
             name: true,
             nickname: true,
             email: true,
-            role: true,
             image: true,
             password: true, // Check if user has password (credentials) or not (OAuth)
         }
@@ -35,7 +34,6 @@ export default async function ProfilePage() {
         name: user.name ?? null,
         nickname: user.nickname ?? null,
         email: user.email!, // Non-null assertion safe because we checked session.user.email exists
-        role: user.role,
         image: user.image ?? null,
     }} isOAuthUser={isOAuthUser} />;
 }

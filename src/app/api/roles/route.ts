@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
-import { isAdmin, DEFAULT_PERMISSIONS } from '@/lib/permissions';
+import { isAdmin } from '@/lib/permissions';
 
 /**
  * GET /api/roles
@@ -74,40 +74,44 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        if (!user || !isAdmin(user)) {
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
         const body = await request.json();
-        const { name, departmentId, permissions, scope, isActive } = body;
+        const { name, departmentId, scope, isActive, permissionIds = [] } = body;
 
         // Validation
-        if (!name || !permissions) {
+        if (!name) {
             return NextResponse.json(
-                { error: 'Name and permissions are required' },
+                { error: 'Name is required' },
                 { status: 400 }
             );
         }
 
-        // Validate permissions JSON
-        try {
-            JSON.parse(permissions);
-        } catch (e) {
-            return NextResponse.json(
-                { error: 'Invalid permissions JSON' },
-                { status: 400 }
-            );
-        }
-
-        // Create role
+        // Create role first
         const role = await prisma.role.create({
             data: {
                 name,
                 departmentId: departmentId || null,
-                permissions,
                 scope: scope || 'department',
-                isActive: isActive ?? true,
+                isActive: isActive !== undefined ? isActive : true,
             },
+        });
+
+        // Then create permissions individually (createMany not supported due to composite unique)
+        for (const permissionId of permissionIds) {
+            await prisma.rolePermission.create({
+                data: {
+                    roleId: role.id,
+                    permissionId,
+                },
+            });
+        }
+
+        // Fetch complete role with counts
+        const completeRole = await prisma.role.findUnique({
+            where: { id: role.id },
             include: {
                 department: {
                     select: {
@@ -119,6 +123,7 @@ export async function POST(request: NextRequest) {
                 _count: {
                     select: {
                         users: true,
+                        rolePermissions: true,
                     },
                 },
             },
@@ -135,7 +140,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        return NextResponse.json(role, { status: 201 });
+        return NextResponse.json(completeRole, { status: 201 });
     } catch (error: any) {
         console.error('Error creating role:', error);
 

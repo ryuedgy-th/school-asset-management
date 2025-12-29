@@ -7,8 +7,9 @@ interface User {
     id: number;
     name: string | null;
     email: string | null;
-    department: string | null;
-    role: string;
+
+    userDepartment: { name: string } | null;
+    userRole: { name: string } | null;
 }
 
 interface UserSelectProps {
@@ -36,9 +37,10 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                 setFilteredUsers(allUsers);
 
                 // Extract unique departments
+
                 const uniqueDepts = Array.from(new Set(
                     allUsers
-                        .map(u => u.department)
+                        .map(u => u.userDepartment?.name)
                         .filter(Boolean)
                 )) as string[];
                 setDepartments(uniqueDepts.sort());
@@ -58,7 +60,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
 
         // Department filter
         if (departmentFilter !== 'all') {
-            filtered = filtered.filter(u => u.department === departmentFilter);
+            filtered = filtered.filter(u => u.userDepartment?.name === departmentFilter);
         }
 
         // Search filter
@@ -67,7 +69,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
             filtered = filtered.filter(u =>
                 u.name?.toLowerCase().includes(query) ||
                 u.email?.toLowerCase().includes(query) ||
-                u.department?.toLowerCase().includes(query)
+                u.userDepartment?.name.toLowerCase().includes(query)
             );
         }
 
@@ -84,10 +86,10 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                     <div>
                         <div className="font-semibold text-blue-900">{selectedUser.name}</div>
                         <div className="text-sm text-primary/90">{selectedUser.email}</div>
-                        {selectedUser.department && (
+                        {selectedUser.userDepartment && (
                             <div className="text-xs text-primary flex items-center gap-1 mt-0.5">
                                 <Building2 size={12} />
-                                {selectedUser.department}
+                                {selectedUser.userDepartment.name}
                             </div>
                         )}
                     </div>
@@ -122,8 +124,8 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                     <button
                         onClick={() => setDepartmentFilter('all')}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${departmentFilter === 'all'
-                                ? 'bg-primary text-white'
-                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            ? 'bg-primary text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             }`}
                     >
                         All Departments
@@ -133,8 +135,8 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                             key={dept}
                             onClick={() => setDepartmentFilter(dept)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${departmentFilter === dept
-                                    ? 'bg-primary text-white'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                ? 'bg-primary text-white'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                         >
                             {dept}
@@ -170,15 +172,15 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                                 <div className="flex-1 min-w-0">
                                     <div className="font-semibold text-slate-800 truncate">{user.name || 'Unnamed User'}</div>
                                     <div className="text-sm text-slate-500 truncate">{user.email || 'No email'}</div>
-                                    {user.department && (
+                                    {user.userDepartment && (
                                         <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
                                             <Building2 size={12} />
-                                            {user.department}
+                                            {user.userDepartment.name}
                                         </div>
                                     )}
                                 </div>
                                 <div className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded-full font-medium">
-                                    {user.role}
+                                    {user.userRole?.name}
                                 </div>
                             </button>
                         ))}

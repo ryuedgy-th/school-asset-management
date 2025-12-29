@@ -26,7 +26,7 @@ export default async function AssignmentsPage() {
     }
 
     // Check if user has edit permission (admin view)
-    const isAdmin = hasPermission(user, 'assignments', 'edit');
+    const isAdmin = await hasPermission(user, 'assignments', 'edit');
 
     // Fetch assignments based on role
     const assignments = await prisma.assignment.findMany({
@@ -39,7 +39,12 @@ export default async function AssignmentsPage() {
                     id: true,
                     name: true,
                     email: true,
-                    department: true
+                    userDepartment: {
+                        select: {
+                            name: true,
+                            code: true
+                        }
+                    }
                 }
             },
             closedBy: { select: { name: true } },
@@ -61,7 +66,7 @@ export default async function AssignmentsPage() {
 
     return (
         <AssignmentsClient
-            assignments={assignments}
+            assignments={assignments as any}
             isAdmin={isAdmin}
             currentUserId={user.id}
         />

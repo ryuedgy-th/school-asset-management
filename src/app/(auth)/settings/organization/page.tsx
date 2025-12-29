@@ -1,63 +1,83 @@
-'use client';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
+import { isAdmin } from '@/lib/permissions';
+import OrganizationClient from './OrganizationClient';
 
-import { useState } from 'react';
-import { Building2, Shield } from 'lucide-react';
-import DepartmentsTab from './DepartmentsTab';
-import RolesTab from './RolesTab';
+export const metadata = {
+    title: 'Organization Management | AssetMaster',
+    description: 'Manage departments and roles',
+};
 
-type TabType = 'departments' | 'roles';
+export default async function OrganizationPage() {
+    const session = await auth();
+    if (!session?.user?.id) {
+        redirect('/login');
+    }
 
-export default function OrganizationSettingsPage() {
-    const [activeTab, setActiveTab] = useState<TabType>('departments');
+    const user = await prisma.user.findUnique({
+        where: { id: parseInt(session.user.id) },
+        include: {
+            userRole: true,
+            userDepartment: true,
+        },
+    });
 
-    const tabs = [
-        { id: 'departments' as TabType, label: 'Departments', icon: Building2, description: 'Manage departments' },
-        { id: 'roles' as TabType, label: 'Roles & Permissions', icon: Shield, description: 'Manage roles' },
-    ];
+    if (!user || !await isAdmin(user.id)) {
+        redirect('/dashboard');
+    }
+
+    // Fetch departments with counts
+    const departments = await prisma.department.findMany({
+        include: {
+            _count: {
+                select: {
+                    users: true,
+                    roles: true,
+                    assets: true,
+                    inspections: true,
+                },
+            },
+        },
+        orderBy: { name: 'asc' },
+    });
+
+    // Fetch roles with departments and user counts
+    const roles = await prisma.role.findMany({
+        include: {
+            department: {
+                select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                },
+            },
+            _count: {
+                select: {
+                    users: true,
+                    rolePermissions: true,
+                },
+            },
+        },
+        orderBy: [{ departmentId: 'asc' }, { name: 'asc' }],
+    });
+
+    // Fetch all modules and permissions for roles management
+    const modules = await prisma.module.findMany({
+        where: { isActive: true },
+        include: {
+            permissions: {
+                orderBy: { action: 'asc' },
+            },
+        },
+        orderBy: { sortOrder: 'asc' },
+    });
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900">Organization Settings</h1>
-                <p className="text-slate-600 mt-2">Manage departments, roles, and permissions</p>
-            </div>
-
-            {/* Tabs */}
-            <div className="border-b border-slate-200 mb-6">
-                <nav className="flex gap-8" role="tablist">
-                    {tabs.map(tab => {
-                        const Icon = tab.icon;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                role="tab"
-                                aria-selected={activeTab === tab.id}
-                                className={`
-                                    flex items-center gap-2 pb-4 px-1 border-b-2 transition-all
-                                    ${activeTab === tab.id
-                                        ? 'border-primary text-primary font-semibold'
-                                        : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                                    }
-                                `}
-                            >
-                                <Icon size={20} />
-                                <div className="text-left">
-                                    <div className="text-sm">{tab.label}</div>
-                                    <div className="text-xs opacity-70">{tab.description}</div>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </nav>
-            </div>
-
-            {/* Tab Content */}
-            <div role="tabpanel">
-                {activeTab === 'departments' && <DepartmentsTab />}
-                {activeTab === 'roles' && <RolesTab />}
-            </div>
-        </div>
+        <OrganizationClient
+            departments={JSON.parse(JSON.stringify(departments))}
+            roles={JSON.parse(JSON.stringify(roles))}
+            modules={JSON.parse(JSON.stringify(modules))}
+        />
     );
 }

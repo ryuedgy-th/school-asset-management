@@ -34,7 +34,7 @@ export default async function InspectionsPage() {
     // Fetch recent inspections (filtered by department)
     const inspections = await prisma.inspection.findMany({
         where: {
-            ...getDepartmentFilter(user), // 🔒 Department isolation
+            ...await getDepartmentFilter(user.id), // 🔒 Department isolation
         },
         include: {
             asset: {
@@ -61,7 +61,7 @@ export default async function InspectionsPage() {
     // Fetch all assets for the create modal (filtered by department)
     const assets = await prisma.asset.findMany({
         where: {
-            ...getDepartmentFilter(user), // 🔒 Department isolation
+            ...await getDepartmentFilter(user.id), // 🔒 Department isolation
         },
         select: {
             id: true,

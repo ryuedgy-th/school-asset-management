@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { getSecuritySettingsMetadata } from '@/lib/system-settings';
 import { prisma } from '@/lib/prisma';
+import { isAdmin } from '@/lib/permissions';
 
 /**
  * GET /api/settings/security
@@ -24,7 +25,8 @@ export async function GET() {
         });
 
         // Check if admin
-        if (user?.role !== 'Admin') {
+        // Check if admin
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json(
                 { error: 'Forbidden - Admin access required' },
                 { status: 403 }

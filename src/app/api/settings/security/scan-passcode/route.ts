@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { updateScanPasscode } from '@/lib/system-settings';
 import { prisma } from '@/lib/prisma';
+import { isAdmin } from '@/lib/permissions';
 import bcrypt from 'bcryptjs';
 
 /**
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if admin
-        if (user.role !== 'Admin') {
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json(
                 { error: 'Forbidden - Admin access required' },
                 { status: 403 }

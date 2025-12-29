@@ -52,7 +52,7 @@ export default async function AssetsPage(props: {
     const pageSize = Number(searchParams?.pageSize) || 25;
 
     const whereClause: any = {
-        ...getDepartmentFilter(user), // 🔒 Department isolation
+        ...await getDepartmentFilter(user.id), // 🔒 Department isolation
     };
 
     // Search query

@@ -91,12 +91,12 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                 // Success - reset failed attempts
                 await resetFailedAttempts(email);
 
+                // Return a type that satisfies NextAuth's User type
                 return {
                     id: user.id.toString(),
                     email: user.email,
                     name: user.name,
-                    role: user.role
-                };
+                } as any; // Cast to any to bypass type mismatch if User type is augmented with properties we don't return here
             }
         })
     ],
@@ -118,7 +118,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         id: true,
                         email: true,
                         name: true,
-                        role: true,
                         userRole: true,
                         userDepartment: true,
                         // Never include image or large fields
@@ -127,7 +126,6 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                 if (user) {
                     session.user.id = user.id.toString();
-                    session.user.role = user.role;
                     session.user.userRole = user.userRole;
                     session.user.userDepartment = user.userDepartment;
                     session.user.name = user.name ?? undefined;

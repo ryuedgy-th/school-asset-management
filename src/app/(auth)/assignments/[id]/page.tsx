@@ -36,7 +36,11 @@ export default async function AssignmentDetailPage(props: PageProps) {
     const assignment = await prisma.assignment.findUnique({
         where: { id },
         include: {
-            user: true,
+            user: {
+                include: {
+                    userDepartment: true
+                }
+            },
             borrowTransactions: {
                 include: {
                     items: {
@@ -61,7 +65,7 @@ export default async function AssignmentDetailPage(props: PageProps) {
     }
 
     // Permission check: user can only view their own assignments unless they have edit permission
-    const isAdmin = hasPermission(user, 'assignments', 'edit');
+    const isAdmin = await hasPermission(user, 'assignments', 'edit');
     const isOwner = assignment.userId === user.id;
 
     if (!isAdmin && !isOwner) {

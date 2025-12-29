@@ -39,7 +39,6 @@ export async function PUT(req: NextRequest) {
                 name: true,
                 nickname: true,
                 email: true,
-                role: true,
             }
         });
 

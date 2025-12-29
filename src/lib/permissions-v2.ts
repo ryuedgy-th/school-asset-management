@@ -15,14 +15,17 @@ export interface UserPermission {
     scopeFilter?: Record<string, any>;
 }
 
+export type ModuleName = string; // Alias for now since table is dynamic, but usually typed
+export type PermissionAction = string; // Alias for now
+
 export interface ModuleInfo {
     id: number;
     code: string;
     name: string;
-    description?: string;
-    category?: string;
-    icon?: string;
-    routePath?: string;
+    description?: string | null;
+    category?: string | null;
+    icon?: string | null;
+    routePath?: string | null;
 }
 
 // ========================================

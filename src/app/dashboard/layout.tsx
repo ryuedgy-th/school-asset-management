@@ -2,6 +2,7 @@ import Sidebar from '@/components/Sidebar';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import { getAccessibleModules } from '@/lib/permissions';
 
 export default async function DashboardLayout({
     children,
@@ -23,9 +24,8 @@ export default async function DashboardLayout({
 
             if (user?.userRole) {
                 userRoleName = user.userRole.name;
-                if (user.userRole.permissions) {
-                    permissions = JSON.parse(user.userRole.permissions);
-                }
+                // Use new permission system to get accessible modules as permissions
+                permissions = await getAccessibleModules(user.id);
             }
         }
     } catch (error) {

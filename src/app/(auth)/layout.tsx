@@ -18,7 +18,7 @@ export default async function AuthLayout({
     if (!session?.user?.email) return null; // Middleware handles redirect, but safe check
 
     let permissions: any = {};
-    let accessibleModules: any[] = [];
+    let accessibleModules: string[] = [];
 
     let user;
     try {
@@ -30,20 +30,9 @@ export default async function AuthLayout({
             }
         });
 
-        if (user?.userRole?.permissions) {
-            try {
-                permissions = typeof user.userRole.permissions === 'string'
-                    ? JSON.parse(user.userRole.permissions)
-                    : user.userRole.permissions;
-            } catch (e) {
-                console.error('Error parsing permissions:', e);
-                permissions = {};
-            }
-        }
-
-        // Get accessible modules for sidebar filtering
+        // Get accessible modules for sidebar filtering using new permission system
         if (user) {
-            accessibleModules = getAccessibleModules(user);
+            accessibleModules = await getAccessibleModules(user.id);
         }
     } catch (error) {
         console.error("Error fetching user permissions:", error);
@@ -53,7 +42,7 @@ export default async function AuthLayout({
         <div className="flex flex-col lg:flex-row min-h-screen w-full">
             <Sidebar
                 permissions={permissions}
-                role={user?.role || 'User'}
+                role={user?.userRole?.name || 'User'}
                 user={{
                     name: user?.name,
                     email: user?.email,

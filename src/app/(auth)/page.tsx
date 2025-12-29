@@ -46,8 +46,7 @@ export default async function Home() {
   }
 
   // Department filter for all queries
-  const deptFilter = getDepartmentFilter(user);
-
+  const deptFilter = await getDepartmentFilter(user.id); // 🔒 Department isolation
   const totalAssets = await prisma.asset.count({ where: deptFilter });
   const availableAssets = await prisma.asset.count({
     where: { ...deptFilter, status: 'Available' }

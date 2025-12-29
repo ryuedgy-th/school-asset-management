@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        if (!user || !isAdmin(user)) {
+        if (!user || !await isAdmin(user.id)) {
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
 
