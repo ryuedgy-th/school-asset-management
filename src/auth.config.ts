@@ -1,10 +1,48 @@
 import type { NextAuthConfig } from 'next-auth';
+import { prisma } from '@/lib/prisma';
 
 export const authConfig = {
     pages: {
         signIn: '/login',
     },
     callbacks: {
+        async signIn({ user, account, profile }) {
+            // Handle OAuth/SSO sign-in
+            if (account?.provider === 'google') {
+                try {
+                    // Check if user exists in database
+                    const existingUser = await prisma.user.findUnique({
+                        where: { email: user.email! },
+                        select: { id: true, roleId: true }
+                    });
+
+                    // If user exists but has no role, assign default role
+                    if (existingUser && !existingUser.roleId) {
+                        console.log('🔧 Assigning default role to existing user without role:', user.email);
+
+                        // Find default "User" role
+                        const defaultRole = await prisma.role.findFirst({
+                            where: {
+                                name: 'User',
+                                isActive: true
+                            }
+                        });
+
+                        if (defaultRole) {
+                            await prisma.user.update({
+                                where: { id: existingUser.id },
+                                data: { roleId: defaultRole.id }
+                            });
+                            console.log('✅ Assigned role:', defaultRole.name);
+                        }
+                    }
+                } catch (error) {
+                    console.error('❌ Error in signIn callback:', error);
+                    // Don't block login even if role assignment fails
+                }
+            }
+            return true;
+        },
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
             const isLoginPage = nextUrl.pathname === '/login';

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
 import { PrismaAdapter } from '@auth/prisma-adapter';
+import type { Adapter } from 'next-auth/adapters';
 
 async function getUser(email: string): Promise<User | null> {
     try {
@@ -19,8 +20,37 @@ async function getUser(email: string): Promise<User | null> {
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
-    // @ts-expect-error - Type mismatch between @auth/core versions is expected
     adapter: PrismaAdapter(prisma),
+    events: {
+        async createUser({ user }) {
+            console.log('🆕 New user created via SSO:', user.email);
+
+            // Assign default role if user doesn't have one
+            const dbUser = await prisma.user.findUnique({
+                where: { id: parseInt(user.id) },
+                select: { roleId: true }
+            });
+
+            if (!dbUser?.roleId) {
+                const defaultRole = await prisma.role.findFirst({
+                    where: {
+                        name: 'User',
+                        isActive: true
+                    }
+                });
+
+                if (defaultRole) {
+                    await prisma.user.update({
+                        where: { id: parseInt(user.id) },
+                        data: { roleId: defaultRole.id }
+                    });
+                    console.log('✅ Assigned default role:', defaultRole.name);
+                } else {
+                    console.error('❌ No default "User" role found!');
+                }
+            }
+        }
+    },
     // Use JWT with minimal data to avoid HTTP 431
     session: {
         strategy: "jwt",
@@ -118,6 +148,8 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                         id: true,
                         email: true,
                         name: true,
+                        roleId: true,
+                        departmentId: true,
                         userRole: true,
                         userDepartment: true,
                         // Never include image or large fields
@@ -126,10 +158,15 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
 
                 if (user) {
                     session.user.id = user.id.toString();
-                    session.user.userRole = user.userRole;
-                    session.user.userDepartment = user.userDepartment;
+                    session.user.userRole = user.userRole || null;
+                    session.user.userDepartment = user.userDepartment || null;
                     session.user.name = user.name ?? undefined;
                     session.user.email = user.email ?? '';
+
+                    // Log warning if user has no role
+                    if (!user.roleId) {
+                        console.warn('⚠️ User has no role assigned:', user.email);
+                    }
                 }
             }
             return session;

@@ -37,11 +37,11 @@ model User {
   image          String?
   password       String?
   
-  // Role and Department (REQUIRED)
-  roleId         Int
-  userRole       Role        @relation(fields: [roleId], references: [id])
-  departmentId   Int
-  userDepartment Department  @relation(fields: [departmentId], references: [id])
+  // Role and Department (optional for initial SSO signup)
+  roleId         Int?
+  userRole       Role?       @relation(fields: [roleId], references: [id])
+  departmentId   Int?
+  userDepartment Department? @relation(fields: [departmentId], references: [id])
   phoneNumber    String?
 
   // Account Lockout
