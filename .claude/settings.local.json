@@ -16,7 +16,10 @@
       "Bash(npx prisma studio)",
       "Bash(git clone:*)",
       "Bash(npm install)",
-      "Bash(if not exist \"%APPDATA%\\\\Claude\" mkdir \"%APPDATA%\\\\Claude\")"
+      "Bash(if not exist \"%APPDATA%\\\\Claude\" mkdir \"%APPDATA%\\\\Claude\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(del nul)"
     ]
   }
 }
