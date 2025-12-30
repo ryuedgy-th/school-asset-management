@@ -8,8 +8,14 @@ interface User {
     name: string | null;
     email: string | null;
 
-    userDepartment: { name: string } | null;
+    userDepartment: { id: number; name: string } | null;
     userRole: { name: string } | null;
+}
+
+interface Department {
+    id: number;
+    name: string;
+    code: string;
 }
 
 interface UserSelectProps {
@@ -24,34 +30,33 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [departmentFilter, setDepartmentFilter] = useState<string>('all');
-    const [departments, setDepartments] = useState<string[]>([]);
+    const [departments, setDepartments] = useState<Department[]>([]);
 
-    // Load all users on mount
+    // Load all users and departments on mount
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchData = async () => {
             setLoading(true);
             try {
+                // Fetch users
                 const { getAllUsers } = await import('@/app/lib/actions');
                 const allUsers = await getAllUsers();
                 setUsers(allUsers);
                 setFilteredUsers(allUsers);
 
-                // Extract unique departments
-
-                const uniqueDepts = Array.from(new Set(
-                    allUsers
-                        .map(u => u.userDepartment?.name)
-                        .filter(Boolean)
-                )) as string[];
-                setDepartments(uniqueDepts.sort());
+                // Fetch departments from API
+                const deptRes = await fetch('/api/departments?simple=true');
+                if (deptRes.ok) {
+                    const departments = await deptRes.json();
+                    setDepartments(departments);
+                }
             } catch (error) {
-                console.error('Failed to load users:', error);
+                console.error('Failed to load data:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchUsers();
+        fetchData();
     }, []);
 
     // Filter users based on search and department
@@ -60,7 +65,7 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
 
         // Department filter
         if (departmentFilter !== 'all') {
-            filtered = filtered.filter(u => u.userDepartment?.name === departmentFilter);
+            filtered = filtered.filter(u => u.userDepartment?.id === parseInt(departmentFilter));
         }
 
         // Search filter
@@ -132,14 +137,14 @@ export default function UserSelect({ onSelect, label = "Select User" }: UserSele
                     </button>
                     {departments.map(dept => (
                         <button
-                            key={dept}
-                            onClick={() => setDepartmentFilter(dept)}
-                            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${departmentFilter === dept
+                            key={dept.id}
+                            onClick={() => setDepartmentFilter(dept.id.toString())}
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${departmentFilter === dept.id.toString()
                                 ? 'bg-primary text-white'
                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                         >
-                            {dept}
+                            {dept.name}
                         </button>
                     ))}
                 </div>

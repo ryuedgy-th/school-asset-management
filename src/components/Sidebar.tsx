@@ -101,6 +101,11 @@ const menuItems: MenuItem[] = [
         icon: FileText,
         href: '/stationary',
         module: 'stationary',
+        subItems: [
+            { label: 'Dashboard', href: '/stationary', module: 'stationary' },
+            { label: 'Requisitions', href: '/stationary/requisitions', module: 'stationary' },
+            { label: 'Analytics', href: '/stationary/analytics', module: 'stationary', requirePermission: 'view' }
+        ]
     },
     {
         label: 'Users',

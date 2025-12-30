@@ -223,7 +223,7 @@ export async function getAllUsers() {
             name: true,
             nickname: true,
             email: true,
-            userDepartment: { select: { name: true } },
+            userDepartment: { select: { id: true, name: true } },
             userRole: { select: { name: true } }
         },
         orderBy: { name: 'asc' }

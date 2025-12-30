@@ -6,6 +6,8 @@ import { isAdmin } from '@/lib/permissions';
 /**
  * GET /api/departments
  * List all departments
+ * Query params:
+ * - simple=true: Returns only id, code, name, isActive (for dropdowns/filters)
  */
 export async function GET(request: NextRequest) {
     try {
@@ -26,7 +28,24 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // Get all departments with counts
+        const searchParams = request.nextUrl.searchParams;
+        const simple = searchParams.get('simple') === 'true';
+
+        // Simple response for dropdowns/filters
+        if (simple) {
+            const departments = await prisma.department.findMany({
+                where: { isActive: true },
+                select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                },
+                orderBy: { name: 'asc' },
+            });
+            return NextResponse.json(departments);
+        }
+
+        // Full response with counts
         const departments = await prisma.department.findMany({
             include: {
                 _count: {
