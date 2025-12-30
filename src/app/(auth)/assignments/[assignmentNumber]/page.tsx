@@ -46,7 +46,8 @@ export default async function AssignmentDetailPage(props: PageProps) {
                     items: {
                         include: { asset: true }
                     },
-                    createdBy: { select: { name: true } }
+                    createdBy: { select: { name: true } },
+                    cancelledBy: { select: { name: true } }
                 }
             },
             returnTransactions: {

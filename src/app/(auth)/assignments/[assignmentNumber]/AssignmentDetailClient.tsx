@@ -68,7 +68,10 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
     // Find which are Returned
     const returnedIds = assignment.returnTransactions.flatMap(tx => tx.items.map(ri => ri.borrowItemId));
 
-    const activeItems = allBorrowed.filter(item => !returnedIds.includes(item.id));
+    const activeItems = allBorrowed.filter(item =>
+        item.borrowTransaction.status !== 'cancelled' &&
+        !returnedIds.includes(item.id)
+    );
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 pb-20 pt-6">
@@ -193,108 +196,122 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                     <div className="font-bold text-slate-800 flex items-center gap-2">
                                         Borrowed Items
                                         <span className="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">{tx.transactionNumber}</span>
+                                        {tx.status === 'cancelled' && (
+                                            <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full border border-red-200">
+                                                ❌ Cancelled
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="text-sm text-slate-500">
                                         {new Date(tx.borrowDate).toISOString().replace('T', ' ').substring(0, 19)} by {tx.createdBy?.name || 'Staff'}
                                     </div>
+                                    {tx.status === 'cancelled' && tx.cancelledAt && (
+                                        <div className="mt-1 text-xs text-red-600">
+                                            Cancelled on {new Date(tx.cancelledAt).toLocaleDateString()} {new Date(tx.cancelledAt).toLocaleTimeString()}
+                                            {tx.cancelReason && <span> • Reason: {tx.cancelReason}</span>}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {/* PDF Download Button */}
-                                    {tx.isSigned ? (
-                                        <div className="flex items-center gap-3">
-                                            {/* PDF Button - Contextually only when signed */}
-                                            <a
-                                                href={`/api/borrow/${tx.id}/pdf`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
-                                            >
-                                                📄 PDF
-                                            </a>
-                                            {tx.borrowerSignature && (
-                                                <div className="text-right">
-                                                    <div className="text-xs text-emerald-600 mb-1">✅ Signed</div>
-                                                    <img src={tx.borrowerSignature} alt="Signature" className="h-8 object-contain border border-slate-100 bg-slate-50 rounded" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : (
+                                    {tx.status !== 'cancelled' && (
                                         <>
-                                            <button
-                                                onClick={async () => {
-                                                    try {
-                                                        const { generateBorrowTransactionToken } = await import('@/app/lib/borrow-transaction-signature');
-                                                        const res = await generateBorrowTransactionToken(tx.id);
-                                                        if (res.success && res.url) {
-                                                            const success = await copyToClipboard(res.url);
-                                                            if (success) {
-                                                                alert('✅ Signature link copied to clipboard!');
-                                                            } else {
-                                                                window.prompt('Copy this link:', res.url);
+                                            {tx.isSigned ? (
+                                                <div className="flex items-center gap-3">
+                                                    {/* PDF Button - Contextually only when signed */}
+                                                    <a
+                                                        href={`/api/borrow/${tx.id}/pdf`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
+                                                    >
+                                                        📄 PDF
+                                                    </a>
+                                                    {tx.borrowerSignature && (
+                                                        <div className="text-right">
+                                                            <div className="text-xs text-emerald-600 mb-1">✅ Signed</div>
+                                                            <img src={tx.borrowerSignature} alt="Signature" className="h-8 object-contain border border-slate-100 bg-slate-50 rounded" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        onClick={async () => {
+                                                            try {
+                                                                const { generateBorrowTransactionToken } = await import('@/app/lib/borrow-transaction-signature');
+                                                                const res = await generateBorrowTransactionToken(tx.id);
+                                                                if (res.success && res.url) {
+                                                                    const success = await copyToClipboard(res.url);
+                                                                    if (success) {
+                                                                        alert('✅ Signature link copied to clipboard!');
+                                                                    } else {
+                                                                        window.prompt('Copy this link:', res.url);
+                                                                    }
+                                                                } else {
+                                                                    alert('❌ ' + (res.error || 'Failed to generate link'));
+                                                                }
+                                                            } catch (e: any) {
+                                                                console.error(e);
+                                                                alert('❌ Error: ' + e.message);
                                                             }
-                                                        } else {
-                                                            alert('❌ ' + (res.error || 'Failed to generate link'));
-                                                        }
-                                                    } catch (e: any) {
-                                                        console.error(e);
-                                                        alert('❌ Error: ' + e.message);
-                                                    }
-                                                }}
-                                                className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-sm font-medium transition-all"
-                                            >
-                                                🔗 Copy Signature Link
-                                            </button>
-                                            <button
-                                                onClick={async () => {
-                                                    if (!confirm('Send signature request email to the borrower?')) return;
-                                                    try {
-                                                        const { generateBorrowTransactionToken } = await import('@/app/lib/borrow-transaction-signature');
-                                                        // Pass true as second argument to send email
-                                                        const res = await generateBorrowTransactionToken(tx.id, true);
+                                                        }}
+                                                        className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-sm font-medium transition-all"
+                                                    >
+                                                        🔗 Copy Signature Link
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!confirm('Send signature request email to the borrower?')) return;
+                                                            try {
+                                                                const { generateBorrowTransactionToken } = await import('@/app/lib/borrow-transaction-signature');
+                                                                // Pass true as second argument to send email
+                                                                const res = await generateBorrowTransactionToken(tx.id, true);
 
-                                                        if (res.success) {
-                                                            if (res.emailSent) {
-                                                                alert('✅ Email sent successfully!');
-                                                            } else {
-                                                                alert('⚠️ Link generated but email could not be sent. Please invoke Copy Link instead.');
+                                                                if (res.success) {
+                                                                    if (res.emailSent) {
+                                                                        alert('✅ Email sent successfully!');
+                                                                    } else {
+                                                                        alert('⚠️ Link generated but email could not be sent. Please invoke Copy Link instead.');
+                                                                    }
+                                                                } else {
+                                                                    alert('❌ ' + (res.error || 'Failed to process request'));
+                                                                }
+                                                            } catch (e: any) {
+                                                                console.error(e);
+                                                                alert('❌ Error: ' + e.message);
                                                             }
-                                                        } else {
-                                                            alert('❌ ' + (res.error || 'Failed to process request'));
-                                                        }
-                                                    } catch (e: any) {
-                                                        console.error(e);
-                                                        alert('❌ Error: ' + e.message);
-                                                    }
-                                                }}
-                                                className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary/90 border border-blue-200 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
-                                            >
-                                                📧 Send Email
-                                            </button>
+                                                        }}
+                                                        className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary/90 border border-blue-200 rounded-lg text-sm font-medium transition-all flex items-center gap-1"
+                                                    >
+                                                        📧 Send Email
+                                                    </button>
 
-                                            {/* Cancel Button */}
-                                            <button
-                                                onClick={async () => {
-                                                    if (!confirm(`Cancel transaction ${tx.transactionNumber}? The reserved assets will become available again.`)) {
-                                                        return;
-                                                    }
-                                                    try {
-                                                        const { deleteBorrowTransaction } = await import('@/app/lib/borrow-actions');
-                                                        const res = await deleteBorrowTransaction(tx.id);
-                                                        if (res.success) {
-                                                            alert('✅ Transaction cancelled successfully');
-                                                            window.location.reload();
-                                                        } else {
-                                                            alert('❌ ' + res.error);
-                                                        }
-                                                    } catch (e: any) {
-                                                        console.error(e);
-                                                        alert('❌ Error: ' + e.message);
-                                                    }
-                                                }}
-                                                className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-sm font-medium transition-all"
-                                            >
-                                                ✖️ Cancel
-                                            </button>
+                                                    {/* Cancel Button */}
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!confirm(`Cancel transaction ${tx.transactionNumber}? The reserved assets will become available again.`)) {
+                                                                return;
+                                                            }
+                                                            try {
+                                                                const { cancelBorrowTransaction } = await import('@/app/lib/borrow-actions');
+                                                                const res = await cancelBorrowTransaction(tx.id);
+                                                                if (res.success) {
+                                                                    alert('✅ Transaction cancelled successfully');
+                                                                    window.location.reload();
+                                                                } else {
+                                                                    alert('❌ ' + res.error);
+                                                                }
+                                                            } catch (e: any) {
+                                                                console.error(e);
+                                                                alert('❌ Error: ' + e.message);
+                                                            }
+                                                        }}
+                                                        className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg text-sm font-medium transition-all"
+                                                    >
+                                                        ✖️ Cancel
+                                                    </button>
+                                                </>
+                                            )}
                                         </>
                                     )}
                                 </div>

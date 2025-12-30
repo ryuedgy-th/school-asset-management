@@ -438,7 +438,10 @@ export async function getAllAvailableAssets() {
 /**
  * Delete a borrow transaction (only if not signed)
  */
-export async function deleteBorrowTransaction(transactionId: number) {
+export async function cancelBorrowTransaction(
+    transactionId: number,
+    reason?: string
+) {
     try {
         const session = await auth();
         if (!session?.user?.id) {
@@ -452,7 +455,8 @@ export async function deleteBorrowTransaction(transactionId: number) {
                 id: true,
                 isSigned: true,
                 transactionNumber: true,
-                assignmentId: true
+                assignmentId: true,
+                status: true
             }
         });
 
@@ -461,10 +465,14 @@ export async function deleteBorrowTransaction(transactionId: number) {
         }
 
         if (transaction.isSigned) {
-            return { success: false, error: 'Cannot delete signed transaction' };
+            return { success: false, error: 'Cannot cancel signed transaction' };
         }
 
-        // Delete in transaction to ensure atomicity
+        if (transaction.status === 'cancelled') {
+            return { success: false, error: 'Transaction already cancelled' };
+        }
+
+        // Update in transaction to ensure atomicity
         await prisma.$transaction(async (tx) => {
             // Get all items to restore asset status and stock
             const items = await tx.borrowItem.findMany({
@@ -501,34 +509,49 @@ export async function deleteBorrowTransaction(transactionId: number) {
                 });
             }
 
-            // Delete all BorrowItems (due to foreign key)
-            await tx.borrowItem.deleteMany({
-                where: { borrowTransactionId: transactionId }
+            // Update BorrowItems status to Cancelled (instead of deleting)
+            await tx.borrowItem.updateMany({
+                where: { borrowTransactionId: transactionId },
+                data: { status: 'Cancelled' }
             });
 
-            // Delete the transaction
-            await tx.borrowTransaction.delete({
-                where: { id: transactionId }
+            // Update transaction status to cancelled (instead of deleting)
+            await tx.borrowTransaction.update({
+                where: { id: transactionId },
+                data: {
+                    status: 'cancelled',
+                    cancelledAt: new Date(),
+                    cancelledById: Number(session.user.id),
+                    cancelReason: reason || null
+                }
             });
         });
 
         await logAudit(
-            'DELETE_TRANSACTION',
+            'CANCEL_TRANSACTION',
             'BorrowTransaction',
             transactionId,
-            `Deleted transaction ${transaction.transactionNumber}`,
+            `Cancelled transaction ${transaction.transactionNumber}${reason ? ': ' + reason : ''}`,
             Number(session.user.id)
         );
 
+        // Fetch assignment to get assignmentNumber for URL revalidation
+        const assignment = await prisma.assignment.findUnique({
+            where: { id: transaction.assignmentId },
+            select: { assignmentNumber: true }
+        });
+
         revalidatePath('/assignments');
-        revalidatePath(`/assignments/${transaction.assignmentId}`);
+        if (assignment) {
+            revalidatePath(`/assignments/${assignment.assignmentNumber}`);
+        }
 
         return {
             success: true,
-            message: `Transaction ${transaction.transactionNumber} deleted successfully`
+            message: `Transaction ${transaction.transactionNumber} cancelled successfully`
         };
     } catch (error) {
-        console.error('Error deleting transaction:', error);
-        return { success: false, error: 'Failed to delete transaction' };
+        console.error('Error cancelling transaction:', error);
+        return { success: false, error: 'Failed to cancel transaction' };
     }
 }
