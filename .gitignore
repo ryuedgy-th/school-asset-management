@@ -190,3 +190,4 @@ seed-ticket-email-templates.sql
 # Generated files
 /src/generated/
 /prisma/generated/
+/docs
