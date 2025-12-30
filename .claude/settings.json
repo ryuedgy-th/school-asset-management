@@ -1,6 +1,5 @@
 {
   "enabledPlugins": {
-    "claude-mem@thedotmack": true,
-    "context7@claude-plugins-official": true
+    "claude-mem@thedotmack": true
   }
 }
