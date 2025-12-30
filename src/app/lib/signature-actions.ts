@@ -52,14 +52,21 @@ export async function confirmBorrowSignature(data: {
                 }
             });
 
-            // 2. Update all Reserved assets to Borrowed
+            // 2. Update all Reserved assets and BorrowItems to Borrowed
             for (const item of transaction.items) {
                 const asset = item.asset;
 
                 // Only update unique items (totalStock = 1) from Reserved to Borrowed
                 if (asset.totalStock === 1 && asset.status === 'Reserved') {
+                    // Update Asset status
                     await tx.asset.update({
                         where: { id: asset.id },
+                        data: { status: 'Borrowed' }
+                    });
+
+                    // Update BorrowItem status to match (Reserved → Borrowed)
+                    await tx.borrowItem.update({
+                        where: { id: item.id },
                         data: { status: 'Borrowed' }
                     });
                 }

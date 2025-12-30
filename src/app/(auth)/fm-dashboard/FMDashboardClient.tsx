@@ -348,7 +348,7 @@ export default function FMDashboardClient({ user }: { user: any }) {
                             {data.lists.topAssetsByCost.map((asset: any, idx: number) => (
                                 <Link
                                     key={asset.id}
-                                    href={`/fm-assets/${asset.id}`}
+                                    href={`/fm-assets/${asset.assetCode}`}
                                     className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
                                 >
                                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">

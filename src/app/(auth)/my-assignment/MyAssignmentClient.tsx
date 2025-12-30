@@ -96,7 +96,7 @@ export default function MyAssignmentClient({ assignment, user }: MyAssignmentCli
                                         </div>
                                         <div className="flex-1">
                                             <Link
-                                                href={`/assets/${item.asset.id}`}
+                                                href={`/assets/${item.asset.assetCode}`}
                                                 className="font-semibold text-slate-900 hover:text-primary transition-colors"
                                             >
                                                 {item.asset.name}

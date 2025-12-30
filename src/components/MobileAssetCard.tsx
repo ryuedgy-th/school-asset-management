@@ -52,7 +52,7 @@ export default function MobileAssetCard({
                 )}
 
                 <div className="flex-1 min-w-0">
-                    <Link href={`/assets/${asset.id}`} className="block">
+                    <Link href={`/assets/${asset.assetCode}`} className="block">
                         <h3 className="font-bold text-slate-900 text-base leading-tight mb-1">{asset.name}</h3>
                         <p className="text-xs text-slate-400 font-mono">{asset.assetCode}</p>
                     </Link>

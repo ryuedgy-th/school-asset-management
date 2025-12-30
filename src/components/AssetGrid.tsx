@@ -34,7 +34,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [showBulkPrint, setShowBulkPrint] = useState(false);
 
-    async function handleDelete(id: number) {
+    async function handleDelete(assetCode: string) {
         const confirmed = await confirm({
             title: 'Delete Asset',
             message: 'Are you sure you want to delete this asset? This action cannot be undone.',
@@ -45,7 +45,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
         if (!confirmed) return;
 
         try {
-            const res = await fetch(`/api/assets/${id}`, {
+            const res = await fetch(`/api/assets/${assetCode}`, {
                 method: 'DELETE',
             });
 
@@ -198,7 +198,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                         isSelected={selectedIds.has(asset.id)}
                         onToggleSelect={() => toggleSelect(asset.id)}
                         onEdit={() => setEditingAsset(asset)}
-                        onDelete={() => handleDelete(asset.id)}
+                        onDelete={() => handleDelete(asset.assetCode)}
                         onShowQR={() => setQrAsset(asset)}
                     />
                 ))}
@@ -259,7 +259,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                                             )}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <Link href={`/assets/${asset.id}`} className="flex flex-col hover:text-primary transition-colors">
+                                            <Link href={`/assets/${asset.assetCode}`} className="flex flex-col hover:text-primary transition-colors">
                                                 <span className="font-semibold text-slate-900">{asset.name}</span>
                                                 <span className="text-[10px] text-slate-400 font-mono">{asset.assetCode}</span>
                                             </Link>
@@ -316,7 +316,7 @@ export default function AssetGrid({ assets }: AssetGridProps) {
                                                     <Pencil size={16} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(asset.id)}
+                                                    onClick={() => handleDelete(asset.assetCode)}
                                                     className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     title="Delete"
                                                 >

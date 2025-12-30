@@ -212,12 +212,19 @@ export async function createBorrowTransaction(data: {
             });
 
             // Create BorrowItem with inspection
-            await tx.borrowItem.create({
+            // Determine initial status based on asset type
+            // Unique items (stock=1) → Reserved (pending signature)
+            // Bulk items (stock>1) → Borrowed (no signature needed)
+            const initialStatus = asset.totalStock === 1 && item.quantity === 1
+                ? 'Reserved'
+                : 'Borrowed';
+
+            const borrowItem = await tx.borrowItem.create({
                 data: {
                     borrowTransactionId: transaction.id,
                     assetId: item.assetId,
                     quantity: item.quantity,
-                    status: 'Borrowed',
+                    status: initialStatus, // Match Asset.status for consistency
                     checkoutInspectionId: latestInspection?.id
                 }
             });
@@ -229,7 +236,7 @@ export async function createBorrowTransaction(data: {
 
             let newStatus = asset.status;
             if (asset.totalStock === 1 && item.quantity === 1) {
-                newStatus = 'Reserved'; // Changed from 'Borrowed' - will change to 'Borrowed' after signature
+                newStatus = 'Reserved'; // Will change to 'Borrowed' after signature
             }
 
             await tx.asset.update({

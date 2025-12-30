@@ -158,13 +158,12 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                     <th className="px-6 py-4 whitespace-nowrap">Items</th>
                                     <th className="px-6 py-4 whitespace-nowrap">Status</th>
                                     <th className="px-6 py-4 whitespace-nowrap">Date</th>
-                                    <th className="px-6 py-4 text-right whitespace-nowrap">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {filteredAssignments.length === 0 ? (
                                     <tr>
-                                        <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
+                                        <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                                             No assignments found.
                                         </td>
                                     </tr>
@@ -173,8 +172,13 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                         key={assignment.id}
                                         className={`hover:bg-slate-50/50 ${assignment.status === 'Closed' ? 'opacity-60' : ''}`}
                                     >
-                                        <td className="px-6 py-4 font-medium text-slate-900 border-l-4 border-l-transparent hover:border-l-primary transition-all">
-                                            {assignment.assignmentNumber}
+                                        <td className="px-6 py-4 font-medium border-l-4 border-l-transparent hover:border-l-primary transition-all">
+                                            <Link
+                                                href={`/assignments/${assignment.assignmentNumber}`}
+                                                className="text-primary hover:text-blue-800 transition-colors font-semibold"
+                                            >
+                                                {assignment.assignmentNumber}
+                                            </Link>
                                         </td>
                                         <td className="px-6 py-4 text-slate-900 font-medium">
                                             {assignment.user.name}
@@ -220,14 +224,6 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                                     </>
                                                 )}
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <Link
-                                                href={`/assignments/${assignment.id}`}
-                                                className="text-primary font-medium hover:text-blue-800 transition-colors"
-                                            >
-                                                {assignment.status === 'Active' ? 'Manage' : 'View'}
-                                            </Link>
                                         </td>
                                     </tr>
                                 ))}
@@ -288,7 +284,7 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                                 Academic Year: {assignment.academicYear} / Term {assignment.term}
                                             </p>
                                         </div>
-                                        <Link href={`/assignments/${assignment.id}`} className="text-sm font-medium text-primary hover:text-blue-800">
+                                        <Link href={`/assignments/${assignment.assignmentNumber}`} className="text-sm font-medium text-primary hover:text-blue-800">
                                             View Details →
                                         </Link>
                                     </div>
@@ -341,7 +337,7 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                                             {assignment.closedAt?.toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Link href={`/assignments/${assignment.id}`} className="text-primary hover:underline">
+                                            <Link href={`/assignments/${assignment.assignmentNumber}`} className="text-primary hover:underline">
                                                 View
                                             </Link>
                                         </td>

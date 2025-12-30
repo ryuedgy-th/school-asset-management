@@ -278,7 +278,7 @@ export default function FMAssetsClient({ fmAssets, categories, user }: FMAssetsC
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <Link href={`/fm-assets/${asset.id}`}>
+                                                <Link href={`/fm-assets/${asset.assetCode}`}>
                                                     <div className="font-medium text-slate-900 hover:text-primary cursor-pointer transition-colors">{asset.name}</div>
                                                     {asset.brand && asset.model && (
                                                         <div className="text-sm text-slate-500">{asset.brand} {asset.model}</div>
@@ -315,7 +315,7 @@ export default function FMAssetsClient({ fmAssets, categories, user }: FMAssetsC
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center justify-end gap-2">
                                                     <Link
-                                                        href={`/fm-assets/${asset.id}/edit`}
+                                                        href={`/fm-assets/${asset.assetCode}/edit`}
                                                         className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                                                         title="Edit Asset"
                                                     >

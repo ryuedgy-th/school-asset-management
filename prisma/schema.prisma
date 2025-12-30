@@ -57,13 +57,14 @@ model User {
   logs     AuditLog[]
 
   // Relations
-  assignments         Assignment[]        @relation
-  closedAssignments   Assignment[]        @relation("ClosedAssignments")
-  checkedReturns      ReturnTransaction[] @relation("CheckedReturns")
-  createdTransactions BorrowTransaction[]
-  assignedTasks       PMTask[]
-  inspections         Inspection[]        @relation("InspectorInspections")
-  approvedInspections Inspection[]        @relation("InspectionApprover")
+  assignments           Assignment[]        @relation
+  closedAssignments     Assignment[]        @relation("ClosedAssignments")
+  checkedReturns        ReturnTransaction[] @relation("CheckedReturns")
+  createdTransactions   BorrowTransaction[]
+  cancelledTransactions BorrowTransaction[] @relation("CancelledTransactions")
+  assignedTasks         PMTask[]
+  inspections           Inspection[]        @relation("InspectorInspections")
+  approvedInspections   Inspection[]        @relation("InspectionApprover")
 
   // FM Asset Management Relations
   createdFMAssets       FMAsset[]              @relation("FMAssetCreatedBy")
@@ -390,6 +391,15 @@ model BorrowTransaction {
   assignmentId      Int
   transactionNumber String   @unique // e.g. TR-2024-001
   borrowDate        DateTime @default(now())
+  
+  // Transaction Status Tracking
+  status            String   @default("pending") // pending, active, cancelled, completed
+  
+  // Cancellation Metadata (for audit trail)
+  cancelledAt       DateTime?
+  cancelledById     Int?
+  cancelReason      String?
+  
   borrowerSignature String? // Path to image
   notes             String?
   createdById       Int
@@ -404,9 +414,13 @@ model BorrowTransaction {
   signedPdfPath        String?
   signedPdfGeneratedAt DateTime?
 
-  assignment Assignment   @relation(fields: [assignmentId], references: [id])
-  createdBy  User         @relation(fields: [createdById], references: [id])
-  items      BorrowItem[]
+  assignment  Assignment   @relation(fields: [assignmentId], references: [id])
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  cancelledBy User?        @relation("CancelledTransactions", fields: [cancelledById], references: [id])
+  items       BorrowItem[]
+  
+  @@index([status])
+  @@index([assignmentId])
 }
 
 model BorrowItem {
@@ -414,7 +428,7 @@ model BorrowItem {
   borrowTransactionId Int
   assetId             Int
   quantity            Int    @default(1)
-  status              String @default("Borrowed") // Borrowed, Returned
+  status              String @default("Borrowed") // Reserved, Borrowed, Returned, Cancelled
 
   // Inspection at checkout (per-asset)
   checkoutInspectionId Int?
@@ -1091,4 +1105,31 @@ model ACInspectionRecord {
 
   @@index([fmAssetId])
   @@index([inspectionDate])
+}
+
+// ============================================
+// 30. Numbering Configuration
+// ============================================
+model NumberingConfig {
+  id             Int     @id @default(autoincrement())
+  module         String  @unique // "assets", "tickets", "inspections", "assignments", "fm_assets"
+  prefix         String  // "IT", "TKT", "INS", "ASG", "FM"
+  includeYear    Boolean @default(true) // Include year in format
+  includeMonth   Boolean @default(false) // Include month in format (YYYY-MM)
+  sequenceDigits Int     @default(3) // Number of digits for sequence (e.g., 001, 0001)
+  separator      String  @default("-") // Separator character between parts
+  resetAnnually  Boolean @default(true) // Reset sequence number each year
+
+  // Current sequence tracking (per year if resetAnnually is true)
+  currentYear    Int?    // Track which year we're in
+  currentMonth   Int?    // Track which month we're in (if includeMonth is true)
+  currentSeq     Int     @default(0) // Current sequence number
+
+  // Example format preview
+  exampleOutput  String? // e.g., "IT-2025-001"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([module])
 }

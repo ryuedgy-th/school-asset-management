@@ -368,8 +368,8 @@ export default function TicketsClient() {
                                     .filter(t => t.status === 'open' || t.status === 'assigned')
                                     .map((ticket) => (
                                         <Link
-                                            key={ticket.id}
-                                            href={`/tickets/${ticket.id}`}
+                                            key={ticket.ticketNumber}
+                                            href={`/tickets/${ticket.ticketNumber}`}
                                             className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between mb-2">
@@ -425,8 +425,8 @@ export default function TicketsClient() {
                                     .filter(t => t.status === 'in_progress')
                                     .map((ticket) => (
                                         <Link
-                                            key={ticket.id}
-                                            href={`/tickets/${ticket.id}`}
+                                            key={ticket.ticketNumber}
+                                            href={`/tickets/${ticket.ticketNumber}`}
                                             className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between mb-2">
@@ -480,8 +480,8 @@ export default function TicketsClient() {
                                     .filter(t => t.status === 'resolved')
                                     .map((ticket) => (
                                         <Link
-                                            key={ticket.id}
-                                            href={`/tickets/${ticket.id}`}
+                                            key={ticket.ticketNumber}
+                                            href={`/tickets/${ticket.ticketNumber}`}
                                             className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                                         >
                                             <div className="flex items-start justify-between mb-2">
@@ -530,8 +530,8 @@ export default function TicketsClient() {
                                     .filter(t => t.status === 'closed' || t.status === 'cancelled')
                                     .map((ticket) => (
                                         <Link
-                                            key={ticket.id}
-                                            href={`/tickets/${ticket.id}`}
+                                            key={ticket.ticketNumber}
+                                            href={`/tickets/${ticket.ticketNumber}`}
                                             className="block p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer opacity-75 hover:opacity-100"
                                         >
                                             <div className="flex items-start justify-between mb-2">
@@ -579,7 +579,7 @@ export default function TicketsClient() {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {filteredTickets.map((ticket) => (
-                                        <tr key={ticket.id} className="hover:bg-slate-50 transition-colors">
+                                        <tr key={ticket.ticketNumber} className="hover:bg-slate-50 transition-colors">
                                             <td className="px-4 py-3">
                                                 <div className="font-mono text-sm font-medium text-primary">
                                                     {ticket.ticketNumber}
@@ -590,7 +590,7 @@ export default function TicketsClient() {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
-                                                    href={`/tickets/${ticket.id}`}
+                                                    href={`/tickets/${ticket.ticketNumber}`}
                                                     className="block hover:text-primary transition-colors cursor-pointer group"
                                                 >
                                                     <div className="font-medium text-slate-900 group-hover:text-primary">

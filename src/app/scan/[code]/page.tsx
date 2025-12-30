@@ -342,8 +342,8 @@ function FMAssetScanView({ asset }: { asset: any }) {
                                     <div className="flex items-start justify-between mb-1">
                                         <div className="font-mono text-xs text-primary">{ticket.ticketNumber}</div>
                                         <span className={`text-xs px-2 py-0.5 rounded-full ${ticket.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                                                ticket.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                                                    'bg-yellow-100 text-yellow-700'
+                                            ticket.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                                                'bg-yellow-100 text-yellow-700'
                                             }`}>
                                             {ticket.priority}
                                         </span>
@@ -498,7 +498,11 @@ function ITAssetScanView({ asset }: { asset: any }) {
                                         <div className="font-semibold text-sm text-slate-900">
                                             {item.borrowTransaction?.assignment?.user?.name || 'N/A'}
                                         </div>
-                                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${item.status === 'Returned' ? 'bg-gray-100 text-gray-700' : 'bg-primary/20 text-primary/90'
+                                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${item.status === 'Returned'
+                                                ? 'bg-gray-100 text-gray-700'
+                                                : item.status === 'Reserved'
+                                                    ? 'bg-orange-100 text-orange-700'
+                                                    : 'bg-primary/20 text-primary/90'
                                             }`}>
                                             {item.status}
                                         </span>

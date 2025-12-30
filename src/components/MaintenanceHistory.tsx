@@ -66,7 +66,7 @@ export default function MaintenanceHistory({ inspections }: MaintenanceHistoryPr
                         {damageInspections.map((inspection) => (
                             <Link
                                 key={inspection.id}
-                                href={`/inspections/${inspection.id}`}
+                                href={`/inspections/${inspection.inspectionNumber}`}
                                 className="block p-4 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                             >
                                 <div className="flex items-start justify-between mb-2">
@@ -123,7 +123,7 @@ export default function MaintenanceHistory({ inspections }: MaintenanceHistoryPr
                         {regularInspections.map((inspection) => (
                             <Link
                                 key={inspection.id}
-                                href={`/inspections/${inspection.id}`}
+                                href={`/inspections/${inspection.inspectionNumber}`}
                                 className="block p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                             >
                                 <div className="flex items-center justify-between">

@@ -211,7 +211,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                         <tr key={inspection.id} className="hover:bg-slate-50 transition-colors">
                                             <td className="px-4 py-3">
                                                 <Link
-                                                    href={`/inspections/${inspection.id}`}
+                                                    href={`/inspections/${inspection.inspectionNumber}`}
                                                     className="font-mono text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-colors cursor-pointer"
                                                 >
                                                     {inspection.inspectionNumber || `#${inspection.id}`}
@@ -225,7 +225,7 @@ export default function InspectionsClient({ inspections, assets }: InspectionsCl
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Link
-                                                    href={`/assets/${inspection.asset.id}`}
+                                                    href={`/assets/${inspection.asset.assetCode}`}
                                                     className="hover:text-primary transition-colors"
                                                 >
                                                     <div className="font-medium text-slate-900">{inspection.asset.name}</div>

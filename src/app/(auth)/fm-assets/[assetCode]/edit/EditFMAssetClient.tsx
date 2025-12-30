@@ -12,12 +12,10 @@ import {
     Calendar,
     Settings as SettingsIcon,
     Image as ImageIcon,
-    Plus,
-    X,
-    Loader2,
+    Trash2,
 } from 'lucide-react';
-import { createFMAsset } from '@/app/lib/fm-asset-actions';
-import { createFMCategory } from '@/app/lib/fm-category-actions';
+import { updateFMAsset } from '@/app/lib/fm-asset-actions';
+import Image from 'next/image';
 
 interface Category {
     id: number;
@@ -39,9 +37,34 @@ interface User {
     } | null;
 }
 
-interface FMAssetFormClientProps {
+interface FMAsset {
+    id: number;
+    assetCode: string;
+    name: string;
+    type: string | null;
+    brand: string | null;
+    model: string | null;
+    serialNumber: string | null;
+    description: string | null;
+    specifications: any;
+    building: string | null;
+    floor: string | null;
+    room: string | null;
+    purchaseDate: Date | null;
+    installDate: Date | null;
+    warrantyExpiry: Date | null;
+    purchaseCost: number | null;
+    currentValue: number | null;
+    condition: string;
+    status: string;
+    requiresMaintenance: boolean;
+    images: string[];
+    categoryId: number;
+}
+
+interface EditFMAssetClientProps {
+    fmAsset: FMAsset;
     categories: Category[];
-    suggestedCode: string;
     user: User;
 }
 
@@ -57,54 +80,60 @@ const STEPS = [
     { id: 6, name: 'Photos', icon: ImageIcon },
 ];
 
-export default function FMAssetFormClient({
+export default function EditFMAssetClient({
+    fmAsset,
     categories,
-    suggestedCode,
     user,
-}: FMAssetFormClientProps) {
+}: EditFMAssetClientProps) {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [showCategoryModal, setShowCategoryModal] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState('');
-    const [newCategoryDesc, setNewCategoryDesc] = useState('');
-    const [creatingCategory, setCreatingCategory] = useState(false);
-    const [localCategories, setLocalCategories] = useState(categories);
 
     const [formData, setFormData] = useState({
         // Step 1: Basic Info
-        name: '',
-        assetCode: suggestedCode,
-        categoryId: categories[0]?.id || 0,
-        type: '',
+        name: fmAsset.name,
+        assetCode: fmAsset.assetCode,
+        categoryId: fmAsset.categoryId,
+        type: fmAsset.type || '',
 
         // Step 2: Details
-        brand: '',
-        model: '',
-        serialNumber: '',
-        description: '',
-        specifications: '',
+        brand: fmAsset.brand || '',
+        model: fmAsset.model || '',
+        serialNumber: fmAsset.serialNumber || '',
+        description: fmAsset.description || '',
+        specifications:
+            typeof fmAsset.specifications === 'string'
+                ? fmAsset.specifications
+                : JSON.stringify(fmAsset.specifications, null, 2),
 
         // Step 3: Location
-        building: '',
-        floor: '',
-        room: '',
+        building: fmAsset.building || '',
+        floor: fmAsset.floor || '',
+        room: fmAsset.room || '',
 
         // Step 4: Dates & Cost
-        purchaseDate: '',
-        installDate: '',
-        warrantyExpiry: '',
-        purchaseCost: '',
-        currentValue: '',
+        purchaseDate: fmAsset.purchaseDate
+            ? new Date(fmAsset.purchaseDate).toISOString().split('T')[0]
+            : '',
+        installDate: fmAsset.installDate
+            ? new Date(fmAsset.installDate).toISOString().split('T')[0]
+            : '',
+        warrantyExpiry: fmAsset.warrantyExpiry
+            ? new Date(fmAsset.warrantyExpiry).toISOString().split('T')[0]
+            : '',
+        purchaseCost: fmAsset.purchaseCost?.toString() || '',
+        currentValue: fmAsset.currentValue?.toString() || '',
 
         // Step 5: Status & Maintenance
-        condition: 'good',
-        status: 'active',
-        requiresMaintenance: false,
+        condition: fmAsset.condition,
+        status: fmAsset.status,
+        requiresMaintenance: fmAsset.requiresMaintenance,
 
         // Step 6: Photos
-        images: [] as File[],
+        existingImages: fmAsset.images,
+        imagesToDelete: [] as string[],
+        newImages: [] as File[],
     });
 
     const validateStep = (step: number): boolean => {
@@ -137,13 +166,17 @@ export default function FMAssetFormClient({
                 }
                 break;
             case 6:
-                // Validate image count
-                if (formData.images.length > 10) {
+                // Validate total image count
+                const totalImages =
+                    formData.existingImages.length -
+                    formData.imagesToDelete.length +
+                    formData.newImages.length;
+                if (totalImages > 10) {
                     setError('Maximum 10 images allowed');
                     return false;
                 }
                 // Validate file sizes
-                for (const file of formData.images) {
+                for (const file of formData.newImages) {
                     if (file.size > 5 * 1024 * 1024) {
                         setError(`File ${file.name} exceeds 5MB limit`);
                         return false;
@@ -168,12 +201,26 @@ export default function FMAssetFormClient({
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        setFormData({ ...formData, images: [...formData.images, ...files] });
+        setFormData({ ...formData, newImages: [...formData.newImages, ...files] });
     };
 
-    const removeImage = (index: number) => {
-        const newImages = formData.images.filter((_, i) => i !== index);
-        setFormData({ ...formData, images: newImages });
+    const removeNewImage = (index: number) => {
+        const newImages = formData.newImages.filter((_, i) => i !== index);
+        setFormData({ ...formData, newImages });
+    };
+
+    const markImageForDeletion = (imagePath: string) => {
+        setFormData({
+            ...formData,
+            imagesToDelete: [...formData.imagesToDelete, imagePath],
+        });
+    };
+
+    const unmarkImageForDeletion = (imagePath: string) => {
+        setFormData({
+            ...formData,
+            imagesToDelete: formData.imagesToDelete.filter((img) => img !== imagePath),
+        });
     };
 
     const handleSubmit = async () => {
@@ -210,7 +257,7 @@ export default function FMAssetFormClient({
                 requiresMaintenance: formData.requiresMaintenance,
             };
 
-            const asset = await createFMAsset(submitData);
+            const asset = await updateFMAsset(fmAsset.id, submitData);
 
             router.push(`/fm-assets/${asset.assetCode}`);
             router.refresh();
@@ -221,50 +268,14 @@ export default function FMAssetFormClient({
         }
     };
 
-    const handleCreateCategory = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setCreatingCategory(true);
-
-        try {
-            await createFMCategory({
-                name: newCategoryName,
-                description: newCategoryDesc,
-            });
-
-            // Add to local list (will refresh to get actual ID)
-            const tempCategory = {
-                id: Date.now(),
-                name: newCategoryName,
-                description: newCategoryDesc,
-                icon: null,
-                color: null,
-            };
-            setLocalCategories([...localCategories, tempCategory]);
-            setFormData({ ...formData, categoryId: tempCategory.id });
-
-            // Reset modal
-            setNewCategoryName('');
-            setNewCategoryDesc('');
-            setShowCategoryModal(false);
-
-            router.refresh();
-        } catch (err: any) {
-            setError(err.message || 'Failed to create category');
-        } finally {
-            setCreatingCategory(false);
-        }
-    };
-
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-4xl mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Create New FM Asset
-                    </h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit FM Asset</h1>
                     <p className="text-gray-600">
-                        Complete all steps to register a new facility management asset
+                        Update asset information: {fmAsset.assetCode}
                     </p>
                 </div>
 
@@ -280,12 +291,13 @@ export default function FMAssetFormClient({
                                 <div key={step.id} className="flex items-center flex-1">
                                     <div className="flex flex-col items-center flex-1">
                                         <div
-                                            className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isCompleted
-                                                ? 'bg-green-600 border-green-600 text-white'
-                                                : isActive
+                                            className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
+                                                isCompleted
+                                                    ? 'bg-green-600 border-green-600 text-white'
+                                                    : isActive
                                                     ? 'bg-blue-600 border-blue-600 text-white'
                                                     : 'bg-white border-gray-300 text-gray-400'
-                                                }`}
+                                            }`}
                                         >
                                             {isCompleted ? (
                                                 <Check size={20} />
@@ -295,12 +307,13 @@ export default function FMAssetFormClient({
                                         </div>
                                         <div className="mt-2 text-center">
                                             <p
-                                                className={`text-sm font-medium ${isActive
-                                                    ? 'text-blue-600'
-                                                    : isCompleted
+                                                className={`text-sm font-medium ${
+                                                    isActive
+                                                        ? 'text-blue-600'
+                                                        : isCompleted
                                                         ? 'text-green-600'
                                                         : 'text-gray-500'
-                                                    }`}
+                                                }`}
                                             >
                                                 {step.name}
                                             </p>
@@ -308,8 +321,9 @@ export default function FMAssetFormClient({
                                     </div>
                                     {index < STEPS.length - 1 && (
                                         <div
-                                            className={`h-0.5 flex-1 mx-2 ${isCompleted ? 'bg-green-600' : 'bg-gray-300'
-                                                }`}
+                                            className={`h-0.5 flex-1 mx-2 ${
+                                                isCompleted ? 'bg-green-600' : 'bg-gray-300'
+                                            }`}
                                         />
                                     )}
                                 </div>
@@ -363,43 +377,29 @@ export default function FMAssetFormClient({
                                     placeholder="e.g., FM-0001"
                                     required
                                 />
-                                <p className="text-xs text-gray-500 mt-1">
-                                    Suggested: {suggestedCode}
-                                </p>
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Category *
                                 </label>
-                                <div className="flex gap-2">
-                                    <select
-                                        value={formData.categoryId}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                categoryId: parseInt(e.target.value),
-                                            })
-                                        }
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        required
-                                    >
-                                        {localCategories.map((category) => (
-                                            <option key={category.id} value={category.id}>
-                                                {category.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCategoryModal(true)}
-                                        className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-1 whitespace-nowrap"
-                                        title="Create new category"
-                                    >
-                                        <Plus size={16} />
-                                        New
-                                    </button>
-                                </div>
+                                <select
+                                    value={formData.categoryId}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            categoryId: parseInt(e.target.value),
+                                        })
+                                    }
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    required
+                                >
+                                    {categories.map((category) => (
+                                        <option key={category.id} value={category.id}>
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>
@@ -742,9 +742,68 @@ export default function FMAssetFormClient({
                                 Photos & QR Code
                             </h2>
 
+                            {/* Existing Images */}
+                            {formData.existingImages.length > 0 && (
+                                <div>
+                                    <p className="text-sm font-medium text-gray-700 mb-2">
+                                        Existing Images
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-4 mb-4">
+                                        {formData.existingImages.map((image, index) => {
+                                            const isMarkedForDeletion =
+                                                formData.imagesToDelete.includes(image);
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className={`relative group border rounded-lg overflow-hidden ${
+                                                        isMarkedForDeletion
+                                                            ? 'border-red-500 opacity-50'
+                                                            : 'border-gray-200'
+                                                    }`}
+                                                >
+                                                    <div className="aspect-square relative">
+                                                        <Image
+                                                            src={image}
+                                                            alt={`Image ${index + 1}`}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            isMarkedForDeletion
+                                                                ? unmarkImageForDeletion(image)
+                                                                : markImageForDeletion(image)
+                                                        }
+                                                        className={`absolute top-1 right-1 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity ${
+                                                            isMarkedForDeletion
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'bg-red-500 text-white'
+                                                        }`}
+                                                        title={
+                                                            isMarkedForDeletion
+                                                                ? 'Keep image'
+                                                                : 'Delete image'
+                                                        }
+                                                    >
+                                                        {isMarkedForDeletion ? (
+                                                            <Check size={14} />
+                                                        ) : (
+                                                            <Trash2 size={14} />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Upload New Photos */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Upload Photos
+                                    Upload New Photos
                                 </label>
                                 <input
                                     type="file"
@@ -754,18 +813,18 @@ export default function FMAssetFormClient({
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Max 10 images, 5MB each. Supported: JPG, PNG, WebP
+                                    Max 10 images total, 5MB each. Supported: JPG, PNG, WebP
                                 </p>
                             </div>
 
-                            {/* Image Previews */}
-                            {formData.images.length > 0 && (
+                            {/* New Image Previews */}
+                            {formData.newImages.length > 0 && (
                                 <div>
                                     <p className="text-sm font-medium text-gray-700 mb-2">
-                                        Selected Images ({formData.images.length})
+                                        New Images ({formData.newImages.length})
                                     </p>
                                     <div className="grid grid-cols-3 gap-4">
-                                        {formData.images.map((file, index) => (
+                                        {formData.newImages.map((file, index) => (
                                             <div
                                                 key={index}
                                                 className="relative group border border-gray-200 rounded-lg p-2"
@@ -781,10 +840,10 @@ export default function FMAssetFormClient({
                                                 </p>
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeImage(index)}
+                                                    onClick={() => removeNewImage(index)}
                                                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
-                                                    <ChevronLeft size={12} />
+                                                    <Trash2 size={12} />
                                                 </button>
                                             </div>
                                         ))}
@@ -797,8 +856,7 @@ export default function FMAssetFormClient({
                                     QR Code
                                 </p>
                                 <p className="text-sm text-blue-700">
-                                    A QR code will be automatically generated with code:{' '}
-                                    <strong>FM-{formData.assetCode}</strong>
+                                    QR code: <strong>FM-{formData.assetCode}</strong>
                                 </p>
                             </div>
                         </div>
@@ -838,85 +896,12 @@ export default function FMAssetFormClient({
                                 disabled={loading}
                                 className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loading ? 'Creating...' : 'Create Asset'}
+                                {loading ? 'Updating...' : 'Update Asset'}
                                 <Check size={20} />
                             </button>
                         )}
                     </div>
                 </div>
-
-                {/* Quick Add Category Modal */}
-                {showCategoryModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-                            <div className="flex items-center justify-between px-6 py-4 border-b">
-                                <h3 className="text-lg font-bold text-gray-800">Quick Add Category</h3>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowCategoryModal(false);
-                                        setNewCategoryName('');
-                                        setNewCategoryDesc('');
-                                    }}
-                                    className="text-gray-400 hover:text-gray-600 p-1 rounded-full"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-                            <form onSubmit={handleCreateCategory} className="p-6 space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Category Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={newCategoryName}
-                                        onChange={(e) => setNewCategoryName(e.target.value)}
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                                        placeholder="e.g., HVAC System"
-                                        autoFocus
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Description
-                                    </label>
-                                    <textarea
-                                        value={newCategoryDesc}
-                                        onChange={(e) => setNewCategoryDesc(e.target.value)}
-                                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary/20 resize-none h-20"
-                                        placeholder="Optional..."
-                                    />
-                                </div>
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setShowCategoryModal(false);
-                                            setNewCategoryName('');
-                                            setNewCategoryDesc('');
-                                        }}
-                                        className="flex-1 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={creatingCategory || !newCategoryName.trim()}
-                                        className="flex-1 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium flex items-center justify-center gap-2 disabled:opacity-50"
-                                    >
-                                        {creatingCategory ? (
-                                            <><Loader2 className="animate-spin" size={16} /> Creating...</>
-                                        ) : (
-                                            <><Plus size={16} /> Create</>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

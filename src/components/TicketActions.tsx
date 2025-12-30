@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, Play, RotateCcw } from 'lucide-react';
 interface TicketActionsProps {
     ticket: {
         id: number;
+        ticketNumber: string;
         status: string;
         assignedToId: number | null;
     };
@@ -37,7 +38,7 @@ export default function TicketActions({ ticket, currentUserId, onStatusChange }:
 
         try {
             setLoading(true);
-            const response = await fetch(`/api/tickets/${ticket.id}/status`, {
+            const response = await fetch(`/api/tickets/${ticket.ticketNumber}/status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
