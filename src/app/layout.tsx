@@ -3,6 +3,7 @@ import './globals.css';
 import { DialogProvider } from '@/contexts/DialogProvider';
 import { SessionProvider } from 'next-auth/react';
 import SessionTimeout from '@/components/SessionTimeout';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'School Asset Management',
@@ -23,6 +24,7 @@ export default function RootLayout({
           </DialogProvider>
           <SessionTimeout />
         </SessionProvider>
+        <Analytics />
         <div id="portal-root"></div>
       </body>
     </html>
