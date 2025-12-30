@@ -19,7 +19,8 @@
       "Bash(if not exist \"%APPDATA%\\\\Claude\" mkdir \"%APPDATA%\\\\Claude\")",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(del nul)"
+      "Bash(del nul)",
+      "Bash(git branch:*)"
     ]
   }
 }
