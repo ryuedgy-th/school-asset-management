@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "set NODE_OPTIONS=--max-http-header-size=65536 && next dev --turbo",
-    "build": "next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma generate",
