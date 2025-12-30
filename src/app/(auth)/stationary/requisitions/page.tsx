@@ -79,9 +79,9 @@ export default async function StationaryRequisitionsPage() {
     });
 
     // Convert Decimal to number
-    const requisitions = requisitionsRaw.map(req => ({
+    const requisitions = requisitionsRaw.map((req: any) => ({
         ...req,
-        items: req.items.map(item => ({
+        items: req.items.map((item: any) => ({
             ...item,
             estimatedUnitCost: item.estimatedUnitCost ? Number(item.estimatedUnitCost) : null,
         })),
@@ -101,7 +101,7 @@ export default async function StationaryRequisitionsPage() {
     });
 
     // Convert Decimal to number
-    const items = itemsRaw.map(item => ({
+    const items = itemsRaw.map((item: any) => ({
         ...item,
         unitCost: item.unitCost ? Number(item.unitCost) : 0,
     }));
