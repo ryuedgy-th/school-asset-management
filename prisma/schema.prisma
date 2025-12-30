@@ -25,6 +25,13 @@ model Department {
   roles       Role[]
   assets      Asset[]
   inspections Inspection[]
+
+  // Stationary Relations
+  stationaryLocations      StationaryLocation[]
+  stationaryRequisitions   StationaryRequisition[]
+  stationaryIssues         StationaryIssue[]
+  stationaryReturns        StationaryReturn[]
+  departmentBudgets        DepartmentBudget[]
 }
 
 // 14. Users & Permissions
@@ -77,6 +84,28 @@ model User {
   ticketActivities      TicketActivity[]
   inventoryTransactions InventoryTransaction[]
   inspectionRecords     ACInspectionRecord[]
+
+  // Stationary Relations
+  createdStationaryItems   StationaryItem[]       @relation("StationaryItemCreator")
+  managedLocations         StationaryLocation[]   @relation("StationaryLocationManager")
+
+  requisitionsRequested    StationaryRequisition[] @relation("RequisitionRequester")
+  requisitionsForUser      StationaryRequisition[] @relation("RequisitionForUser")
+  requisitionsApprovedL1   StationaryRequisition[] @relation("RequisitionApproverL1")
+  requisitionsApprovedL2   StationaryRequisition[] @relation("RequisitionApproverL2")
+  requisitionsRejected     StationaryRequisition[] @relation("RequisitionRejector")
+  requisitionsIssued       StationaryRequisition[] @relation("RequisitionIssuer")
+
+  issuesCreated            StationaryIssue[]      @relation("IssueCreator")
+  issuesReceived           StationaryIssue[]      @relation("IssueRecipient")
+  issuesAcknowledged       StationaryIssue[]      @relation("IssueAcknowledger")
+
+  returnsCreated           StationaryReturn[]     @relation("ReturnCreator")
+  returnsApproved          StationaryReturn[]     @relation("ReturnApprover")
+
+  purchaseOrdersCreated    StationaryPurchaseOrder[] @relation("POCreator")
+  purchaseOrdersApproved   StationaryPurchaseOrder[] @relation("POApprover")
+  purchaseOrdersReceived   StationaryPurchaseOrder[] @relation("POReceiver")
 }
 
 // ============================================
@@ -1132,4 +1161,493 @@ model NumberingConfig {
   updatedAt DateTime @updatedAt
 
   @@index([module])
+}
+
+// ============================================
+// 31. Stationary Management System
+// ============================================
+
+// 31.1 Stationary Category
+model StationaryCategory {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique  // "PEN", "PAPER", "FILE"
+  name        String               // "Writing Instruments", "Paper Products"
+  description String?
+  parentId    Int?                 // For nested categories
+  parent      StationaryCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    StationaryCategory[] @relation("CategoryTree")
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  items       StationaryItem[]
+
+  @@index([parentId])
+  @@index([code])
+}
+
+// 31.2 Stationary Vendor
+model StationaryVendor {
+  id              Int       @id @default(autoincrement())
+  vendorCode      String    @unique  // "VEN-001"
+  name            String
+  contactPerson   String?
+  email           String?
+  phone           String?
+  address         String?
+
+  // Terms
+  paymentTerms    String?   // "Net 30", "COD"
+  leadTimeDays    Int       @default(7)
+
+  // Rating
+  rating          Int?      @default(0)  // 0-5 stars
+
+  isActive        Boolean   @default(true)
+  isPreferred     Boolean   @default(false)
+
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items           StationaryItem[]
+  purchaseOrders  StationaryPurchaseOrder[]
+
+  @@index([vendorCode])
+}
+
+// 31.3 Stationary Item (Item Master)
+model StationaryItem {
+  id              Int       @id @default(autoincrement())
+  itemCode        String    @unique  // "PEN-BLK-001"
+  name            String               // "Pilot G2 Pen Black"
+  description     String?
+  categoryId      Int
+  category        StationaryCategory @relation(fields: [categoryId], references: [id])
+
+  // Unit of Measure
+  uom             String    @default("pieces")  // "pieces", "boxes", "reams", "packs"
+  uomConversion   String?   // JSON: { "1 box": "12 pieces", "1 ream": "500 sheets" }
+
+  // Stock Control
+  minStockLevel   Int       @default(0)  // Trigger reorder alert
+  maxStockLevel   Int?                   // Maximum stock to maintain
+  reorderPoint    Int       @default(0)  // Economic order quantity
+  reorderQuantity Int       @default(0)  // Default order quantity
+
+  // Cost & Vendor
+  unitCost        Decimal?  
+  defaultVendorId Int?
+  defaultVendor   StationaryVendor? @relation(fields: [defaultVendorId], references: [id])
+
+  // Item Properties
+  isRestricted    Boolean   @default(false)  // Requires special approval
+  expiryTracking  Boolean   @default(false)  // Track expiry dates
+  barcodeEnabled  Boolean   @default(false)
+  barcode         String?   @unique
+
+  // Status
+  isActive        Boolean   @default(true)
+  isArchived      Boolean   @default(false)
+
+  // Metadata
+  tags            String?   // JSON array: ["eco-friendly", "bulk-order"]
+  imageUrl        String?
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdById     Int
+  createdBy       User      @relation("StationaryItemCreator", fields: [createdById], references: [id])
+
+  stock           StationaryStock[]
+  requisitionItems StationaryRequisitionItem[]
+  issueItems      StationaryIssueItem[]
+  returnItems     StationaryReturnItem[]
+  purchaseOrderItems StationaryPurchaseOrderItem[]
+
+  @@index([categoryId])
+  @@index([itemCode])
+  @@index([defaultVendorId])
+  @@index([createdById])
+}
+
+// 31.4 Stationary Location (Storage Locations)
+model StationaryLocation {
+  id          Int       @id @default(autoincrement())
+  code        String    @unique  // "WH-MAIN", "DEPT-IT", "DEPT-FM"
+  name        String               // "Main Warehouse", "IT Department Store"
+  type        String    @default("warehouse")  // "warehouse", "department", "sub-store"
+
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  address     String?
+  capacity    String?   // "500 sq ft", "20 shelves"
+
+  // Access Control
+  managedById Int?      // Store keeper
+  managedBy   User?     @relation("StationaryLocationManager", fields: [managedById], references: [id])
+
+  isActive    Boolean   @default(true)
+  isDefault   Boolean   @default(false)  // Default location for new stock
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  stock       StationaryStock[]
+  issues      StationaryIssue[]
+
+  @@index([departmentId])
+  @@index([managedById])
+}
+
+// 31.5 Stationary Stock (Inventory by Location)
+model StationaryStock {
+  id          Int       @id @default(autoincrement())
+  itemId      Int
+  item        StationaryItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  locationId  Int
+  location    StationaryLocation @relation(fields: [locationId], references: [id])
+
+  quantity    Int       @default(0)
+
+  // Optional: Batch/Lot Tracking
+  batchNumber String?
+  expiryDate  DateTime?
+
+  // Stock Value
+  unitCost    Decimal?    // Cost at which this batch was received
+  totalValue  Decimal?    // quantity * unitCost (computed)
+
+  lastStocktakeDate DateTime?
+  lastStocktakeQuantity Int?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([itemId, locationId, batchNumber])
+  @@index([itemId])
+  @@index([locationId])
+}
+
+// 31.6 Stationary Requisition (Request Header)
+model StationaryRequisition {
+  id              Int       @id @default(autoincrement())
+  requisitionNo   String    @unique  // "REQ-2025-0001"
+
+  // Requester
+  requestedById   Int
+  requestedBy     User      @relation("RequisitionRequester", fields: [requestedById], references: [id])
+  departmentId    Int
+  department      Department @relation(fields: [departmentId], references: [id])
+
+  // Requested For (who will use the items)
+  requestedForType String   @default("department")  // "department" or "personal"
+  requestedForUserId Int?
+  requestedForUser   User?  @relation("RequisitionForUser", fields: [requestedForUserId], references: [id])
+
+  // Purpose & Details
+  purpose         String?  // Reason for requisition
+  urgency         String    @default("normal")  // "normal", "urgent"
+
+  // Status Flow: draft → pending → approved_l1 → approved_l2 → approved → issued → completed / rejected
+  status          String    @default("pending")
+
+  // Approval Workflow
+  approvedByL1Id  Int?      // Department Head
+  approvedByL1    User?     @relation("RequisitionApproverL1", fields: [approvedByL1Id], references: [id])
+  approvedByL1At  DateTime?
+
+  approvedByL2Id  Int?      // Finance/Budget Manager (if needed)
+  approvedByL2    User?     @relation("RequisitionApproverL2", fields: [approvedByL2Id], references: [id])
+  approvedByL2At  DateTime?
+
+  rejectedById    Int?
+  rejectedBy      User?     @relation("RequisitionRejector", fields: [rejectedById], references: [id])
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  // Issue Details
+  issuedById      Int?      // Store Keeper
+  issuedBy        User?     @relation("RequisitionIssuer", fields: [issuedById], references: [id])
+  issuedAt        DateTime?
+
+  completedAt     DateTime?
+
+  // Metadata
+  totalEstimatedCost Decimal?  
+  totalActualCost    Decimal?  
+
+  comments        String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items           StationaryRequisitionItem[]
+  issues          StationaryIssue[]
+
+  @@index([requestedById])
+  @@index([departmentId])
+  @@index([requestedForUserId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([approvedByL1Id])
+  @@index([approvedByL2Id])
+}
+
+// 31.7 Stationary Requisition Item (Request Line Items)
+model StationaryRequisitionItem {
+  id              Int       @id @default(autoincrement())
+  requisitionId   Int
+  requisition     StationaryRequisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+
+  itemId          Int
+  item            StationaryItem @relation(fields: [itemId], references: [id])
+
+  quantityRequested Int
+  quantityApproved  Int?      // May differ from requested
+  quantityIssued    Int       @default(0)
+
+  estimatedUnitCost Decimal?  
+  estimatedTotal    Decimal?  
+
+  justification   String?   // Why this item is needed
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([requisitionId])
+  @@index([itemId])
+}
+
+// 31.8 Stationary Issue (Issue/Distribution Voucher)
+model StationaryIssue {
+  id              Int       @id @default(autoincrement())
+  issueNo         String    @unique  // "ISS-2025-0001"
+
+  requisitionId   Int?
+  requisition     StationaryRequisition? @relation(fields: [requisitionId], references: [id])
+
+  // Issue Details
+  issuedById      Int
+  issuedBy        User      @relation("IssueCreator", fields: [issuedById], references: [id])
+
+  issuedToId      Int
+  issuedTo        User      @relation("IssueRecipient", fields: [issuedToId], references: [id])
+
+  departmentId    Int
+  department      Department @relation(fields: [departmentId], references: [id])
+
+  locationId      Int
+  location        StationaryLocation @relation(fields: [locationId], references: [id])
+
+  // Delivery
+  deliveryMethod  String    @default("collection")  // "collection", "delivery"
+  deliveryDate    DateTime?
+  deliveryNotes   String?
+
+  // Acknowledgment
+  acknowledgedById Int?
+  acknowledgedBy   User?    @relation("IssueAcknowledger", fields: [acknowledgedById], references: [id])
+  acknowledgedAt   DateTime?
+
+  totalCost       Decimal?  
+
+  status          String    @default("pending")  // "pending", "issued", "delivered", "acknowledged"
+
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items           StationaryIssueItem[]
+
+  @@index([requisitionId])
+  @@index([issuedById])
+  @@index([issuedToId])
+  @@index([departmentId])
+  @@index([locationId])
+  @@index([createdAt])
+}
+
+// 31.9 Stationary Issue Item (Issue Line Items)
+model StationaryIssueItem {
+  id              Int       @id @default(autoincrement())
+  issueId         Int
+  issue           StationaryIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  itemId          Int
+  item            StationaryItem @relation(fields: [itemId], references: [id])
+
+  quantity        Int
+  unitCost        Decimal?  
+  totalCost       Decimal?  
+
+  batchNumber     String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([issueId])
+  @@index([itemId])
+}
+
+// 31.10 Stationary Return (Return Voucher)
+model StationaryReturn {
+  id              Int       @id @default(autoincrement())
+  returnNo        String    @unique  // "RET-2025-0001"
+
+  returnedById    Int
+  returnedBy      User      @relation("ReturnCreator", fields: [returnedById], references: [id])
+
+  departmentId    Int
+  department      Department @relation(fields: [departmentId], references: [id])
+
+  returnType      String    @default("unused")  // "unused", "defective", "excess"
+  returnReason    String?
+
+  // Approval
+  approvedById    Int?
+  approvedBy      User?     @relation("ReturnApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+
+  status          String    @default("pending")  // "pending", "approved", "rejected", "completed"
+
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items           StationaryReturnItem[]
+
+  @@index([returnedById])
+  @@index([departmentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// 31.11 Stationary Return Item
+model StationaryReturnItem {
+  id              Int       @id @default(autoincrement())
+  returnId        Int
+  return          StationaryReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  itemId          Int
+  item            StationaryItem @relation(fields: [itemId], references: [id])
+
+  quantity        Int
+  condition       String    @default("good")  // "good", "damaged", "defective"
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([returnId])
+  @@index([itemId])
+}
+
+// 31.12 Stationary Purchase Order (Procurement)
+model StationaryPurchaseOrder {
+  id              Int       @id @default(autoincrement())
+  poNumber        String    @unique  // "PO-2025-0001"
+
+  vendorId        Int
+  vendor          StationaryVendor @relation(fields: [vendorId], references: [id])
+
+  // PO Details
+  orderDate       DateTime  @default(now())
+  expectedDelivery DateTime?
+
+  // Status: draft → submitted → approved → ordered → partially_received → received → closed / cancelled
+  status          String    @default("draft")
+
+  // Totals
+  subtotal        Decimal   
+  tax             Decimal?  
+  shippingCost    Decimal?  
+  totalAmount     Decimal   
+
+  // Approval
+  approvedById    Int?
+  approvedBy      User?     @relation("POApprover", fields: [approvedById], references: [id])
+  approvedAt      DateTime?
+
+  // Receiving
+  receivedById    Int?
+  receivedBy      User?     @relation("POReceiver", fields: [receivedById], references: [id])
+  receivedAt      DateTime?
+
+  // Metadata
+  createdById     Int
+  createdBy       User      @relation("POCreator", fields: [createdById], references: [id])
+
+  notes           String?
+  termsConditions String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items           StationaryPurchaseOrderItem[]
+
+  @@index([vendorId])
+  @@index([status])
+  @@index([createdById])
+  @@index([approvedById])
+}
+
+// 31.13 Stationary Purchase Order Item
+model StationaryPurchaseOrderItem {
+  id              Int       @id @default(autoincrement())
+  purchaseOrderId Int
+  purchaseOrder   StationaryPurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  itemId          Int
+  item            StationaryItem @relation(fields: [itemId], references: [id])
+
+  quantityOrdered Int
+  quantityReceived Int      @default(0)
+
+  unitPrice       Decimal   
+  totalPrice      Decimal   
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([purchaseOrderId])
+  @@index([itemId])
+}
+
+// 31.14 Department Budget (Budget Control)
+model DepartmentBudget {
+  id              Int       @id @default(autoincrement())
+  departmentId    Int
+  department      Department @relation(fields: [departmentId], references: [id])
+
+  // Budget Period
+  fiscalYear      Int       // 2025
+  fiscalQuarter   Int?      // 1, 2, 3, 4 (null = annual)
+  fiscalMonth     Int?      // 1-12 (null = annual/quarterly)
+
+  // Budget Amounts
+  allocatedAmount Decimal   
+  spentAmount     Decimal   @default(0) 
+  committedAmount Decimal   @default(0)   // Approved but not issued
+  availableAmount Decimal   @default(0)   // allocated - spent - committed
+
+  // Alerts
+  alertThreshold  Int       @default(80)  // Alert at 80% utilization
+
+  isActive        Boolean   @default(true)
+
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([departmentId, fiscalYear, fiscalQuarter, fiscalMonth])
+  @@index([departmentId])
+  @@index([fiscalYear])
 }

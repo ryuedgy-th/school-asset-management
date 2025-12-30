@@ -40,10 +40,7 @@ export async function GET(request: NextRequest) {
             take: limit,
         });
 
-        return NextResponse.json({
-            users,
-            total: users.length,
-        });
+        return NextResponse.json(users);
     } catch (error) {
         console.error('Error fetching users:', error);
         return NextResponse.json(

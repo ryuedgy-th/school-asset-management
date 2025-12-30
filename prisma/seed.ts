@@ -1158,6 +1158,320 @@ This is an automated message from the School Asset Management System.`,
 
     console.log('✅ Created 5 demo FM Assets');
 
+    // ============================================
+    // Stationary Management System - Sample Data
+    // ============================================
+    console.log('\n📝 Seeding Stationary Management data...');
+
+    // Create Stationary Categories
+    console.log('📂 Creating stationary categories...');
+    const penCategory = await prisma.stationaryCategory.create({
+        data: {
+            code: 'PEN',
+            name: 'Writing Instruments',
+            description: 'Pens, pencils, markers, and highlighters',
+            sortOrder: 1,
+        },
+    });
+
+    const paperCategory = await prisma.stationaryCategory.create({
+        data: {
+            code: 'PAPER',
+            name: 'Paper Products',
+            description: 'A4 paper, envelopes, notepads',
+            sortOrder: 2,
+        },
+    });
+
+    const fileCategory = await prisma.stationaryCategory.create({
+        data: {
+            code: 'FILE',
+            name: 'Filing & Storage',
+            description: 'Folders, binders, storage boxes',
+            sortOrder: 3,
+        },
+    });
+
+    const officeCategory = await prisma.stationaryCategory.create({
+        data: {
+            code: 'OFFICE',
+            name: 'Office Supplies',
+            description: 'Staplers, clips, tape, scissors',
+            sortOrder: 4,
+        },
+    });
+
+    const techCategory = await prisma.stationaryCategory.create({
+        data: {
+            code: 'TECH',
+            name: 'Tech Accessories',
+            description: 'USB drives, batteries, cables',
+            sortOrder: 5,
+        },
+    });
+
+    console.log('✅ Created 5 stationary categories');
+
+    // Create Vendors
+    console.log('🏪 Creating vendors...');
+    const vendor1 = await prisma.stationaryVendor.create({
+        data: {
+            vendorCode: 'VEN-001',
+            name: 'Office Depot Thailand',
+            contactPerson: 'Somchai Supplier',
+            email: 'somchai@officedepot.th',
+            phone: '02-123-4567',
+            address: '123 Sukhumvit Rd, Bangkok',
+            paymentTerms: 'Net 30',
+            leadTimeDays: 7,
+            rating: 5,
+            isPreferred: true,
+        },
+    });
+
+    const vendor2 = await prisma.stationaryVendor.create({
+        data: {
+            vendorCode: 'VEN-002',
+            name: 'SE-ED Supplies',
+            contactPerson: 'Nittaya Office',
+            email: 'nittaya@se-ed.co.th',
+            phone: '02-987-6543',
+            address: '456 Phahonyothin Rd, Bangkok',
+            paymentTerms: 'Net 15',
+            leadTimeDays: 3,
+            rating: 4,
+        },
+    });
+
+    console.log('✅ Created 2 vendors');
+
+    // Create Stationary Items
+    console.log('📦 Creating stationary items...');
+    const item1 = await prisma.stationaryItem.create({
+        data: {
+            itemCode: 'PEN-BLK-001',
+            name: 'Pilot G2 Pen - Black',
+            description: 'Premium gel ink pen, 0.7mm',
+            categoryId: penCategory.id,
+            uom: 'pieces',
+            minStockLevel: 50,
+            maxStockLevel: 200,
+            reorderPoint: 60,
+            reorderQuantity: 100,
+            unitCost: 15.00,
+            defaultVendorId: vendor1.id,
+            createdById: adminUser.id,
+            tags: '["premium", "best-seller"]',
+        },
+    });
+
+    const item2 = await prisma.stationaryItem.create({
+        data: {
+            itemCode: 'PAPER-A4-001',
+            name: 'A4 Paper 80gsm',
+            description: 'Double A white paper, 500 sheets/ream',
+            categoryId: paperCategory.id,
+            uom: 'reams',
+            minStockLevel: 20,
+            maxStockLevel: 100,
+            reorderPoint: 25,
+            reorderQuantity: 50,
+            unitCost: 120.00,
+            defaultVendorId: vendor1.id,
+            createdById: adminUser.id,
+            tags: '["bulk-order"]',
+        },
+    });
+
+    const item3 = await prisma.stationaryItem.create({
+        data: {
+            itemCode: 'FILE-FOLD-001',
+            name: 'Manila Folder',
+            description: 'A4 size manila folder, 250gsm',
+            categoryId: fileCategory.id,
+            uom: 'pieces',
+            minStockLevel: 30,
+            maxStockLevel: 150,
+            reorderPoint: 40,
+            reorderQuantity: 80,
+            unitCost: 8.00,
+            defaultVendorId: vendor2.id,
+            createdById: adminUser.id,
+        },
+    });
+
+    const item4 = await prisma.stationaryItem.create({
+        data: {
+            itemCode: 'OFFICE-STPL-001',
+            name: 'Desktop Stapler',
+            description: 'Heavy-duty stapler, 25 sheets capacity',
+            categoryId: officeCategory.id,
+            uom: 'pieces',
+            minStockLevel: 10,
+            maxStockLevel: 40,
+            reorderPoint: 15,
+            reorderQuantity: 20,
+            unitCost: 85.00,
+            defaultVendorId: vendor2.id,
+            createdById: adminUser.id,
+        },
+    });
+
+    const item5 = await prisma.stationaryItem.create({
+        data: {
+            itemCode: 'TECH-USB-001',
+            name: 'USB Flash Drive 16GB',
+            description: 'Sandisk USB 3.0 flash drive',
+            categoryId: techCategory.id,
+            uom: 'pieces',
+            minStockLevel: 15,
+            maxStockLevel: 50,
+            reorderPoint: 20,
+            reorderQuantity: 30,
+            unitCost: 180.00,
+            defaultVendorId: vendor1.id,
+            isRestricted: true, // Requires special approval
+            createdById: adminUser.id,
+            tags: '["tech", "restricted"]',
+        },
+    });
+
+    console.log('✅ Created 5 stationary items');
+
+    // Create Storage Locations
+    console.log('📍 Creating storage locations...');
+    const mainWarehouse = await prisma.stationaryLocation.create({
+        data: {
+            code: 'WH-MAIN',
+            name: 'Main Warehouse',
+            type: 'warehouse',
+            address: 'Building A, Floor 1',
+            capacity: '500 sq ft',
+            isDefault: true,
+            managedById: adminUser.id,
+        },
+    });
+
+    const itDeptStore = await prisma.stationaryLocation.create({
+        data: {
+            code: 'STORE-IT',
+            name: 'IT Department Store',
+            type: 'department',
+            departmentId: itDept.id,
+            address: 'Building B, Floor 3',
+            capacity: '50 sq ft',
+            managedById: adminUser.id,
+        },
+    });
+
+    console.log('✅ Created 2 storage locations');
+
+    // Create Initial Stock
+    console.log('📊 Creating initial stock...');
+    await prisma.stationaryStock.create({
+        data: {
+            itemId: item1.id,
+            locationId: mainWarehouse.id,
+            quantity: 120,
+            unitCost: 15.00,
+            totalValue: 1800.00,
+            batchNumber: 'BATCH-001',
+        },
+    });
+    await prisma.stationaryStock.create({
+        data: {
+            itemId: item2.id,
+            locationId: mainWarehouse.id,
+            quantity: 45,
+            unitCost: 120.00,
+            totalValue: 5400.00,
+            batchNumber: 'BATCH-002',
+        },
+    });
+    await prisma.stationaryStock.create({
+        data: {
+            itemId: item3.id,
+            locationId: mainWarehouse.id,
+            quantity: 80,
+            unitCost: 8.00,
+            totalValue: 640.00,
+            batchNumber: null,
+        },
+    });
+    await prisma.stationaryStock.create({
+        data: {
+            itemId: item4.id,
+            locationId: mainWarehouse.id,
+            quantity: 25,
+            unitCost: 85.00,
+            totalValue: 2125.00,
+            batchNumber: null,
+        },
+    });
+    await prisma.stationaryStock.create({
+        data: {
+            itemId: item5.id,
+            locationId: mainWarehouse.id,
+            quantity: 30,
+            unitCost: 180.00,
+            totalValue: 5400.00,
+            batchNumber: null,
+        },
+    });
+    // Some stock in IT department store
+    await prisma.stationaryStock.create({
+        data: {
+            itemId: item1.id,
+            locationId: itDeptStore.id,
+            quantity: 20,
+            unitCost: 15.00,
+            totalValue: 300.00,
+            batchNumber: null,
+        },
+    });
+    await prisma.stationaryStock.create({
+        data: {
+            itemId: item2.id,
+            locationId: itDeptStore.id,
+            quantity: 10,
+            unitCost: 120.00,
+            totalValue: 1200.00,
+            batchNumber: null,
+        },
+    });
+
+    console.log('✅ Created initial stock for 5 items across 2 locations');
+
+    // Create Department Budget
+    console.log('💰 Creating department budgets...');
+    await prisma.departmentBudget.create({
+        data: {
+            departmentId: itDept.id,
+            fiscalYear: 2025,
+            allocatedAmount: 50000.00,
+            spentAmount: 0,
+            committedAmount: 0,
+            availableAmount: 50000.00,
+            alertThreshold: 80,
+        },
+    });
+
+    await prisma.departmentBudget.create({
+        data: {
+            departmentId: fmDept.id,
+            fiscalYear: 2025,
+            allocatedAmount: 30000.00,
+            spentAmount: 0,
+            committedAmount: 0,
+            availableAmount: 30000.00,
+            alertThreshold: 80,
+        },
+    });
+
+    console.log('✅ Created budgets for 2 departments');
+
+    console.log('✅ Stationary Management data seeded successfully!');
+
     console.log('\n✨ Ready for testing!');
     console.log('');
 }

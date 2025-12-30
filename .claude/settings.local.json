@@ -9,7 +9,11 @@
       "Bash(grep:*)",
       "Bash(npm run build:*)",
       "Bash(ls:*)",
-      "Bash(npx prisma generate)"
+      "Bash(npx prisma generate)",
+      "Bash(npm run seed:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(npx prisma studio)"
     ]
   }
 }

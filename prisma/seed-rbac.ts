@@ -212,10 +212,17 @@ async function seedRBAC() {
             { action: 'approve', name: 'Approve Maintenance', description: 'Approve maintenance work' },
         ],
 
-        // Stationary - add approve
+        // Stationary - comprehensive permissions
         stationary: [
-            ...standardPermissions,
-            { action: 'approve', name: 'Approve Requests', description: 'Approve stationary requests' },
+            { action: 'view', name: 'View Stationary', description: 'View items, stock, and requisitions' },
+            { action: 'create', name: 'Create Requisition', description: 'Create requisition requests' },
+            { action: 'edit', name: 'Edit Items', description: 'Edit stationary items and details' },
+            { action: 'delete', name: 'Delete Items', description: 'Delete stationary items' },
+            { action: 'approve', name: 'Approve Requisitions', description: 'Approve requisition requests' },
+            { action: 'issue', name: 'Issue Items', description: 'Issue items from inventory' },
+            { action: 'receive', name: 'Receive Items', description: 'Receive items into inventory' },
+            { action: 'manage_budget', name: 'Manage Budgets', description: 'Manage department budgets' },
+            { action: 'export', name: 'Export Reports', description: 'Export analytics and reports' },
         ],
 
         // Reports - view and export only
