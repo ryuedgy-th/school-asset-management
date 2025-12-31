@@ -142,10 +142,9 @@ error.log
 !.vscode/tasks.json
 
 # Claude Code (AI Assistant)
-.claude/settings.local.json
-.claude/*.log
-.claude/cache/
-.claude/tmp/
+# Ignore entire .claude folder (local AI assistant settings)
+.claude/
+!.claude/.gitkeep
 
 # JetBrains (WebStorm, IntelliJ, etc.)
 .idea/
