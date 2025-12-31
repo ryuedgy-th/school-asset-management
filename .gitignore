@@ -12,6 +12,11 @@
 !.yarn/releases
 !.yarn/versions
 
+# Optional: Uncomment to ignore lock file (NOT recommended for production)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
 # ============================================================
 # TESTING
 # ============================================================
@@ -19,6 +24,20 @@
 /.nyc_output
 *.test.js
 *.spec.js
+
+# Test results & reports
+/test-results/
+/playwright-report/
+/junit.xml
+/test-output/
+
+# E2E test artifacts
+/e2e/screenshots/
+/e2e/videos/
+/e2e/downloads/
+
+# Storybook
+storybook-static
 
 # ============================================================
 # NEXT.JS
@@ -40,11 +59,24 @@
 next-env.d.ts
 
 # ============================================================
-# ENVIRONMENT & SECRETS
+# ENVIRONMENT & SECRETS (CRITICAL - DO NOT COMMIT)
 # ============================================================
 .env
 .env.*
 !.env.example
+
+# OAuth tokens & credentials
+credentials.json
+token.json
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+
+# Email queue/cache
+/email-queue/*
+/email-cache/*
 
 # ============================================================
 # DATABASE FILES (CRITICAL - DO NOT COMMIT)
@@ -69,8 +101,23 @@ prisma/migrations/*_draft
 # ============================================================
 # UPLOADS & USER GENERATED CONTENT
 # ============================================================
+# Uploaded files (PDFs, images, etc.)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# User signatures (SENSITIVE - Personal data)
+/public/signatures/*
+!/public/signatures/.gitkeep
+
+# Generated QR codes (if stored in public)
+/public/qrcodes/*
+!/public/qrcodes/.gitkeep
+
+# Generated PDFs (reports, exports)
+/public/exports/*
+!/public/exports/.gitkeep
+/public/reports/*
+!/public/reports/.gitkeep
 
 # ============================================================
 # LOGS & DEBUG FILES
@@ -93,6 +140,12 @@ error.log
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/tasks.json
+
+# Claude Code (AI Assistant)
+.claude/settings.local.json
+.claude/*.log
+.claude/cache/
+.claude/tmp/
 
 # JetBrains (WebStorm, IntelliJ, etc.)
 .idea/
@@ -191,3 +244,45 @@ seed-ticket-email-templates.sql
 /src/generated/
 /prisma/generated/
 /docs
+
+# Session storage (if implemented)
+/sessions/*
+/session-store/*
+
+# Audit logs (local development)
+/logs/*
+/audit-logs/*
+
+# Database backups (should be stored securely elsewhere)
+*.dump
+*.backup.sql
+/backups/*
+/db-backups/*
+
+# User data exports (SENSITIVE)
+/exports/*.xlsx
+/exports/*.csv
+/exports/*.json
+!/exports/.gitkeep
+
+# ============================================================
+# NOTES
+# ============================================================
+# This .gitignore is configured for a school asset management system
+# with sensitive data handling requirements.
+#
+# CRITICAL FILES TO NEVER COMMIT:
+# - .env (contains database passwords, API keys)
+# - public/signatures/* (user signature images)
+# - public/uploads/* (uploaded documents/photos)
+# - credentials.json, token.json (OAuth tokens)
+# - *.dump, *.backup.sql (database backups)
+#
+# If you accidentally commit sensitive files:
+# 1. Remove from Git: git rm --cached <file>
+# 2. Add to .gitignore
+# 3. Commit the change
+# 4. For already-pushed commits, consider: git filter-branch or BFG Repo-Cleaner
+# 5. Rotate any exposed credentials immediately
+#
+# For more info: https://git-scm.com/docs/gitignore
