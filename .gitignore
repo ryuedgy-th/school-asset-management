@@ -135,11 +135,10 @@ error.log
 # IDE & EDITOR FILES
 # ============================================================
 # VSCode
-.vscode/*
-!.vscode/settings.json
+# Ignore entire .vscode folder (local IDE settings)
+.vscode/
 !.vscode/extensions.json
-!.vscode/launch.json
-!.vscode/tasks.json
+!.vscode/.gitkeep
 
 # Claude Code (AI Assistant)
 # Ignore entire .claude folder (local AI assistant settings)
