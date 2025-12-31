@@ -62,7 +62,17 @@ export default async function AssignmentDetailPage(props: PageProps) {
     });
 
     if (!assignment) {
-        return <div>Assignment not found</div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="text-center p-8">
+                    <h1 className="text-2xl font-bold text-slate-900 mb-2">Assignment not found</h1>
+                    <p className="text-slate-600 mb-4">Assignment number: <code className="bg-slate-200 px-2 py-1 rounded">{assignmentNumber}</code></p>
+                    <a href="/assignments" className="inline-block px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+                        ← Back to Assignments
+                    </a>
+                </div>
+            </div>
+        );
     }
 
     // Permission check: user can only view their own assignments unless they have edit permission

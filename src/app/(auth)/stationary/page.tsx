@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { hasModuleAccess } from '@/lib/permissions';
 import Link from 'next/link';
-import { Package, Warehouse, Send, FileText, RotateCcw, ShoppingCart, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Package, Warehouse, Send, FileText, RotateCcw, ShoppingCart, TrendingDown, AlertTriangle, MapPin } from 'lucide-react';
 
 export default async function StationaryDashboard() {
     const session = await auth();
@@ -53,7 +53,7 @@ export default async function StationaryDashboard() {
             description: 'Manage stationary items and catalog',
             icon: Package,
             href: '/stationary/items',
-            color: 'blue',
+            color: 'primary',
             count: totalItems,
         },
         {
@@ -61,7 +61,7 @@ export default async function StationaryDashboard() {
             description: 'Monitor inventory and stock levels',
             icon: Warehouse,
             href: '/stationary/stock',
-            color: 'purple',
+            color: 'primary',
             count: totalStock,
             badge: lowStockCount > 0 ? `${lowStockCount} low` : undefined,
         },
@@ -70,7 +70,7 @@ export default async function StationaryDashboard() {
             description: 'Request items from inventory',
             icon: Send,
             href: '/stationary/requisitions',
-            color: 'green',
+            color: 'secondary',
             count: totalRequisitions,
             badge: pendingRequisitions > 0 ? `${pendingRequisitions} pending` : undefined,
         },
@@ -79,7 +79,7 @@ export default async function StationaryDashboard() {
             description: 'Item distribution records',
             icon: FileText,
             href: '/stationary/issues',
-            color: 'blue',
+            color: 'primary',
             count: totalIssues,
         },
         {
@@ -87,7 +87,7 @@ export default async function StationaryDashboard() {
             description: 'Item return management',
             icon: RotateCcw,
             href: '/stationary/returns',
-            color: 'orange',
+            color: 'secondary',
             count: totalReturns,
         },
         {
@@ -95,26 +95,23 @@ export default async function StationaryDashboard() {
             description: 'Procurement and ordering',
             icon: ShoppingCart,
             href: '/stationary/purchase-orders',
-            color: 'indigo',
+            color: 'primary',
             count: totalPOs,
         },
     ];
 
     const colorClasses: Record<string, { bg: string; text: string; shadow: string }> = {
-        blue: { bg: 'bg-blue-600', text: 'text-blue-600', shadow: 'shadow-blue-600/20' },
-        purple: { bg: 'bg-purple-600', text: 'text-purple-600', shadow: 'shadow-purple-600/20' },
-        green: { bg: 'bg-green-600', text: 'text-green-600', shadow: 'shadow-green-600/20' },
-        orange: { bg: 'bg-orange-600', text: 'text-orange-600', shadow: 'shadow-orange-600/20' },
-        indigo: { bg: 'bg-indigo-600', text: 'text-indigo-600', shadow: 'shadow-indigo-600/20' },
+        primary: { bg: 'bg-primary', text: 'text-primary', shadow: 'shadow-primary/20' },
+        secondary: { bg: 'bg-secondary', text: 'text-secondary', shadow: 'shadow-secondary/20' },
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50 p-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                        <div className="p-3 bg-primary rounded-xl shadow-lg shadow-primary/20">
                             <Package className="text-white" size={32} />
                         </div>
                         <div>
@@ -198,33 +195,40 @@ export default async function StationaryDashboard() {
                 {/* Quick Links */}
                 <div className="mt-12 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <Link
                             href="/stationary/items"
                             className="p-4 text-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                         >
-                            <Package className="mx-auto mb-2 text-blue-600" size={24} />
+                            <Package className="mx-auto mb-2 text-primary" size={24} />
                             <p className="text-sm font-medium text-slate-900">Add Item</p>
+                        </Link>
+                        <Link
+                            href="/stationary/locations"
+                            className="p-4 text-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                        >
+                            <MapPin className="mx-auto mb-2 text-primary" size={24} />
+                            <p className="text-sm font-medium text-slate-900">Locations</p>
                         </Link>
                         <Link
                             href="/stationary/stock"
                             className="p-4 text-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                         >
-                            <Warehouse className="mx-auto mb-2 text-purple-600" size={24} />
+                            <Warehouse className="mx-auto mb-2 text-primary" size={24} />
                             <p className="text-sm font-medium text-slate-900">Adjust Stock</p>
                         </Link>
                         <Link
                             href="/stationary/requisitions"
                             className="p-4 text-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                         >
-                            <Send className="mx-auto mb-2 text-green-600" size={24} />
+                            <Send className="mx-auto mb-2 text-secondary" size={24} />
                             <p className="text-sm font-medium text-slate-900">New Requisition</p>
                         </Link>
                         <Link
                             href="/stationary/purchase-orders"
                             className="p-4 text-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                         >
-                            <ShoppingCart className="mx-auto mb-2 text-indigo-600" size={24} />
+                            <ShoppingCart className="mx-auto mb-2 text-primary" size={24} />
                             <p className="text-sm font-medium text-slate-900">Create PO</p>
                         </Link>
                     </div>

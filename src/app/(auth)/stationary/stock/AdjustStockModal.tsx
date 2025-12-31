@@ -157,7 +157,7 @@ export default function AdjustStockModal({ items, locations, onClose }: AdjustSt
                                 onClick={() => setFormData({ ...formData, adjustmentType: 'set' })}
                                 className={`px-4 py-2 rounded-lg border-2 font-medium transition-colors ${
                                     formData.adjustmentType === 'set'
-                                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                        ? 'border-primary bg-purple-50 text-primary'
                                         : 'border-slate-300 text-slate-700 hover:bg-slate-50'
                                 }`}
                             >
@@ -181,7 +181,7 @@ export default function AdjustStockModal({ items, locations, onClose }: AdjustSt
                                 min="0"
                                 value={formData.quantity}
                                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                 required
                             />
                         </div>
@@ -196,7 +196,7 @@ export default function AdjustStockModal({ items, locations, onClose }: AdjustSt
                                 min="0"
                                 value={formData.unitCost}
                                 onChange={(e) => setFormData({ ...formData, unitCost: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                             />
                         </div>
                     </div>
@@ -225,7 +225,7 @@ export default function AdjustStockModal({ items, locations, onClose }: AdjustSt
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                         >
                             {loading ? 'Adjusting...' : 'Adjust Stock'}
                         </button>

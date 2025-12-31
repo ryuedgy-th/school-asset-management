@@ -295,7 +295,7 @@ export default function EditFMAssetClient({
                                                 isCompleted
                                                     ? 'bg-green-600 border-green-600 text-white'
                                                     : isActive
-                                                    ? 'bg-blue-600 border-blue-600 text-white'
+                                                    ? 'bg-primary border-primary text-white'
                                                     : 'bg-white border-gray-300 text-gray-400'
                                             }`}
                                         >
@@ -309,7 +309,7 @@ export default function EditFMAssetClient({
                                             <p
                                                 className={`text-sm font-medium ${
                                                     isActive
-                                                        ? 'text-blue-600'
+                                                        ? 'text-primary'
                                                         : isCompleted
                                                         ? 'text-green-600'
                                                         : 'text-gray-500'
@@ -723,7 +723,7 @@ export default function EditFMAssetClient({
                                             requiresMaintenance: e.target.checked,
                                         })
                                     }
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
                                 />
                                 <label
                                     htmlFor="requiresMaintenance"
@@ -778,7 +778,7 @@ export default function EditFMAssetClient({
                                                         }
                                                         className={`absolute top-1 right-1 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity ${
                                                             isMarkedForDeletion
-                                                                ? 'bg-blue-500 text-white'
+                                                                ? 'bg-primary text-white'
                                                                 : 'bg-red-500 text-white'
                                                         }`}
                                                         title={
@@ -851,11 +851,11 @@ export default function EditFMAssetClient({
                                 </div>
                             )}
 
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <p className="text-sm text-blue-900 font-medium mb-1">
+                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <p className="text-sm text-purple-900 font-medium mb-1">
                                     QR Code
                                 </p>
-                                <p className="text-sm text-blue-700">
+                                <p className="text-sm text-purple-700">
                                     QR code: <strong>FM-{formData.assetCode}</strong>
                                 </p>
                             </div>
@@ -882,7 +882,7 @@ export default function EditFMAssetClient({
                             <button
                                 type="button"
                                 onClick={handleNext}
-                                className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                                className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium"
                             >
                                 Next
                                 <ChevronRight size={20} />

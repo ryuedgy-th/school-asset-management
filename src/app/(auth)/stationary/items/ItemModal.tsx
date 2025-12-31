@@ -115,7 +115,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                                 type="text"
                                 value={formData.itemCode}
                                 onChange={(e) => setFormData({ ...formData, itemCode: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                 required
                                 disabled={!!item}
                             />
@@ -128,7 +128,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                             <select
                                 value={formData.categoryId}
                                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                             >
                                 <option value="">No Category</option>
                                 {categories.map(cat => (
@@ -171,7 +171,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                             <select
                                 value={formData.uom}
                                 onChange={(e) => setFormData({ ...formData, uom: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                 required
                             >
                                 <option value="pcs">Pieces (pcs)</option>
@@ -195,7 +195,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                                 min="0"
                                 value={formData.unitCost}
                                 onChange={(e) => setFormData({ ...formData, unitCost: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                             />
                         </div>
                     </div>
@@ -210,7 +210,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                                 min="0"
                                 value={formData.reorderLevel}
                                 onChange={(e) => setFormData({ ...formData, reorderLevel: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                             />
                         </div>
 
@@ -223,7 +223,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                                 min="0"
                                 value={formData.maxQuantity}
                                 onChange={(e) => setFormData({ ...formData, maxQuantity: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                             />
                         </div>
                     </div>
@@ -234,7 +234,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                             id="isActive"
                             checked={formData.isActive}
                             onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                            className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                            className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
                         />
                         <label htmlFor="isActive" className="text-sm font-medium text-slate-700">
                             Active
@@ -252,7 +252,7 @@ export default function ItemModal({ item, categories, onClose }: ItemModalProps)
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                         >
                             {loading ? 'Saving...' : (item ? 'Update Item' : 'Create Item')}
                         </button>

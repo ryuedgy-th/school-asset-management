@@ -253,7 +253,7 @@ export default function StationaryRequisitionDetailClient({
         const badges: Record<string, { label: string; color: string }> = {
             draft: { label: 'Draft', color: 'bg-slate-100 text-slate-800' },
             pending: { label: 'Pending Approval', color: 'bg-yellow-100 text-yellow-800' },
-            approved_l1: { label: 'Approved L1', color: 'bg-blue-100 text-blue-800' },
+            approved_l1: { label: 'Approved L1', color: 'bg-purple-100 text-purple-800' },
             approved_l2: { label: 'Approved L2', color: 'bg-green-100 text-green-800' },
             approved: { label: 'Approved', color: 'bg-green-100 text-green-800' },
             rejected: { label: 'Rejected', color: 'bg-red-100 text-red-800' },
@@ -302,7 +302,7 @@ export default function StationaryRequisitionDetailClient({
                             <button
                                 onClick={() => handleApprove('L1')}
                                 disabled={isProcessing}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                             >
                                 Approve (L1)
                             </button>
@@ -426,8 +426,8 @@ export default function StationaryRequisitionDetailClient({
                             {/* L1 Approval */}
                             {requisition.approvedByL1At && requisition.approvedByL1 && (
                                 <div className="flex items-start gap-3">
-                                    <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
+                                    <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <div className="w-3 h-3 bg-primary rounded-full"></div>
                                     </div>
                                     <div className="flex-1">
                                         <p className="font-medium text-slate-900">Approved (Level 1)</p>

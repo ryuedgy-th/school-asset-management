@@ -117,13 +117,13 @@ export default function StationaryItemsClient({ items, categories, user }: Stati
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50 p-8">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
-                            <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                            <div className="p-3 bg-primary rounded-xl shadow-lg shadow-primary/20">
                                 <Package className="text-white" size={28} />
                             </div>
                             <div>
@@ -136,7 +136,7 @@ export default function StationaryItemsClient({ items, categories, user }: Stati
                                 setSelectedItem(null);
                                 setShowModal(true);
                             }}
-                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
                         >
                             <Plus size={20} />
                             Add Item

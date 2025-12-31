@@ -40,18 +40,18 @@ export default async function StationaryReturnsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50/30 to-slate-50 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50 p-8">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <Link
                         href="/stationary"
-                        className="inline-flex items-center gap-2 text-orange-600 hover:text-orange-800 mb-4"
+                        className="inline-flex items-center gap-2 text-secondary hover:text-secondary/90 mb-4"
                     >
                         <ArrowLeft size={20} />
                         Back to Stationary
                     </Link>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-orange-600 rounded-xl shadow-lg shadow-orange-600/20">
+                        <div className="p-3 bg-secondary rounded-xl shadow-lg shadow-secondary/20">
                             <RotateCcw className="text-white" size={28} />
                         </div>
                         <div>
@@ -108,7 +108,7 @@ export default async function StationaryReturnsPage() {
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 text-xs rounded-full ${
                                                     returnItem.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                                    returnItem.status === 'approved' ? 'bg-blue-100 text-blue-800' :
+                                                    returnItem.status === 'approved' ? 'bg-purple-100 text-purple-800' :
                                                     returnItem.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                                                     returnItem.status === 'rejected' ? 'bg-red-100 text-red-800' :
                                                     'bg-gray-100 text-gray-800'

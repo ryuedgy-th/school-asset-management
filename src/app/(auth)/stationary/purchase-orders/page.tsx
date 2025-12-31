@@ -58,18 +58,18 @@ export default async function StationaryPurchaseOrdersPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-slate-50 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50 p-8">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <Link
                         href="/stationary"
-                        className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-800 mb-4"
+                        className="inline-flex items-center gap-2 text-primary hover:text-primary/90 mb-4"
                     >
                         <ArrowLeft size={20} />
                         Back to Stationary
                     </Link>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-indigo-600 rounded-xl shadow-lg shadow-indigo-600/20">
+                        <div className="p-3 bg-primary rounded-xl shadow-lg shadow-primary/20">
                             <ShoppingCart className="text-white" size={28} />
                         </div>
                         <div>
@@ -123,7 +123,7 @@ export default async function StationaryPurchaseOrdersPage() {
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 text-xs rounded-full ${
                                                     po.status === 'received' ? 'bg-green-100 text-green-800' :
-                                                    po.status === 'partially_received' ? 'bg-blue-100 text-blue-800' :
+                                                    po.status === 'partially_received' ? 'bg-purple-100 text-purple-800' :
                                                     po.status === 'ordered' ? 'bg-purple-100 text-purple-800' :
                                                     po.status === 'approved' ? 'bg-cyan-100 text-cyan-800' :
                                                     po.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' :

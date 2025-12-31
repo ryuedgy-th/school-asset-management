@@ -41,18 +41,18 @@ export default async function StationaryIssuesPage() {
     });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 p-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-slate-50 p-8">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <Link
                         href="/stationary"
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-4"
+                        className="inline-flex items-center gap-2 text-primary hover:text-primary/90 mb-4"
                     >
                         <ArrowLeft size={20} />
                         Back to Stationary
                     </Link>
                     <div className="flex items-center gap-3">
-                        <div className="p-3 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
+                        <div className="p-3 bg-primary rounded-xl shadow-lg shadow-primary/20">
                             <FileText className="text-white" size={28} />
                         </div>
                         <div>

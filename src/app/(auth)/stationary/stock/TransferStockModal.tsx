@@ -130,7 +130,7 @@ export default function TransferStockModal({ items, locations, stock, onClose }:
                             <select
                                 value={formData.fromLocationId}
                                 onChange={(e) => setFormData({ ...formData, fromLocationId: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                 required
                             >
                                 <option value="">Select Location</option>
@@ -149,7 +149,7 @@ export default function TransferStockModal({ items, locations, stock, onClose }:
 
                         <div className="flex justify-center">
                             <div className="p-3 bg-purple-100 rounded-full">
-                                <ArrowRight className="text-purple-600" size={24} />
+                                <ArrowRight className="text-primary" size={24} />
                             </div>
                         </div>
 
@@ -160,7 +160,7 @@ export default function TransferStockModal({ items, locations, stock, onClose }:
                             <select
                                 value={formData.toLocationId}
                                 onChange={(e) => setFormData({ ...formData, toLocationId: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
                                 required
                             >
                                 <option value="">Select Location</option>
@@ -211,9 +211,9 @@ export default function TransferStockModal({ items, locations, stock, onClose }:
 
                     {/* Transfer Summary */}
                     {formData.itemId && formData.fromLocationId && formData.toLocationId && formData.quantity && (
-                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <h3 className="font-semibold text-blue-900 mb-2">Transfer Summary</h3>
-                            <div className="space-y-1 text-sm text-blue-800">
+                        <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                            <h3 className="font-semibold text-purple-900 mb-2">Transfer Summary</h3>
+                            <div className="space-y-1 text-sm text-purple-800">
                                 <p>
                                     <span className="font-medium">Item:</span> {selectedItem?.name}
                                 </p>
@@ -241,7 +241,7 @@ export default function TransferStockModal({ items, locations, stock, onClose }:
                         <button
                             type="submit"
                             disabled={loading || !availableStock}
-                            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                         >
                             {loading ? 'Transferring...' : 'Transfer Stock'}
                         </button>
