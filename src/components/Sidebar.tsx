@@ -51,19 +51,20 @@ const menuItems: MenuItem[] = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/' }, // Always visible
     {
         icon: Box,
-        label: 'IT Assets',
+        label: 'IT Department',
         href: '/assets',
         module: 'assets',
         subItems: [
             { label: 'All IT Assets', href: '/assets', module: 'assets' },
             { label: 'Categories', href: '/assets/categories', module: 'assets' },
-            { label: 'Domains', href: '/domains', module: 'assets' },
-            { label: 'Software Licenses', href: '/licenses', module: 'assets' }
+            { label: 'Licenses & Domains', href: '/it-resources', module: 'assets' },
+            { label: 'PM Schedule', href: '/pm', module: 'maintenance' },
+            { label: 'Inspections', href: '/inspections', module: 'inspections' }
         ]
     },
     {
         icon: Warehouse,
-        label: 'FM Assets',
+        label: 'FM Department',
         href: '/fm-assets',
         module: 'fm_assets',
         subItems: [
@@ -79,16 +80,6 @@ const menuItems: MenuItem[] = [
         label: 'Tickets',
         href: '/tickets',
         module: 'tickets',
-    },
-    {
-        icon: Calendar,
-        label: 'IT Maintenance',
-        href: '/pm',
-        module: 'maintenance',
-        subItems: [
-            { label: 'PM Schedule', href: '/pm', module: 'maintenance' },
-            { label: 'Inspections', href: '/inspections', module: 'inspections' }
-        ]
     },
     {
         label: 'Assignments',
@@ -126,7 +117,6 @@ const menuItems: MenuItem[] = [
             { label: 'System Settings', href: '/settings/settings', module: 'settings' },
             { label: 'Organization', href: '/settings/organization', module: 'settings' },
             { label: 'Email & Integration', href: '/settings/email', module: 'settings' },
-            { label: 'Security', href: '/settings/security', module: 'settings' },
         ]
     },
 ];

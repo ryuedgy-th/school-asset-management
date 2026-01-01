@@ -7,6 +7,7 @@ import AddAssetModal from '@/components/BorrowFlow/AddAssetModal';
 import { Package, Clock, CheckCircle2, XCircle, Lock } from 'lucide-react';
 import Image from 'next/image';
 import CloseAssignmentModal from '@/components/BorrowFlow/CloseAssignmentModal';
+import SignatureImage from '@/components/SignatureImage';
 
 // Complex types need careful definition or use of Prisma generated types if avail
 interface FullAssignment extends Assignment {
@@ -94,7 +95,7 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
 
 
                 <div className="flex items-center gap-2">
-                    {assignment.status === 'Active' && (
+                    {assignment.status === 'Active' && isAdmin && (
                         <>
                             <button
                                 onClick={() => setIsAddAssetModalOpen(true)}
@@ -104,7 +105,7 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                 Add Items
                             </button>
 
-                            {activeItems.length > 0 && (
+                            {activeItems.length > 0 && isAdmin && (
                                 <>
                                     <div className="h-6 w-px bg-slate-300 mx-2"></div>
                                     <button
@@ -117,7 +118,7 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                 </>
                             )}
 
-                            {activeItems.length === 0 && allBorrowed.length > 0 && (
+                            {activeItems.length === 0 && allBorrowed.length > 0 && isAdmin && (
                                 <>
                                     <div className="h-6 w-px bg-slate-300 mx-2"></div>
                                     <button
@@ -150,13 +151,15 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                 {activeItems.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 italic flex flex-col items-center gap-4">
                         <p>No currently borrowed items.</p>
-                        <button
-                            onClick={() => setIsAddAssetModalOpen(true)}
-                            className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-sm hover:bg-primary/90 transition-all flex items-center gap-2"
-                        >
-                            <span className="text-xl font-bold">+</span>
-                            Add Assets
-                        </button>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setIsAddAssetModalOpen(true)}
+                                className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-sm hover:bg-primary/90 transition-all flex items-center gap-2"
+                            >
+                                <span className="text-xl font-bold">+</span>
+                                Add Assets
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="divide-y divide-slate-100">
@@ -229,11 +232,16 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                                     {tx.borrowerSignature && (
                                                         <div className="text-right">
                                                             <div className="text-xs text-emerald-600 mb-1">✅ Signed</div>
-                                                            <img src={tx.borrowerSignature} alt="Signature" className="h-8 object-contain border border-slate-100 bg-slate-50 rounded" />
+                                                            <SignatureImage
+                                                                signatureData={tx.borrowerSignature}
+                                                                transactionNumber={tx.transactionNumber}
+                                                                signedAt={tx.borrowDate}
+                                                                className="h-8 object-contain border border-slate-100 bg-slate-50 rounded"
+                                                            />
                                                         </div>
                                                     )}
                                                 </div>
-                                            ) : (
+                                            ) : isAdmin ? (
                                                 <>
                                                     <button
                                                         onClick={async () => {
@@ -311,7 +319,7 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                                         ✖️ Cancel
                                                     </button>
                                                 </>
-                                            )}
+                                            ) : null}
                                         </>
                                     )}
                                 </div>
@@ -345,7 +353,12 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                 {tx.checkerSignature && (
                                     <div className="text-right">
                                         <div className="text-xs text-slate-400 mb-1">Checker Signature</div>
-                                        <img src={tx.checkerSignature} alt="Signature" className="h-8 object-contain border border-slate-100 bg-slate-50 rounded" />
+                                        <SignatureImage
+                                            signatureData={tx.checkerSignature}
+                                            transactionNumber={`RT-${tx.id}`}
+                                            signedAt={tx.returnDate}
+                                            className="h-8 object-contain border border-slate-100 bg-slate-50 rounded"
+                                        />
                                     </div>
                                 )}
                             </div>
@@ -354,8 +367,8 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                     <div key={ri.id} className="flex items-center justify-between text-sm p-2 bg-slate-50 rounded border border-slate-100">
                                         <span className="font-medium text-slate-700">{ri.borrowItem.asset.name}</span>
                                         <div className="flex items-center gap-3">
-                                            <span className={`px-2 py-0.5 rounded text-xs font-semibold ${ri.condition === 'Good' ? 'bg-green-100 text-green-700' :
-                                                ri.condition === 'Damaged' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                                            <span className={`px-2 py-0.5 rounded text-xs font-semibold border ${ri.condition === 'Good' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                ri.condition === 'Damaged' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-100 text-gray-700 border-gray-200'
                                                 }`}>
                                                 {ri.condition}
                                             </span>

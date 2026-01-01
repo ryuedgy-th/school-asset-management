@@ -95,7 +95,7 @@ export default function TransactionSignatureClient({
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-start md:items-center justify-center p-4 md:p-8 pt-16 md:pt-8">
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 md:p-8 text-center">
                     <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle size={32} />
@@ -190,12 +190,12 @@ export default function TransactionSignatureClient({
                                                 </div>
                                                 <p className="text-sm text-slate-500 font-medium">{item.category}</p>
                                             </div>
-                                            <span className={`self-start sm:self-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${item.condition === 'Excellent' ? 'bg-emerald-50 text-emerald-700' :
-                                                item.condition === 'Good' ? 'bg-primary/10 text-primary/90' :
-                                                    item.condition === 'Fair' ? 'bg-amber-50 text-amber-700' :
-                                                        'bg-rose-50 text-rose-700'
+                                            <span className={`self-start sm:self-center px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${item.condition.toLowerCase() === 'excellent' || item.condition.toLowerCase() === 'good' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                                item.condition.toLowerCase() === 'fair' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                                    item.condition.toLowerCase() === 'poor' || item.condition.toLowerCase() === 'broken' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                                                        'bg-gray-100 text-gray-700 border border-gray-200'
                                                 }`}>
-                                                {item.condition}
+                                                {item.condition.charAt(0).toUpperCase() + item.condition.slice(1).toLowerCase()}
                                             </span>
                                         </div>
 

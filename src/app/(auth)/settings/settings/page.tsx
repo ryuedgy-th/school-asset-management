@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import SLASettingsClient from '@/components/Settings/SLASettingsClient';
 import NumberingConfigClient from '@/components/Settings/NumberingConfigClient';
-import { Settings as SettingsIcon, Clock, Hash } from 'lucide-react';
+import QRScanSecurityClient from '@/components/Settings/QRScanSecurityClient';
+import { Settings as SettingsIcon, Clock, Hash, Shield } from 'lucide-react';
 
 export default function SettingsPage() {
-    const [activeTab, setActiveTab] = useState<'sla' | 'numbering'>('sla');
+    const [activeTab, setActiveTab] = useState<'sla' | 'numbering' | 'qr-security'>('sla');
 
     const tabs = [
         {
@@ -20,6 +21,12 @@ export default function SettingsPage() {
             label: 'Numbering Format',
             icon: Hash,
             component: NumberingConfigClient
+        },
+        {
+            id: 'qr-security' as const,
+            label: 'QR Scan Protection',
+            icon: Shield,
+            component: QRScanSecurityClient
         }
     ];
 
@@ -36,26 +43,24 @@ export default function SettingsPage() {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-slate-200">
-                <nav className="flex gap-2">
-                    {tabs.map(tab => {
-                        const Icon = tab.icon;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-4 py-3 font-medium transition-all border-b-2 ${
-                                    activeTab === tab.id
-                                        ? 'border-primary text-primary'
-                                        : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                                }`}
-                            >
-                                <Icon size={18} />
-                                {tab.label}
-                            </button>
-                        );
-                    })}
-                </nav>
+            <div className="flex gap-2 bg-white rounded-xl p-1.5 shadow-sm border border-slate-200 w-fit">
+                {tabs.map(tab => {
+                    const Icon = tab.icon;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                                activeTab === tab.id
+                                    ? 'bg-primary text-white shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                            }`}
+                        >
+                            <Icon size={18} />
+                            {tab.label}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Active Tab Content */}

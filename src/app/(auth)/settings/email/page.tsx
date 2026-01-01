@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, FileText, Key, Users } from 'lucide-react';
+import { Mail, FileText, Users } from 'lucide-react';
 import EmailAccountsTab from './EmailAccountsTab';
 import EmailTemplatesTab from './EmailTemplatesTab';
-import APIKeysTab from './APIKeysTab';
 import NotificationRecipientsTab from './NotificationRecipientsTab';
 
-type TabType = 'accounts' | 'templates' | 'api-keys' | 'recipients';
+type TabType = 'accounts' | 'templates' | 'recipients';
 
 export default function EmailSettingsPage() {
     const [activeTab, setActiveTab] = useState<TabType>('accounts');
@@ -16,7 +15,6 @@ export default function EmailSettingsPage() {
         { id: 'accounts' as TabType, label: 'Email Accounts', icon: Mail, description: 'SMTP & OAuth accounts' },
         { id: 'templates' as TabType, label: 'Templates', icon: FileText, description: 'Email templates' },
         { id: 'recipients' as TabType, label: 'Recipients', icon: Users, description: 'Notification recipients' },
-        { id: 'api-keys' as TabType, label: 'API Keys', icon: Key, description: 'Google OAuth & Integration' },
     ];
 
     return (
@@ -28,33 +26,24 @@ export default function EmailSettingsPage() {
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-slate-200 mb-6">
-                <nav className="flex gap-8" role="tablist">
-                    {tabs.map(tab => {
-                        const Icon = tab.icon;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                role="tab"
-                                aria-selected={activeTab === tab.id}
-                                className={`
-                                    flex items-center gap-2 pb-4 px-1 border-b-2 transition-all
-                                    ${activeTab === tab.id
-                                        ? 'border-primary text-primary font-semibold'
-                                        : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
-                                    }
-                                `}
-                            >
-                                <Icon size={20} />
-                                <div className="text-left">
-                                    <div className="text-sm">{tab.label}</div>
-                                    <div className="text-xs opacity-70">{tab.description}</div>
-                                </div>
-                            </button>
-                        );
-                    })}
-                </nav>
+            <div className="flex gap-2 bg-white rounded-xl p-1.5 shadow-sm border border-slate-200 w-fit mb-6">
+                {tabs.map(tab => {
+                    const Icon = tab.icon;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all ${
+                                activeTab === tab.id
+                                    ? 'bg-primary text-white shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                            }`}
+                        >
+                            <Icon size={18} />
+                            <span>{tab.label}</span>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Tab Content */}
@@ -62,7 +51,6 @@ export default function EmailSettingsPage() {
                 {activeTab === 'accounts' && <EmailAccountsTab />}
                 {activeTab === 'templates' && <EmailTemplatesTab />}
                 {activeTab === 'recipients' && <NotificationRecipientsTab />}
-                {activeTab === 'api-keys' && <APIKeysTab />}
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Shield, Lock, Eye, EyeOff, Check, X, AlertCircle } from 'lucide-react';
+import { Lock, Eye, EyeOff, Check, X, AlertCircle } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 interface SecuritySettings {
@@ -10,16 +10,14 @@ interface SecuritySettings {
     updatedBy: string | null;
 }
 
-export default function SecuritySettingsPage() {
+export default function QRScanSecurityClient() {
     const [settings, setSettings] = useState<SecuritySettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [showChangeModal, setShowChangeModal] = useState(false);
 
     // Form state
-    const [currentPassword, setCurrentPassword] = useState('');
     const [newPasscode, setNewPasscode] = useState('');
     const [confirmPasscode, setConfirmPasscode] = useState('');
-    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPasscode, setShowNewPasscode] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
@@ -86,7 +84,6 @@ export default function SecuritySettingsPage() {
                 });
 
                 // Reset form
-                setCurrentPassword('');
                 setNewPasscode('');
                 setConfirmPasscode('');
                 setShowChangeModal(false);
@@ -121,17 +118,6 @@ export default function SecuritySettingsPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center gap-3">
-                <div className="p-3 bg-primary/10 rounded-xl">
-                    <Shield className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Security Settings</h1>
-                    <p className="text-sm text-slate-500 mt-1">Manage system security and access control</p>
-                </div>
-            </div>
-
             {/* QR Scan Protection Card */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div className="flex items-start justify-between mb-6">

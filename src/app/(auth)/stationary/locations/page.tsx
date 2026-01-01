@@ -25,7 +25,7 @@ export default async function StationaryLocationsPage() {
     }
 
     // Fetch locations with related data
-    const locations = await prisma.stationaryLocation.findMany({
+    const locationsData = await prisma.stationaryLocation.findMany({
         include: {
             department: { select: { id: true, code: true, name: true } },
             managedBy: { select: { id: true, name: true, email: true } },
@@ -33,6 +33,12 @@ export default async function StationaryLocationsPage() {
         },
         orderBy: { code: 'asc' },
     });
+
+    // Convert capacity from string to number
+    const locations = locationsData.map(loc => ({
+        ...loc,
+        capacity: loc.capacity ? parseInt(loc.capacity) : null,
+    })) as any;
 
     // Fetch departments for the form
     const departments = await prisma.department.findMany({
