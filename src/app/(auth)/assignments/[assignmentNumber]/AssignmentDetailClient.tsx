@@ -319,7 +319,28 @@ export default function AssignmentDetailClient({ assignment, isAdmin }: { assign
                                                         ✖️ Cancel
                                                     </button>
                                                 </>
-                                            ) : null}
+                                            ) : (
+                                                // User View - Show Sign button if not signed
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            const { generateBorrowTransactionToken } = await import('@/app/lib/borrow-transaction-signature');
+                                                            const res = await generateBorrowTransactionToken(tx.id);
+                                                            if (res.success && res.url) {
+                                                                window.open(res.url, '_blank');
+                                                            } else {
+                                                                alert('❌ ' + (res.error || 'Failed to generate signature link'));
+                                                            }
+                                                        } catch (e: any) {
+                                                            console.error(e);
+                                                            alert('❌ Error: ' + e.message);
+                                                        }
+                                                    }}
+                                                    className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-sm hover:bg-primary/90 transition-all flex items-center gap-2"
+                                                >
+                                                    ✍️ Sign
+                                                </button>
+                                            )}
                                         </>
                                     )}
                                 </div>

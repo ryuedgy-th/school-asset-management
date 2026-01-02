@@ -243,13 +243,6 @@ export default function AssignmentsClient({ assignments, isAdmin, currentUserId 
                     <h1 className="text-2xl font-bold text-slate-900">My Assignments</h1>
                     <p className="text-slate-500">Manage your borrowed assets and requests.</p>
                 </div>
-                <Link
-                    href="/assignments/new"
-                    className="px-4 py-2 bg-primary text-white rounded-lg font-medium shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all flex items-center gap-2"
-                >
-                    <Plus size={18} />
-                    New Request
-                </Link>
             </div>
 
             {/* Active Assignments */}
