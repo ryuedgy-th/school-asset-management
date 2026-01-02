@@ -45,6 +45,12 @@ export default async function Home() {
     redirect('/login');
   }
 
+  // Redirect regular users to their personalized dashboard
+  const isAdmin = ['Admin', 'Technician'].includes(user.userRole?.name || '');
+  if (!isAdmin) {
+    redirect('/user-dashboard');
+  }
+
   // Department filter for all queries
   const deptFilter = await getDepartmentFilter(user.id); // 🔒 Department isolation
   const totalAssets = await prisma.asset.count({ where: deptFilter });
