@@ -142,7 +142,7 @@ async function main() {
     let totalPermissions = 0;
 
     for (const module of allModules) {
-        const permissions = permissionsByModule[module.code] || standardPermissions;
+        const permissions = permissionsByModule[module.code as keyof typeof permissionsByModule] || standardPermissions;
 
         for (const perm of permissions) {
             await prisma.modulePermission.upsert({
@@ -154,13 +154,13 @@ async function main() {
                 },
                 update: {
                     name: perm.name,
-                    description: perm.description,
+                    description: (perm as any).description,
                 },
                 create: {
                     moduleId: module.id,
                     action: perm.action,
                     name: perm.name,
-                    description: perm.description,
+                    description: (perm as any).description,
                 },
             });
             totalPermissions++;
