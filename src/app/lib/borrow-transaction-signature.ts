@@ -19,16 +19,17 @@ export async function generateBorrowTransactionToken(
         throw new Error('Unauthorized');
     }
 
-    // Verify permissions
-    const userRole = await prisma.user.findUnique({
+    // Get current user with role
+    const currentUser = await prisma.user.findUnique({
         where: { email: session.user.email },
         include: { userRole: true }
     });
 
-    if (!userRole || !['Admin', 'Technician'].includes(userRole.userRole?.name || '')) {
-        throw new Error('Insufficient permissions');
+    if (!currentUser) {
+        throw new Error('User not found');
     }
 
+    // Get transaction with assignment
     const transaction = await prisma.borrowTransaction.findUnique({
         where: { id: transactionId },
         include: {
@@ -39,6 +40,16 @@ export async function generateBorrowTransactionToken(
 
     if (!transaction) {
         throw new Error('Transaction not found');
+    }
+
+    // Check permissions:
+    // - Admin/Technician can generate for any transaction
+    // - Regular user can only generate for their own assignments
+    const isAdmin = ['Admin', 'Technician'].includes(currentUser.userRole?.name || '');
+    const isOwner = transaction.assignment.userId === currentUser.id;
+
+    if (!isAdmin && !isOwner) {
+        throw new Error('Insufficient permissions - you can only sign your own assignments');
     }
 
     if (transaction.isSigned) {
