@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { DialogProvider } from '@/contexts/DialogProvider';
-import { SessionProvider } from 'next-auth/react';
-import SessionTimeout from '@/components/SessionTimeout';
+import { ClientProviders } from '@/components/ClientProviders';
 
 export const metadata: Metadata = {
   title: 'School Asset Management',
@@ -17,12 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="flex min-h-screen bg-slate-50 font-sans text-slate-900" suppressHydrationWarning>
-        <SessionProvider>
-          <DialogProvider>
-            {children}
-          </DialogProvider>
-          <SessionTimeout />
-        </SessionProvider>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
         <div id="portal-root"></div>
       </body>
     </html>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, AlertCircle, CheckCircle, Clock, Plus, Edit, Trash2, Play } from 'lucide-react';
 import PMScheduleModal from '@/components/PMScheduleModal';
+import ExecutePMModal from '@/components/ExecutePMModal';
 
 interface PMSchedule {
     id: number;
@@ -39,6 +40,8 @@ export default function PMSchedulesClient({ schedules, users, assets, user }: PM
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingSchedule, setEditingSchedule] = useState<PMSchedule | null>(null);
+    const [showExecuteModal, setShowExecuteModal] = useState(false);
+    const [executingSchedule, setExecutingSchedule] = useState<PMSchedule | null>(null);
 
     const now = new Date();
     const nextWeek = new Date();
@@ -241,7 +244,10 @@ export default function PMSchedulesClient({ schedules, users, assets, user }: PM
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
                                                     <button
-                                                        onClick={() => alert('Execute PM - Modal coming soon')}
+                                                        onClick={() => {
+                                                            setExecutingSchedule(schedule);
+                                                            setShowExecuteModal(true);
+                                                        }}
                                                         className="p-1 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                                         title="Execute PM"
                                                     >
@@ -323,6 +329,23 @@ export default function PMSchedulesClient({ schedules, users, assets, user }: PM
                 assets={assets}
                 users={users}
             />
+
+            {/* Execute PM Modal */}
+            {executingSchedule && (
+                <ExecutePMModal
+                    isOpen={showExecuteModal}
+                    onClose={() => {
+                        setShowExecuteModal(false);
+                        setExecutingSchedule(null);
+                    }}
+                    schedule={executingSchedule}
+                    onSuccess={() => {
+                        router.refresh();
+                        setShowExecuteModal(false);
+                        setExecutingSchedule(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

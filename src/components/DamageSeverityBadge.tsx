@@ -1,5 +1,3 @@
-'use client';
-
 type DamageSeverity = 'minor' | 'moderate' | 'severe';
 
 interface DamageSeverityBadgeProps {

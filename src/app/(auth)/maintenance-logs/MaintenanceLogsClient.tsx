@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Wrench, Calendar, DollarSign } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Wrench, Calendar, DollarSign, Trash2 } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 export default function MaintenanceLogsClient({ logs, user }: any) {
+    const router = useRouter();
     const [filter, setFilter] = useState('all');
 
     const filtered = logs.filter((log: any) =>
@@ -83,12 +86,15 @@ export default function MaintenanceLogsClient({ logs, user }: any) {
                                 <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">
                                     Cost
                                 </th>
+                                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
                             {filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
                                         No maintenance logs found
                                     </td>
                                 </tr>
@@ -107,6 +113,56 @@ export default function MaintenanceLogsClient({ logs, user }: any) {
                                         <td className="px-6 py-4 text-sm text-slate-700">{log.performedBy}</td>
                                         <td className="px-6 py-4 text-sm text-slate-700">
                                             {log.cost ? `฿${log.cost.toLocaleString()}` : '-'}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        const result = await Swal.fire({
+                                                            icon: 'warning',
+                                                            title: 'Delete Maintenance Log?',
+                                                            html: `Are you sure you want to delete this maintenance log?<br><br><strong>${log.asset.name}</strong><br>${formatDate(log.date)} - ${log.type}<br><br>This action cannot be undone.`,
+                                                            showCancelButton: true,
+                                                            confirmButtonColor: '#ef4444',
+                                                            cancelButtonColor: '#6b7280',
+                                                            confirmButtonText: 'Yes, delete it',
+                                                            cancelButtonText: 'Cancel'
+                                                        });
+
+                                                        if (result.isConfirmed) {
+                                                            try {
+                                                                const res = await fetch(`/api/maintenance-logs/${log.id}`, {
+                                                                    method: 'DELETE',
+                                                                });
+
+                                                                if (!res.ok) {
+                                                                    const error = await res.json();
+                                                                    throw new Error(error.error || 'Failed to delete');
+                                                                }
+
+                                                                await Swal.fire({
+                                                                    icon: 'success',
+                                                                    title: 'Deleted!',
+                                                                    text: 'Maintenance log has been deleted successfully.',
+                                                                    timer: 2000
+                                                                });
+
+                                                                router.refresh();
+                                                            } catch (error: any) {
+                                                                Swal.fire({
+                                                                    icon: 'error',
+                                                                    title: 'Delete Failed',
+                                                                    text: error.message || 'Failed to delete maintenance log'
+                                                                });
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="p-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete Log"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

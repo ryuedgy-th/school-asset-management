@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Search, Filter, Plus, Edit, Trash2, QrCode, Warehouse, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import QRPrintModal from '@/components/QRPrintModal';
 
@@ -13,6 +14,7 @@ interface FMAssetsClientProps {
 }
 
 export default function FMAssetsClient({ fmAssets, categories, user }: FMAssetsClientProps) {
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('all');
     const [filterStatus, setFilterStatus] = useState('all');
@@ -321,6 +323,52 @@ export default function FMAssetsClient({ fmAssets, categories, user }: FMAssetsC
                                                     >
                                                         <Edit size={18} />
                                                     </Link>
+                                                    <button
+                                                        onClick={async () => {
+                                                            const result = await Swal.fire({
+                                                                icon: 'warning',
+                                                                title: 'Delete FM Asset?',
+                                                                html: `Are you sure you want to delete <strong>${asset.name}</strong> (${asset.assetCode})?<br><br>This action cannot be undone.`,
+                                                                showCancelButton: true,
+                                                                confirmButtonColor: '#ef4444',
+                                                                cancelButtonColor: '#6b7280',
+                                                                confirmButtonText: 'Yes, delete it',
+                                                                cancelButtonText: 'Cancel'
+                                                            });
+
+                                                            if (result.isConfirmed) {
+                                                                try {
+                                                                    const res = await fetch(`/api/fm-assets/${asset.assetCode}`, {
+                                                                        method: 'DELETE',
+                                                                    });
+
+                                                                    if (!res.ok) {
+                                                                        const error = await res.json();
+                                                                        throw new Error(error.error || 'Failed to delete');
+                                                                    }
+
+                                                                    await Swal.fire({
+                                                                        icon: 'success',
+                                                                        title: 'Deleted!',
+                                                                        text: 'FM Asset has been deleted successfully.',
+                                                                        timer: 2000
+                                                                    });
+
+                                                                    router.refresh();
+                                                                } catch (error: any) {
+                                                                    Swal.fire({
+                                                                        icon: 'error',
+                                                                        title: 'Delete Failed',
+                                                                        text: error.message || 'Failed to delete FM asset'
+                                                                    });
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Delete Asset"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
