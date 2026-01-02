@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, User as UserIcon, Shield, Mail } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, User as UserIcon, Shield, Mail, Search, Filter } from 'lucide-react';
 import { User, Role, Department } from '@prisma/client';
 import CreateUserModal from './CreateUserModal';
 import EditUserModal from './EditUserModal';
@@ -24,6 +24,31 @@ export default function UserManagement({ initialUsers, roles, departments }: Use
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<UserWithRelations | null>(null);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
+    // Search and filter states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedRole, setSelectedRole] = useState<string>('all');
+    const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+
+    // Filter and search users
+    const filteredUsers = useMemo(() => {
+        return initialUsers.filter((user) => {
+            // Search filter
+            const searchLower = searchQuery.toLowerCase();
+            const matchesSearch = !searchQuery ||
+                user.name?.toLowerCase().includes(searchLower) ||
+                user.nickname?.toLowerCase().includes(searchLower) ||
+                user.email?.toLowerCase().includes(searchLower);
+
+            // Role filter
+            const matchesRole = selectedRole === 'all' || user.roleId?.toString() === selectedRole;
+
+            // Department filter
+            const matchesDepartment = selectedDepartment === 'all' || user.departmentId?.toString() === selectedDepartment;
+
+            return matchesSearch && matchesRole && matchesDepartment;
+        });
+    }, [initialUsers, searchQuery, selectedRole, selectedDepartment]);
 
     async function handleDelete(id: number) {
         const confirmed = await confirm({
@@ -74,6 +99,61 @@ export default function UserManagement({ initialUsers, roles, departments }: Use
                 </button>
             </div>
 
+            {/* Search and Filter Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                    {/* Search Bar */}
+                    <div className="flex-1 relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search by name, nickname, or email..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                        />
+                    </div>
+
+                    {/* Role Filter */}
+                    <div className="md:w-48">
+                        <select
+                            value={selectedRole}
+                            onChange={(e) => setSelectedRole(e.target.value)}
+                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white"
+                        >
+                            <option value="all">All Roles</option>
+                            {roles.map((role) => (
+                                <option key={role.id} value={role.id.toString()}>
+                                    {role.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Department Filter */}
+                    <div className="md:w-48">
+                        <select
+                            value={selectedDepartment}
+                            onChange={(e) => setSelectedDepartment(e.target.value)}
+                            className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors bg-white"
+                        >
+                            <option value="all">All Departments</option>
+                            {departments.map((dept) => (
+                                <option key={dept.id} value={dept.id.toString()}>
+                                    {dept.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                {/* Results Count */}
+                <div className="mt-3 text-sm text-slate-600">
+                    Showing <span className="font-semibold text-slate-900">{filteredUsers.length}</span> of{' '}
+                    <span className="font-semibold text-slate-900">{initialUsers.length}</span> users
+                </div>
+            </div>
+
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
@@ -86,7 +166,7 @@ export default function UserManagement({ initialUsers, roles, departments }: Use
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {initialUsers.map((user) => (
+                        {filteredUsers.map((user) => (
                             <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
                                 <td className="p-4">
                                     <div className="flex items-center gap-3">
@@ -134,10 +214,12 @@ export default function UserManagement({ initialUsers, roles, departments }: Use
                                 </td>
                             </tr>
                         ))}
-                        {initialUsers.length === 0 && (
+                        {filteredUsers.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="p-8 text-center text-slate-500">
-                                    No users found.
+                                    {searchQuery || selectedRole !== 'all' || selectedDepartment !== 'all'
+                                        ? 'No users match your search criteria.'
+                                        : 'No users found.'}
                                 </td>
                             </tr>
                         )}
